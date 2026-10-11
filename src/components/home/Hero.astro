@@ -31,7 +31,8 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
   class="hero flex min-h-[calc(100svh-6.25rem)] flex-col items-center justify-center gap-5 overflow-x-clip px-5 py-8 text-center"
   data-hero
 >
-  <p class="label-caps opacity-80" data-intro data-hero-label>{brand.campaign}</p>
+  <!-- Shown from the very first paint (no intro), so the page has content before any script runs. -->
+  <p class="label-caps opacity-80">{brand.campaign}</p>
 
   <svg
     class="w-[min(62vw,21rem)] overflow-visible text-wine"
@@ -161,7 +162,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
     const intro = gsap.timeline({ onComplete: () => split.revert() });
 
     intro
-      .from(find('[data-hero-label], [data-hero-stage]'), { opacity: 0, duration: 0.3 }, 0)
+      .from(find('[data-hero-stage]'), { opacity: 0, duration: 0.3 }, 0)
       // Logo: each letter's outline draws, then fills in.
       .from(
         find('[data-hero-logo] path'),

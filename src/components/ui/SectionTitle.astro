@@ -5,15 +5,27 @@ interface Props {
   title: string;
   as?: 'h1' | 'h2' | 'h3';
   align?: 'center' | 'left';
+  // For a heading at the very top of a page: shown at once, with no wave,
+  // so the page has its main heading before any script runs.
+  immediate?: boolean;
   class?: string;
 }
 
-const { label, title, as: Heading = 'h2', align = 'center', class: className } = Astro.props;
+const {
+  label,
+  title,
+  as: Heading = 'h2',
+  align = 'center',
+  immediate = false,
+  class: className,
+} = Astro.props;
 ---
 
 <div class:list={[align === 'center' ? 'text-center' : 'text-left', className]}>
   {label && <p class="label-caps opacity-80">{label}</p>}
-  <Heading class="wave-heading mt-3 text-4xl leading-tight sm:text-5xl" data-wave>{title}</Heading>
+  <Heading class="wave-heading mt-3 text-4xl leading-tight sm:text-5xl" data-wave={immediate ? undefined : ''}>
+    {title}
+  </Heading>
 </div>
 
 <style is:global>

@@ -16,7 +16,6 @@
   /* Self-hosted through Fontsource; imported in Base.astro. */
   --font-display: 'Cormorant Garamond Variable', ui-serif, Georgia, serif;
   --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-script: 'Pinyon Script', 'Cormorant Garamond Variable', cursive;
 }
 
 @layer base {
@@ -34,6 +33,53 @@
   [id] {
     scroll-margin-top: 7rem;
   }
+
+  /* One visible keyboard focus ring everywhere: wine on cream surfaces,
+     cream on the wine ones. */
+  :focus-visible {
+    outline: 2px solid var(--color-wine);
+    outline-offset: 3px;
+  }
+
+  :where(footer, #sale-ribbon, [data-order-bar]) :focus-visible {
+    outline-color: var(--color-cream);
+  }
+
+  #sale-ribbon :focus-visible {
+    outline-offset: -4px;
+  }
+
+  /* Safety net under every scene's own calm version: nothing loops or
+     glides for visitors who asked for reduced motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Shown only when reached with the keyboard. */
+.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 110;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: var(--color-wine);
+  color: var(--color-cream);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+  outline-color: var(--color-cream);
+  outline-offset: -5px;
 }
 
 @utility label-caps {

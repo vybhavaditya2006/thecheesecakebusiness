@@ -3,6 +3,7 @@ import { getImage } from 'astro:assets';
 import OrderApp from '../components/order/OrderApp.tsx';
 import type { BiteImages } from '../components/order/parts';
 import { flavours } from '../content/flavours';
+import { seo } from '../content/site';
 import { biteImage } from '../lib/bite-images';
 import SectionTitle from '../components/ui/SectionTitle.astro';
 import { saleActive, formatPrice, pricing } from '../content/pricing';
@@ -23,10 +24,10 @@ for (const flavour of flavours) {
 }
 ---
 
-<Base title="Order">
+<Base title={seo.order.title} description={seo.order.description}>
   <!-- Kept short on phones so the box and the flavours share one screen. -->
   <section class="px-5 pt-6 pb-4 text-center sm:pt-12 sm:pb-8">
-    <SectionTitle as="h1" label="Order" title="Pack your box" />
+    <SectionTitle as="h1" label="Order" title="Pack your box" immediate />
     <p class="mt-4 hidden text-sm sm:block">
       {pricing.box.label}: <strong>{formatPrice(pricing.box[key])}</strong> · {pricing.single.label}:{' '}
       <strong>{formatPrice(pricing.single[key])}</strong>
@@ -34,9 +35,12 @@ for (const flavour of flavours) {
   </section>
 
   <!-- The order lives in the browser, so the builder only renders there. -->
-  <OrderApp client:only="react" biteImages={biteImages}>
-    <p slot="fallback" class="px-5 py-24 text-center text-sm">Setting out the box…</p>
-  </OrderApp>
+  <!-- A full screen is held for the builder so nothing below jumps when it appears. -->
+  <div class="min-h-svh">
+    <OrderApp client:only="react" biteImages={biteImages}>
+      <p slot="fallback" class="px-5 py-24 text-center text-sm">Setting out the box…</p>
+    </OrderApp>
+  </div>
 </Base>
 
 <style is:global>

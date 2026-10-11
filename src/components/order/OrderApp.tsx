@@ -40,7 +40,18 @@ export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages 
       <BiteImagesContext.Provider value={biteImages}>
       <div className="mx-auto grid max-w-6xl items-start gap-10 px-5 pb-28 lg:grid-cols-[1fr_20rem] lg:pb-16">
         <div>
-          <div className="mx-auto flex w-fit rounded-full border border-wine p-1" role="tablist" aria-label="Order type">
+          <div
+            className="mx-auto flex w-fit rounded-full border border-wine p-1"
+            role="tablist"
+            aria-label="Order type"
+            // Arrow keys move between tabs, as screen-reader users expect.
+            onKeyDown={(event) => {
+              if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+              const next = tab === 'box' ? 'custom' : 'box';
+              setTab(next);
+              event.currentTarget.querySelector<HTMLElement>(`#tab-${next}`)?.focus();
+            }}
+          >
             {tabs.map((item) => (
               <button
                 key={item.id}
@@ -48,6 +59,7 @@ export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages 
                 role="tab"
                 id={`tab-${item.id}`}
                 aria-selected={tab === item.id}
+                tabIndex={tab === item.id ? 0 : -1}
                 aria-controls="order-panel"
                 className={`label-caps relative rounded-full px-5 py-3 transition-colors ${tab === item.id ? 'text-cream' : 'text-wine'}`}
                 onClick={() => setTab(item.id)}

@@ -119,7 +119,7 @@ export default function BoxBuilder() {
   };
 
   return (
-    <div>
+    <div data-box-builder>
       {singles ? (
         <ul className="mx-auto max-w-md space-y-3">
           {flavours.map((flavour) => {
@@ -196,7 +196,13 @@ export default function BoxBuilder() {
                         style={{ originY: 1 }}
                         aria-label={`Take ${flavour.name} out of the box`}
                         disabled={lidShut}
-                        onClick={() => removeBiteAt(boxNumber * BOX + slot)}
+                        onClick={(event) => {
+                          // The bite's button is about to vanish; hand keyboard
+                          // focus to that flavour's "add" button instead.
+                          const builder = event.currentTarget.closest('[data-box-builder]');
+                          removeBiteAt(boxNumber * BOX + slot);
+                          builder?.querySelector<HTMLElement>(`[data-add="${flavour.id}"]`)?.focus();
+                        }}
                         // Squash on landing, then spring back.
                         initial={{ scaleX: 1.25, scaleY: 0.68 }}
                         animate={{ scaleX: 1, scaleY: 1 }}
@@ -294,6 +300,7 @@ export default function BoxBuilder() {
                   type="button"
                   className="block w-full"
                   aria-label={`Add ${flavour.name} to the box`}
+                  data-add={flavour.id}
                   whileTap={{ scale: 0.88 }}
                   onClick={(event) => add(flavour.id, event)}
                 >

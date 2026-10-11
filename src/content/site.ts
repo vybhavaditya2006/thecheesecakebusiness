@@ -1,9 +1,13 @@
 import { brand } from './brand';
 import { customOptions } from './custom';
-import { pricing } from './pricing';
+import { flavours } from './flavours';
+import { formatPrice, pricing, saleActive } from './pricing';
 
 export const delivery = {
   area: 'Nagarabhavi, Bengaluru',
+  city: 'Bengaluru',
+  region: 'Karnataka',
+  country: 'IN',
   pincode: '560072',
   // Kitchen location as [lat, lng] (Plus Code 7J4VXG79+8X).
   kitchen: [12.96331, 77.51994] as const,
@@ -35,6 +39,27 @@ export const deliveryVerdict = {
 } as const;
 
 export const orderPath = '/order';
+
+const priceKey = saleActive ? 'offer' : 'regular';
+
+// Page titles and descriptions for search results and link previews.
+export const seo = {
+  home: {
+    title: `${brand.name}: cheesecake bites in ${delivery.city}`,
+    description: `Bite-sized cheesecakes by ${brand.maker} in ${delivery.area}. ${flavours.length} flavours from ${formatPrice(pricing.single[priceKey])} a bite, or a box of ${pricing.box.bites} for ${formatPrice(pricing.box[priceKey])}. Free delivery within ${delivery.freeRadiusKm} km.`,
+  },
+  order: {
+    title: `Order cheesecake bites · ${brand.name}`,
+    description: `Pack a box of ${pricing.box.bites} for ${formatPrice(pricing.box[priceKey])}, pick singles, or ask for a custom box or party platter. ${delivery.freeNote}`,
+  },
+  // Generated at build time by src/pages/og.png.ts.
+  shareImage: {
+    path: '/og.png',
+    width: 1200,
+    height: 630,
+    alt: `${brand.name}: a box of five cheesecake bites tied with a bow`,
+  },
+} as const;
 
 // Link that opens the custom-order tab on the order page for one option.
 export const customOrderLink = (optionId: string): string =>

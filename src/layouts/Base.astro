@@ -2,8 +2,12 @@
 import '@fontsource-variable/cormorant-garamond/wght.css';
 import '@fontsource-variable/cormorant-garamond/wght-italic.css';
 import '@fontsource-variable/dm-sans/wght.css';
-import '@fontsource/pinyon-script/400.css';
 import '../styles/global.css';
+
+// The two fonts every screen starts with, fetched early so text does not
+// wait for the stylesheet to ask for them.
+import displayFont from '@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-normal.woff2?url';
+import bodyFont from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url';
 
 import { ClientRouter } from 'astro:transitions';
 import BiteCursor from '../components/ui/BiteCursor.astro';
@@ -12,14 +16,18 @@ import Footer from '../components/ui/Footer.astro';
 import Nav from '../components/ui/Nav.astro';
 import SaleRibbon from '../components/ui/SaleRibbon.astro';
 import { brand } from '../content/brand';
+import { seo } from '../content/site';
 
 interface Props {
   title?: string;
   description?: string;
+  // Keep a page out of search results (the dev styleguide).
+  noindex?: boolean;
 }
 
-const { title, description = brand.pitch } = Astro.props;
-const pageTitle = title ? `${title} · ${brand.name}` : `${brand.name} — ${brand.tagline}`;
+const { title = seo.home.title, description = seo.home.description, noindex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const shareImage = new URL(seo.shareImage.path, Astro.site);
 ---
 
 <!doctype html>
@@ -27,11 +35,28 @@ const pageTitle = title ? `${title} · ${brand.name}` : `${brand.name} — ${bra
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={shareImage} />
+    <meta property="og:image:width" content={String(seo.shareImage.width)} />
+    <meta property="og:image:height" content={String(seo.shareImage.height)} />
+    <meta property="og:image:alt" content={seo.shareImage.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+
     <meta name="theme-color" content="#F3E7DA" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <title>{pageTitle}</title>
+    <link rel="preload" as="font" type="font/woff2" href={displayFont} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={bodyFont} crossorigin />
     <ClientRouter />
     <script is:inline>
       // Marks the page as animated so headings can start hidden without a flash.
@@ -45,14 +70,17 @@ const pageTitle = title ? `${title} · ${brand.name}` : `${brand.name} — ${bra
         document.addEventListener('astro:after-swap', mark);
       })();
     </script>
+    <slot name="head" />
   </head>
   <body class="flex min-h-dvh flex-col">
+    <a href="#main" class="skip-link label-caps">Skip to content</a>
+
     <header class="sticky top-0 z-50">
       <SaleRibbon />
       <Nav />
     </header>
 
-    <main class="flex-1">
+    <main id="main" class="flex-1" tabindex="-1">
       <slot />
     </main>
 

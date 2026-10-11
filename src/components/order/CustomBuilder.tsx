@@ -117,7 +117,7 @@ function ComboBite({ layers }: { layers: Layers }) {
           />
         )}
       </AnimatePresence>
-      {!base && !filling && !topping && <p className="pb-10 text-center text-sm opacity-70">Your bite builds up here.</p>}
+      {!base && !filling && !topping && <p className="pb-10 text-center text-sm opacity-80">Your bite builds up here.</p>}
     </div>
   );
 }
@@ -282,7 +282,7 @@ export default function CustomBuilder({ type, onType }: Props) {
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
               />
-              <span className="mt-1 block text-right text-xs opacity-70">
+              <span className="mt-1 block text-right text-xs opacity-80">
                 {note.length} / {giftNoteLimit}
               </span>
             </label>

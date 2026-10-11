@@ -21,6 +21,8 @@ const devStyleguide = {
 export default defineConfig({
   site: `https://${brand.domain}`,
   output: 'static',
+  // Styles go in the page itself, so the first paint never waits on a CSS file.
+  build: { inlineStylesheets: 'always' },
   integrations: [react(), sitemap(), devStyleguide],
   vite: {
     plugins: [tailwindcss()],

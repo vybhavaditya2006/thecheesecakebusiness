@@ -1,0 +1,42 @@
+---
+// LocalBusiness structured data for search engines. The kitchen is at home,
+// so only the neighbourhood, city and pincode are published, never the
+// street address or the exact coordinates.
+import { brand } from '../../content/brand';
+import { formatPrice, pricing, saleActive } from '../../content/pricing';
+import { contact, delivery, orderPath, paymentMethods, seo } from '../../content/site';
+
+const key = saleActive ? 'offer' : 'regular';
+
+const data = {
+  '@context': 'https://schema.org',
+  '@type': 'Bakery',
+  name: brand.name,
+  slogan: brand.tagline,
+  description: seo.home.description,
+  url: Astro.site,
+  image: new URL(seo.shareImage.path, Astro.site),
+  founder: { '@type': 'Person', name: brand.maker },
+  servesCuisine: 'Cheesecake',
+  priceRange: `${formatPrice(pricing.single[key])}–${formatPrice(pricing.box[key])}`,
+  paymentAccepted: paymentMethods.join(', '),
+  ...(contact.whatsapp ? { telephone: `+${contact.whatsapp}` } : {}),
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: delivery.city,
+    addressRegion: delivery.region,
+    postalCode: delivery.pincode,
+    addressCountry: delivery.country,
+  },
+  areaServed: { '@type': 'City', name: delivery.city },
+  potentialAction: { '@type': 'OrderAction', target: new URL(orderPath, Astro.site) },
+  makesOffer: Object.values(pricing).map((price) => ({
+    '@type': 'Offer',
+    name: price.label,
+    price: price[key],
+    priceCurrency: 'INR',
+  })),
+};
+---
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(data)} />

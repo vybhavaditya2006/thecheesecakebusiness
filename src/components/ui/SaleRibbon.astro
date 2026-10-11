@@ -6,8 +6,19 @@ import Bow from './Bow.astro';
 
 const offers = Object.values(pricing);
 // Enough copies for one group to be wider than any screen.
-const copies = Array.from({ length: 6 });
+const copies = Array.from({ length: 4 });
 ---
+
+{/* The bow is drawn once and reused, to keep the ribbon's markup small. */}
+{
+  saleActive && (
+    <svg class="absolute size-0" aria-hidden="true">
+      <symbol id="ribbon-bow" viewBox="0 0 120 62">
+        <Bow />
+      </symbol>
+    </svg>
+  )
+}
 
 {
   saleActive && (
@@ -25,14 +36,14 @@ const copies = Array.from({ length: 6 });
                 aria-hidden={copy > 0 ? 'true' : undefined}
               >
                 <span>{brand.campaign}</span>
-                <Bow class="w-6" />
+                <svg class="w-6" viewBox="0 0 120 62"><use href="#ribbon-bow" /></svg>
                 {offers.map((offer) => (
                   <>
                     <span>
-                      {offer.label} <s class="opacity-60">{formatPrice(offer.regular)}</s>{' '}
+                      {offer.label} <s class="opacity-80">{formatPrice(offer.regular)}</s>{' '}
                       {formatPrice(offer.offer)}
                     </span>
-                    <Bow class="w-6" />
+                    <svg class="w-6" viewBox="0 0 120 62"><use href="#ribbon-bow" /></svg>
                   </>
                 ))}
               </p>

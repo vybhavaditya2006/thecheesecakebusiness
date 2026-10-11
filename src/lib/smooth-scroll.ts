@@ -45,6 +45,8 @@ const glideToAnchor = (event: MouseEvent): void => {
   event.preventDefault();
   if (link.hash !== location.hash) history.pushState(history.state, '', link.hash);
   lenis.scrollTo(target);
+  // Keep what a plain jump link does for keyboard users: move focus too.
+  if (target.hasAttribute('tabindex')) target.focus({ preventScroll: true });
 };
 
 // Called before a page swap: drops the old page's ScrollTriggers and Lenis.

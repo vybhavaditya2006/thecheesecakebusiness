@@ -1,13 +1,28 @@
 ---
-// Temporary script wordmark of the working name. Swap for the logo SVG at
-// brand.logoPath once the final name and logo exist.
+// Temporary script wordmark of the working name, drawn as SVG outlines at
+// build time so no script font has to load. Sized by the font size of the
+// class passed in. Swap for the logo SVG at brand.logoPath once the final
+// name and logo exist.
 import { brand } from '../../content/brand';
+import { wordmarkPaths } from '../../lib/wordmark-paths';
 
 interface Props {
   class?: string;
+  // Set to false where a parent already names the brand (a labelled link).
+  labelled?: boolean;
 }
 
-const { class: className } = Astro.props;
+const { class: className, labelled = true } = Astro.props;
+const wordmark = wordmarkPaths(brand.name);
 ---
 
-<span class:list={['font-script leading-none', className]}>{brand.name}</span>
+<svg
+  class:list={['inline-block h-[0.9em] w-auto overflow-visible', className]}
+  viewBox={wordmark.viewBox}
+  fill="currentColor"
+  role={labelled ? 'img' : undefined}
+  aria-label={labelled ? brand.name : undefined}
+  aria-hidden={labelled ? undefined : 'true'}
+>
+  <path d={wordmark.letters.join('')}></path>
+</svg>

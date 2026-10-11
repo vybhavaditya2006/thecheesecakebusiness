@@ -2,6 +2,7 @@
 import DeliveryFaq from '../components/home/DeliveryFaq.astro';
 import Flavours from '../components/home/Flavours.astro';
 import Hero from '../components/home/Hero.astro';
+import LocalBusiness from '../components/home/LocalBusiness.astro';
 import MadeYourWay from '../components/home/MadeYourWay.astro';
 import Pricing from '../components/home/Pricing.astro';
 import Story from '../components/home/Story.astro';
@@ -11,6 +12,7 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base>
+  <LocalBusiness slot="head" />
   <Hero />
   <WhyBites />
   <Flavours />

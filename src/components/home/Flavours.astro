@@ -89,14 +89,14 @@ const crumbs = [
             </div>
 
             <div class="flavour-text flex flex-col gap-3">
-              <p class="label-caps opacity-70">
+              <p class="label-caps">
                 {pad(index + 1)} / {pad(count)}
               </p>
               <h3 class="flavour-name leading-[0.9]">{flavour.name}</h3>
               <p class="max-w-sm">{flavour.note}</p>
               <p class="flex items-baseline gap-3">
                 {saleActive && (
-                  <span class="relative text-lg opacity-70">
+                  <span class="relative text-lg">
                     <span class="sr-only">Was </span>
                     {formatPrice(price.regular)}
                     {/* Hand-drawn strike through the old price. */}
@@ -117,7 +117,7 @@ const crumbs = [
                 <span class="font-display text-4xl font-semibold">
                   {formatPrice(saleActive ? price.offer : price.regular)}
                 </span>
-                <span class="label-caps opacity-70">per bite</span>
+                <span class="label-caps">per bite</span>
               </p>
               <Button class="mt-1" data-add-to-box={flavour.id}>
                 Add to box<span class="sr-only">: {flavour.name}</span>
@@ -214,7 +214,6 @@ const crumbs = [
     font-weight: 500;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    opacity: 0.7;
   }
 
   .motion .flavours-track {
@@ -331,6 +330,7 @@ const crumbs = [
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
   import { canAffordEffects, finePointer, reducedMotion } from '../../lib/motion';
   import { addBite, isFlavourId } from '../../lib/order-store';
+  import { getLenis } from '../../lib/smooth-scroll';
 
   gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
@@ -489,7 +489,26 @@ const crumbs = [
 
     scene.toggleAttribute('data-crumbs', canAffordEffects());
 
+    // Keyboard: tabbing to a button in a panel that is off to the side
+    // scrolls the page to that flavour, so focus is never out of sight.
+    const reveal = (event: FocusEvent): void => {
+      const panel = (event.target as Element).closest<HTMLElement>('[data-flavour-panel]');
+      const target = panel ? panels.indexOf(panel) : -1;
+      if (target < 0 || target === index || !window.matchMedia('(min-width: 48rem)').matches) return;
+
+      const box = scene.getBoundingClientRect();
+      const from = box.top + window.scrollY - (parseFloat(getComputedStyle(backdrop).top) || 0);
+      const to = box.bottom + window.scrollY - window.innerHeight;
+      const y = from + (target / steps) * (to - from);
+
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(y, { duration: 0.6 });
+      else window.scrollTo(0, y);
+    };
+    scene.addEventListener('focusin', reveal);
+
     return () => {
+      scene.removeEventListener('focusin', reveal);
       media.revert();
       presence.kill();
       arrival?.kill();

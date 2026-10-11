@@ -90,7 +90,7 @@ function Lines() {
         <span className="label-caps">Total</span>
         <span className="font-display text-3xl font-semibold">
           {saleActive && regularTotal > total && (
-            <s className="mr-2 text-lg font-normal opacity-60">{formatPrice(regularTotal)}</s>
+            <s className="mr-2 text-lg font-normal opacity-80">{formatPrice(regularTotal)}</s>
           )}
           <Total value={total} />
           {custom.length > 0 && <span className="text-base font-normal"> + custom</span>}
