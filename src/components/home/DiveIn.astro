@@ -1,0 +1,189 @@
+---
+// The whole cake, in 3D: pinned and scrubbed by scroll. A whole blueberry
+// cheesecake turns on cream linen, a knife line cuts a wedge that slides out,
+// then the camera comes down to the cut face and a circle opens so the page
+// seems to go into the cake.
+//
+// It is only shown when 3D is in use (see the script); otherwise this section
+// stays hidden and WhyBites, the drawn version of the same pitch, shows.
+import { brand } from '../../content/brand';
+import { DIVE_BUILT, DIVE_SCROLL_VH } from '../../lib/three/dive-beats';
+
+const [first, ...rest] = brand.wholeCake;
+---
+
+<section
+  class="dive"
+  style={`--dive-scroll:${Math.round(DIVE_SCROLL_VH * DIVE_BUILT)}svh`}
+  aria-labelledby="dive-heading"
+  data-dive
+>
+  <div class="dive-pin">
+    <div class="absolute inset-0" data-dive-3d></div>
+
+    <div class="dive-text">
+      <h2 id="dive-heading" class="dive-line" data-dive-line>{first}</h2>
+      {rest.map((line) => <p class="dive-line" data-dive-line>{line}</p>)}
+    </div>
+
+    <!-- Opens from the middle to cover the view: the way into the cake. -->
+    <span class="dive-mask" aria-hidden="true" data-dive-mask></span>
+  </div>
+</section>
+
+<style is:global>
+  .dive {
+    display: none;
+  }
+
+  /* Set by the script once 3D is going to be used on this visit. */
+  html[data-dive-on] .dive {
+    display: block;
+    --dive-top: 6.25rem;
+    height: calc(var(--dive-scroll) + 100svh - var(--dive-top));
+  }
+
+  html[data-dive-on] [data-why] {
+    display: none;
+  }
+
+  .dive-pin {
+    position: sticky;
+    top: var(--dive-top);
+    height: calc(100svh - var(--dive-top));
+    overflow: clip;
+  }
+
+  /* The three lines share one spot and take turns. */
+  .dive-text {
+    display: grid;
+    position: absolute;
+    inset: 4% 1.25rem auto;
+    justify-items: center;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .dive-line {
+    grid-area: 1 / 1;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-style: italic;
+    line-height: 1.05;
+    /* A cream backing, so the line reads over the cake as well as the cloth. */
+    padding: 0.12em 0.6em 0.2em;
+    border-radius: 999px;
+    background: rgb(243 231 218 / 0.9);
+  }
+
+  .dive-line + .dive-line {
+    opacity: 0;
+  }
+
+  .dive-mask {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150vmax;
+    height: 150vmax;
+    margin: -75vmax 0 0 -75vmax;
+    border-radius: 50%;
+    background: var(--color-cream);
+    transform: scale(0);
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { DIVE, DIVE_BUILT } from '../../lib/three/dive-beats';
+  import type { DiveCake } from '../../lib/three/dive-cake';
+  import { canUse3D, whenNear } from '../../lib/three/support';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // How long a line takes to come in or go out, as a fraction of the scroll.
+  const FADE = 0.03;
+
+  document.addEventListener('astro:page-load', () => {
+    const section = document.querySelector<HTMLElement>('[data-dive]');
+    const mount = section?.querySelector<HTMLElement>('[data-dive-3d]');
+    if (!section || !mount || !canUse3D()) return;
+
+    const page = document.documentElement;
+    let cake: DiveCake | undefined;
+    let scrub: gsap.core.Timeline | undefined;
+    let gone = false;
+
+    // Swapping this section in for WhyBites (or back) moves everything below.
+    const swap = (use3D: boolean): void => {
+      page.toggleAttribute('data-dive-on', use3D);
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+    };
+    const fallBack = (): void => {
+      scrub?.scrollTrigger?.kill();
+      scrub?.kill();
+      cake?.dispose();
+      cake = undefined;
+      swap(false);
+    };
+
+    const build = (scene: DiveCake): void => {
+      const lines = gsap.utils.toArray<HTMLElement>('[data-dive-line]', section);
+      const pin = section.querySelector<HTMLElement>('.dive-pin')!;
+      // Each line arrives at the start of its beat and leaves at the end of it.
+      const beats = [DIVE.whole, [DIVE.cut[0], DIVE.slide[1]], DIVE.sweep] as const;
+
+      // Positions on this timeline are fractions of the full scroll.
+      scrub = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: section,
+          start: () => `top ${parseFloat(getComputedStyle(pin).top) || 0}px`,
+          end: 'bottom bottom',
+          scrub: true,
+          onUpdate: (self) => scene.setProgress(self.progress * DIVE_BUILT),
+        },
+      });
+      scrub.to({}, { duration: DIVE_BUILT }, 0);
+
+      lines.forEach((line, index) => {
+        const [from, to] = beats[index] ?? beats[beats.length - 1]!;
+        if (index > 0) scrub!.fromTo(line, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: FADE }, from);
+        if (index < lines.length - 1) scrub!.to(line, { opacity: 0, y: -16, duration: FADE }, to - FADE);
+      });
+
+      scrub.fromTo(
+        section.querySelector('[data-dive-mask]'),
+        { scale: 0 },
+        { scale: 1, duration: DIVE.enter[1] - DIVE.enter[0], ease: 'power2.in' },
+        DIVE.enter[0],
+      );
+    };
+
+    swap(true);
+    const stopWaiting = whenNear(section, async () => {
+      try {
+        const { mountDiveCake } = await import('../../lib/three/dive-cake');
+        if (gone) return;
+        // Too slow here: back to the drawn version.
+        cake = mountDiveCake(mount, { onFallback: fallBack });
+        build(cake);
+      } catch {
+        fallBack();
+      }
+    });
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        gone = true;
+        stopWaiting();
+        scrub?.kill();
+        cake?.dispose();
+        page.removeAttribute('data-dive-on');
+      },
+      { once: true },
+    );
+  });
+</script>

@@ -1,4 +1,5 @@
 ---
+import DiveIn from '../components/home/DiveIn.astro';
 import FlavourTeaser from '../components/home/FlavourTeaser.astro';
 import Hero from '../components/home/Hero.astro';
 import HowOrdering from '../components/home/HowOrdering.astro';
@@ -12,6 +13,8 @@ import Base from '../layouts/Base.astro';
 <Base>
   <LocalBusiness slot="head" />
   <Hero />
+  <!-- The 3D cake scene, and the drawn version it falls back to. -->
+  <DiveIn />
   <WhyBites />
   <FlavourTeaser />
   <Divider class="mx-auto max-w-md px-5" />

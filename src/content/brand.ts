@@ -25,6 +25,8 @@ export const brand = {
       },
     ],
   },
+  // The same pitch as three lines, for the 3D cake scene on Home.
+  wholeCake: ['A whole cheesecake?', 'Too much to finish.', 'Too heavy. Too pricey.'],
   // Script logo SVG, imported from src/assets once it exists.
   logoPath: 'src/assets/logo.svg',
   // Placeholder until the real domain is bought.
