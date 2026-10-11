@@ -15,7 +15,7 @@ const tabs: readonly { id: Tab; label: string }[] = [
   { id: 'custom', label: 'Custom' },
 ];
 
-// /order?tab=custom&type=<option> opens straight on a custom option.
+// /box?tab=custom&type=<option> opens straight on a custom option.
 const fromUrl = (): { tab: Tab; type: CustomOptionId } => {
   const params = new URLSearchParams(window.location.search);
   const type = params.get('type');

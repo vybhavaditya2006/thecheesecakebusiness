@@ -2,7 +2,7 @@ import { useStore } from '@nanostores/react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { formatPrice, priceBreakdown } from '../../content/pricing';
-import { delivery, deliveryVerdict } from '../../content/site';
+import { delivery, deliveryVerdict } from '../../content/info';
 import { haversineKm } from '../../lib/distance';
 import {
   emptyDetails,

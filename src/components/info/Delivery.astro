@@ -1,14 +1,14 @@
 ---
-// Delivery + FAQ: a sketch map where the free-delivery ring draws itself
-// around the kitchen pin, then the questions from site.ts.
-import { delivery, faq } from '../../content/site';
+// Where we deliver: a sketch map where the free-delivery ring draws itself
+// around the kitchen pin.
+import { delivery } from '../../content/info';
 import SectionTitle from '../ui/SectionTitle.astro';
 
 const ringLabel = `${delivery.freeRadiusKm} km`;
 ---
 
-<section class="px-5 py-20" data-delivery>
-  <SectionTitle label="Delivery" title={`Free delivery within ${ringLabel}`} />
+<section class="px-5 py-12" data-delivery>
+  <SectionTitle label="Delivery" title={delivery.heading} />
 
   <figure class="mx-auto mt-10 max-w-md">
     <svg
@@ -61,50 +61,12 @@ const ringLabel = `${delivery.freeRadiusKm} km`;
     </svg>
     <figcaption class="mt-4 text-center">
       <span class="label-caps block">{delivery.area} {delivery.pincode}</span>
-      <span class="mt-2 block text-sm">{delivery.paidNote}</span>
+      <span class="mt-2 block text-sm">{delivery.freeNote}</span>
+      <span class="mt-1 block text-sm">{delivery.paidNote}</span>
     </figcaption>
   </figure>
 
-  <div class="mx-auto mt-20 max-w-2xl">
-    <SectionTitle label="Questions" title="Good to know" />
-
-    <div class="mt-8 border-t border-wine/25">
-      {
-        faq.map((item) => (
-          <details class="faq-item border-b border-wine/25" name="faq">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-display text-xl">
-              {item.question}
-              <span class="faq-mark text-2xl leading-none" aria-hidden="true">
-                +
-              </span>
-            </summary>
-            <p class="pb-5 text-sm">{item.answer}</p>
-          </details>
-        ))
-      }
-    </div>
-  </div>
 </section>
-
-<style>
-  summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .faq-mark {
-    transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .faq-item[open] .faq-mark {
-    transform: rotate(45deg);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .faq-mark {
-      transition: none;
-    }
-  }
-</style>
 
 <script>
   import gsap from 'gsap';

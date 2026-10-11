@@ -1,11 +1,9 @@
 ---
-import DeliveryFaq from '../components/home/DeliveryFaq.astro';
-import Flavours from '../components/home/Flavours.astro';
+import FlavourTeaser from '../components/home/FlavourTeaser.astro';
 import Hero from '../components/home/Hero.astro';
+import HowOrdering from '../components/home/HowOrdering.astro';
 import LocalBusiness from '../components/home/LocalBusiness.astro';
-import MadeYourWay from '../components/home/MadeYourWay.astro';
-import Pricing from '../components/home/Pricing.astro';
-import Story from '../components/home/Story.astro';
+import MakerCard from '../components/home/MakerCard.astro';
 import WhyBites from '../components/home/WhyBites.astro';
 import Divider from '../components/ui/Divider.astro';
 import Base from '../layouts/Base.astro';
@@ -15,12 +13,8 @@ import Base from '../layouts/Base.astro';
   <LocalBusiness slot="head" />
   <Hero />
   <WhyBites />
-  <Flavours />
-  <Pricing />
+  <FlavourTeaser />
   <Divider class="mx-auto max-w-md px-5" />
-  <MadeYourWay />
-  <Divider class="mx-auto max-w-md px-5" />
-  <Story />
-  <Divider class="mx-auto max-w-md px-5" />
-  <DeliveryFaq />
+  <HowOrdering />
+  <MakerCard />
 </Base>

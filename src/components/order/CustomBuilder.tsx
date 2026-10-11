@@ -213,7 +213,6 @@ export default function CustomBuilder({ type, onType }: Props) {
           transition={{ duration: 0.2 }}
         >
           <h2 className="text-center text-3xl">{option.name}</h2>
-          <p className="mt-1 text-center text-sm">{option.description}</p>
 
           {type === 'build-your-own' && (
             <>

@@ -42,7 +42,6 @@ const crumbs = [
 ---
 
 <section
-  id="flavours"
   class="flavours relative"
   style={`--flavours-count:${count}`}
   aria-labelledby="flavours-heading"
@@ -64,7 +63,7 @@ const crumbs = [
   </div>
 
   <div class="flavours-pin">
-    <h2 id="flavours-heading" class="flavours-heading">Flavours</h2>
+    <h1 id="flavours-heading" class="flavours-heading">Flavours</h1>
 
     <ul class="flavours-track" data-flavours-track>
       {
@@ -94,6 +93,14 @@ const crumbs = [
               </p>
               <h3 class="flavour-name leading-[0.9]">{flavour.name}</h3>
               <p class="max-w-sm">{flavour.note}</p>
+              <dl class="flavour-layers">
+                {flavour.layers.map((layer) => (
+                  <div class="flex gap-2">
+                    <dt class="label-caps w-14 shrink-0 text-[0.6rem] tracking-[0.15em]">{layer.part}</dt>
+                    <dd class="text-xs whitespace-nowrap">{layer.what}</dd>
+                  </div>
+                ))}
+              </dl>
               <p class="flex items-baseline gap-3">
                 {saleActive && (
                   <span class="relative text-lg">
@@ -117,7 +124,7 @@ const crumbs = [
                 <span class="font-display text-4xl font-semibold">
                   {formatPrice(saleActive ? price.offer : price.regular)}
                 </span>
-                <span class="label-caps">per bite</span>
+                <span class="label-caps">a piece</span>
               </p>
               <Button class="mt-1" data-add-to-box={flavour.id}>
                 Add to box<span class="sr-only">: {flavour.name}</span>
@@ -178,6 +185,10 @@ const crumbs = [
     font-size: 2.25rem;
   }
 
+  .flavour-layers {
+    text-align: left;
+  }
+
   /* ---- Animated version: stacked screen-high panels (phones). */
   .motion [data-flavours] {
     --flavours-top: 6.25rem;
@@ -231,7 +242,7 @@ const crumbs = [
   }
 
   .motion .flavour-visual {
-    width: min(62vw, 33svh);
+    width: min(62vw, 27svh);
   }
 
   .motion .flavour-name {

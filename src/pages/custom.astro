@@ -1,0 +1,9 @@
+---
+import CustomOptions from '../components/custom/CustomOptions.astro';
+import { seo } from '../content/site';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title={seo.custom.title} description={seo.custom.description} entrance="untie">
+  <CustomOptions />
+</Base>

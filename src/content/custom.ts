@@ -10,6 +10,9 @@ export interface CustomOption {
 
 // Custom orders are priced and confirmed on WhatsApp.
 export const customPriceNote = 'Price confirmed on WhatsApp';
+// The same fact in full, for the Custom & Gifts page.
+export const customPricing =
+  'Every custom order is priced on its own. You get the price on WhatsApp once you send it.';
 
 export const customOptions: readonly CustomOption[] = [
   {

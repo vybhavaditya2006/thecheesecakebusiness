@@ -1,7 +1,8 @@
 ---
-// Made your way: the custom options, held like a hand of cards. They fan out
-// on entering view and wobble on hover; each opens the custom order tab.
-import { customOptions } from '../../content/custom';
+// Custom & Gifts: the custom options, held like a hand of cards. They fan
+// out on entering view and wobble on hover; each opens the custom tab of the
+// box builder.
+import { customOptions, customPricing } from '../../content/custom';
 import { customOrderLink } from '../../content/site';
 import Bow from '../ui/Bow.astro';
 import SectionTitle from '../ui/SectionTitle.astro';
@@ -13,8 +14,8 @@ const spread = (index: number, total: number) => {
 };
 ---
 
-<section class="overflow-x-clip px-5 py-20" data-fan>
-  <SectionTitle label="Made your way" title="Tell us what you’re craving" />
+<section class="overflow-x-clip px-5 pt-10 pb-24 sm:pt-16" data-fan>
+  <SectionTitle as="h1" label={'Custom & gifts'} title="Tell us what you’re craving" immediate />
 
   <ul class="fan mx-auto mt-14 grid max-w-xs grid-cols-2 gap-4 sm:flex sm:max-w-none sm:justify-center sm:gap-0">
     {
@@ -41,6 +42,8 @@ const spread = (index: number, total: number) => {
       })
     }
   </ul>
+
+  <p class="mx-auto mt-20 max-w-sm text-center text-sm">{customPricing}</p>
 </section>
 
 <style>

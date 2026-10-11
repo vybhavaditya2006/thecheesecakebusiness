@@ -1,14 +1,14 @@
 ---
 // Scene 4: a little about me. A four-step timeline whose sketches draw
 // themselves as you scroll, followed by the maker and the full story.
-import { story } from '../../content/site';
+import { story } from '../../content/story';
 import SectionTitle from '../ui/SectionTitle.astro';
 import Maker from './Maker.astro';
 import StorySketch from './StorySketch.astro';
 ---
 
-<section id="story" class="px-5 py-20" data-story>
-  <SectionTitle label="Our story" title={story.heading} />
+<section class="px-5 pt-10 pb-20 sm:pt-16" data-story>
+  <SectionTitle as="h1" label="Our story" title={story.heading} immediate />
 
   <ol class="relative mx-auto mt-14 max-w-3xl space-y-14 md:space-y-20">
     <!-- The line the steps hang from; it grows with the scroll. -->

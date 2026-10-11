@@ -21,6 +21,9 @@ const devStyleguide = {
 export default defineConfig({
   site: `https://${brand.domain}`,
   output: 'static',
+  // The order page moved in Round 2. public/_redirects does the same on
+  // Cloudflare Pages and keeps the query string.
+  redirects: { '/order': '/box' },
   // Styles go in the page itself, so the first paint never waits on a CSS file.
   build: { inlineStylesheets: 'always' },
   integrations: [react(), sitemap(), devStyleguide],

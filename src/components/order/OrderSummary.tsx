@@ -3,7 +3,7 @@ import { animate, AnimatePresence, motion, useMotionValue, useReducedMotion, use
 import { useEffect, useState } from 'react';
 import { customPriceNote } from '../../content/custom';
 import { formatPrice, priceBreakdown, pricing, saleActive } from '../../content/pricing';
-import { delivery } from '../../content/site';
+import { delivery } from '../../content/info';
 import { $bites, $custom, clearOrder, countByFlavour, removeCustom } from '../../lib/order-store';
 
 const plural = (count: number, word: string, many = `${word}s`): string =>
@@ -97,7 +97,7 @@ function Lines() {
         </span>
       </p>
       <p className="text-xs opacity-80">
-        {delivery.freeNote} {delivery.paidNote}
+        {delivery.short} of {delivery.area}.
       </p>
       <button type="button" className="label-caps underline underline-offset-4" onClick={clearOrder}>
         Clear order
@@ -111,7 +111,7 @@ export default function OrderSummary() {
   const custom = useStore($custom);
   const [open, setOpen] = useState(false);
   const { total } = priceBreakdown(bites.length);
-  const count = [bites.length && plural(bites.length, 'bite'), custom.length && `${custom.length} custom`]
+  const count = [bites.length && plural(bites.length, 'piece'), custom.length && `${custom.length} custom`]
     .filter(Boolean)
     .join(' + ');
 

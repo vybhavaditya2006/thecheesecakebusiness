@@ -1,20 +1,19 @@
 ---
 // Pricing: two cards. On entering view a hand-drawn line strikes the old
 // price and the offer price pops in.
-import { brand } from '../../content/brand';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
 import SectionTitle from '../ui/SectionTitle.astro';
 
 const cards = [
   { ...pricing.box, blurb: 'Any mix of flavours, packed and tied with a bow.', sticker: true },
-  { ...pricing.single, blurb: 'Just the one. There is no minimum order.', sticker: false },
+  { ...pricing.single, blurb: 'For when one is all you want.', sticker: false },
 ];
 const boxPrice = saleActive ? pricing.box.offer : pricing.box.regular;
-const perBite = formatPrice(Math.round(boxPrice / pricing.box.bites));
+const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
 ---
 
 <section class="px-5 py-20" data-pricing>
-  <SectionTitle label={saleActive ? brand.campaign : 'Pricing'} title="Same price, every flavour" />
+  <SectionTitle label={saleActive ? 'Launch prices' : 'Prices'} title="Same price, every flavour" />
 
   <ul class="mx-auto mt-14 grid max-w-3xl gap-10 sm:grid-cols-2 sm:gap-8">
     {
@@ -53,8 +52,8 @@ const perBite = formatPrice(Math.round(boxPrice / pricing.box.bites));
               class="absolute -bottom-9 -left-2 flex size-24 -rotate-12 flex-col items-center justify-center rounded-full bg-wine p-2 text-cream sm:-left-8"
               data-price-sticker
             >
-              <strong class="font-display text-3xl leading-none">{perBite}</strong>
-              <span class="label-caps mt-1 text-[0.55rem] leading-tight tracking-[0.15em]">a bite in a box</span>
+              <strong class="font-display text-3xl leading-none">{perPiece}</strong>
+              <span class="label-caps mt-1 text-[0.55rem] leading-tight tracking-[0.15em]">a piece in a box of five</span>
             </p>
           )}
         </li>

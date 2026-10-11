@@ -2,7 +2,7 @@ import { brand } from '../content/brand';
 import { customPriceNote } from '../content/custom';
 import type { FlavourId } from '../content/flavours';
 import { formatPrice, priceBreakdown, pricing } from '../content/pricing';
-import { contact } from '../content/site';
+import { contact } from '../content/info';
 import type { OrderDetails } from './order-details';
 import { countByFlavour, type CustomRequest } from './order-store';
 
@@ -29,7 +29,7 @@ export const orderLines = (bites: readonly FlavourId[], custom: readonly CustomR
       lines.push(`• ${pricing.box.name}: ${picked(bites.slice(start, start + pricing.box.bites))}`);
     }
     if (singles) lines.push(`• Singles: ${picked(bites.slice(packed))}`);
-    lines.push(`${plural(bites.length, 'bite')} (${charged}): ${formatPrice(total)}`);
+    lines.push(`${plural(bites.length, 'piece')} (${charged}): ${formatPrice(total)}`);
   }
 
   for (const request of custom) {

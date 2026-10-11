@@ -1,25 +1,28 @@
 ---
 import { brand } from '../../content/brand';
-import { jumpLinks, orderPath } from '../../content/site';
+import { boxLabel, navLinks, orderPath } from '../../content/site';
 import Button from './Button.astro';
 import Wordmark from './Wordmark.astro';
+
+const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+const current = (href: string) => (href === here ? 'page' : undefined);
 ---
 
-<nav class="flex items-center justify-between gap-4 bg-cream px-5 py-3" aria-label="Main">
+<nav class="relative flex items-center justify-between gap-3 bg-cream px-5 py-3" aria-label="Main">
   <a href="/" aria-label={`${brand.name} home`}>
     <Wordmark class="text-4xl" labelled={false} />
   </a>
 
-  <div class="flex items-center gap-6">
+  <div class="flex items-center gap-3 lg:gap-6">
     {
-      jumpLinks.map((link) => (
-        <a href={link.href} class="label-caps hidden sm:block">
+      navLinks.map((link) => (
+        <a href={link.href} class="nav-link label-caps hidden lg:block" aria-current={current(link.href)}>
           {link.label}
         </a>
       ))
     }
     <span class="relative" data-cart-target>
-      <Button href={orderPath} size="sm">Order now</Button>
+      <Button href={orderPath} size="sm" aria-current={current(orderPath)}>{boxLabel}</Button>
       <!-- Number of bites in the box; filled in from the order store. -->
       <span
         class="pointer-events-none absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border border-wine bg-cream px-1 text-[0.65rem] leading-none font-semibold text-wine"
@@ -31,8 +34,46 @@ import Wordmark from './Wordmark.astro';
         <span class="sr-only">&nbsp;in your box</span>
       </span>
     </span>
+
+    <!-- Small screens: the page links fold into a menu. -->
+    <button
+      type="button"
+      class="flex size-10 items-center justify-center rounded-full border border-wine lg:hidden"
+      aria-expanded="false"
+      aria-controls="nav-menu"
+      aria-label="Menu"
+      data-nav-toggle
+    >
+      <svg class="w-4" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M1 1h14M1 6h14M1 11h14"></path>
+      </svg>
+    </button>
   </div>
+
+  <ul
+    id="nav-menu"
+    class="absolute inset-x-0 top-full border-t border-wine/25 bg-cream px-5 py-2 shadow-[0_12px_24px_rgb(74_15_24/0.12)] lg:hidden"
+    hidden
+    data-nav-menu
+  >
+    {
+      navLinks.map((link) => (
+        <li>
+          <a href={link.href} class="nav-link label-caps block py-3" aria-current={current(link.href)}>
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
 </nav>
+
+<style>
+  .nav-link[aria-current='page'] {
+    text-decoration: underline;
+    text-underline-offset: 0.4em;
+  }
+</style>
 
 <script>
   import { reducedMotion } from '../../lib/motion';
@@ -57,4 +98,24 @@ import Wordmark from './Wordmark.astro';
   $totalBites.listen((count) => render(count, true));
   // The nav is re-rendered on every page change.
   document.addEventListener('astro:page-load', () => render($totalBites.get(), false));
+
+  // The menu on small screens. Registered once; the nav itself is replaced
+  // on every page change, which also closes the menu.
+  const setMenu = (open: boolean): void => {
+    document.querySelector('[data-nav-toggle]')?.setAttribute('aria-expanded', String(open));
+    document.querySelector<HTMLElement>('[data-nav-menu]')?.toggleAttribute('hidden', !open);
+  };
+  const menuOpen = (): boolean =>
+    document.querySelector('[data-nav-toggle]')?.getAttribute('aria-expanded') === 'true';
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as Element;
+    if (target.closest?.('[data-nav-toggle]')) return setMenu(!menuOpen());
+    if (menuOpen() && !target.closest?.('[data-nav-menu]')) setMenu(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !menuOpen()) return;
+    setMenu(false);
+    document.querySelector<HTMLElement>('[data-nav-toggle]')?.focus();
+  });
 </script>

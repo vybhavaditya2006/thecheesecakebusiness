@@ -1,0 +1,58 @@
+---
+// The questions the sections above do not already answer.
+import { faq } from '../../content/info';
+import { paths } from '../../content/site';
+import SectionTitle from '../ui/SectionTitle.astro';
+---
+
+<section class="px-5 py-12">
+  <div class="mx-auto max-w-2xl">
+    <SectionTitle label="Questions" title="Asked a lot" />
+
+    <div class="mt-8 border-t border-wine/25">
+      {
+        faq.map((item) => (
+          <details class="faq-item border-b border-wine/25" name="faq">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-display text-xl">
+              {item.question}
+              <span class="faq-mark text-2xl leading-none" aria-hidden="true">
+                +
+              </span>
+            </summary>
+            <p class="pb-5 text-sm">
+              {item.answer}
+              {item.link && (
+                <>
+                  {' '}
+                  <a href={paths[item.link.page]} class="underline underline-offset-4">
+                    {item.link.label}
+                  </a>
+                </>
+              )}
+            </p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-mark {
+    transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .faq-item[open] .faq-mark {
+    transform: rotate(45deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-mark {
+      transition: none;
+    }
+  }
+</style>

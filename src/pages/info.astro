@@ -1,0 +1,21 @@
+---
+import Contact from '../components/info/Contact.astro';
+import Delivery from '../components/info/Delivery.astro';
+import Facts from '../components/info/Facts.astro';
+import Faq from '../components/info/Faq.astro';
+import Divider from '../components/ui/Divider.astro';
+import SectionTitle from '../components/ui/SectionTitle.astro';
+import { seo } from '../content/site';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title={seo.info.title} description={seo.info.description} entrance="pin">
+  <header class="px-5 pt-10 sm:pt-16">
+    <SectionTitle as="h1" label="The practical bits" title="Good to know" immediate />
+  </header>
+  <Delivery />
+  <Facts />
+  <Faq />
+  <Divider class="mx-auto max-w-md px-5" />
+  <Contact />
+</Base>

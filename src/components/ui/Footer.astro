@@ -1,11 +1,14 @@
 ---
 import { brand } from '../../content/brand';
-import { contact, delivery, jumpLinks, orderPath, paymentMethods } from '../../content/site';
+import { arrival, contact, delivery, payment } from '../../content/info';
+import { boxLabel, navLinks, orderPath, paths } from '../../content/site';
 import { whatsappLink } from '../../lib/whatsapp';
 import Bow from './Bow.astro';
 import Wordmark from './Wordmark.astro';
 
-const links = [...jumpLinks, { href: orderPath, label: 'Order' }];
+const links = [...navLinks, { href: orderPath, label: boxLabel }];
+// The practical facts in their shortest form; Good to Know has them in full.
+const facts = [delivery.short, arrival.short, payment.short];
 ---
 
 <footer class="bg-wine-deep px-5 py-12 text-cream">
@@ -13,17 +16,6 @@ const links = [...jumpLinks, { href: orderPath, label: 'Order' }];
     <div>
       <Wordmark class="text-5xl" />
       <p class="label-caps mt-3">{brand.descriptor}</p>
-      <p class="mt-2 font-display text-xl italic">{brand.tagline}</p>
-    </div>
-
-    <div>
-      <h2 class="label-caps font-sans opacity-80">Delivery &amp; payment</h2>
-      <ul class="mt-3 space-y-2 text-sm">
-        <li>{delivery.freeNote}</li>
-        <li>{delivery.paidNote}</li>
-        <li>Pay by {paymentMethods.join(' or ')}.</li>
-        <li>{delivery.minimumOrderNote}</li>
-      </ul>
     </div>
 
     <div>
@@ -38,6 +30,12 @@ const links = [...jumpLinks, { href: orderPath, label: 'Order' }];
             </li>
           ))
         }
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="label-caps font-sans opacity-80">Get in touch</h2>
+      <ul class="mt-3 space-y-2 text-sm">
         {
           contact.whatsapp && (
             <li>
@@ -46,7 +44,7 @@ const links = [...jumpLinks, { href: orderPath, label: 'Order' }];
                 class="underline-offset-4 hover:underline"
                 rel="noopener"
               >
-                WhatsApp us
+                WhatsApp
               </a>
             </li>
           )
@@ -54,7 +52,6 @@ const links = [...jumpLinks, { href: orderPath, label: 'Order' }];
         {
           contact.email && (
             <li>
-              Questions?{' '}
               <a href={`mailto:${contact.email}`} class="underline-offset-4 hover:underline">
                 {contact.email}
               </a>
@@ -62,6 +59,9 @@ const links = [...jumpLinks, { href: orderPath, label: 'Order' }];
           )
         }
       </ul>
+      <a href={paths.info} class="label-caps mt-5 block text-[0.65rem] leading-relaxed underline-offset-4 hover:underline">
+        {facts.join(' · ')}
+      </a>
     </div>
   </div>
 

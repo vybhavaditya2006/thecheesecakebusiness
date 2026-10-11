@@ -1,0 +1,45 @@
+---
+// When it arrives and how to pay: two cards, each with its icon.
+import { arrival, payment } from '../../content/info';
+
+const cards = [
+  { ...arrival, icon: 'clock' },
+  { ...payment, icon: 'wallet' },
+];
+---
+
+<section class="px-5 py-8">
+  <ul class="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2">
+    {
+      cards.map((card) => (
+        <li class="rounded-3xl border border-wine/25 p-7">
+          <svg
+            class="w-10"
+            viewBox="0 0 40 40"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            {card.icon === 'clock' ? (
+              <>
+                <circle cx="20" cy="21" r="14" />
+                <path d="M20 12v9l6 4M14 4h12" />
+              </>
+            ) : (
+              <>
+                <path d="M5 13a4 4 0 0 1 4-4h20v6" />
+                <path d="M5 13v16a4 4 0 0 0 4 4h24a2 2 0 0 0 2-2V17a2 2 0 0 0-2-2H9a4 4 0 0 1-4-2z" />
+                <circle cx="28" cy="24" r="2" />
+              </>
+            )}
+          </svg>
+          <h2 class="mt-4 text-3xl leading-tight">{card.heading}</h2>
+          {card.notes.map((note) => <p class="mt-2 text-sm">{note}</p>)}
+        </li>
+      ))
+    }
+  </ul>
+</section>

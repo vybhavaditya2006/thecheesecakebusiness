@@ -4,7 +4,7 @@
 import Bow from '../ui/Bow.astro';
 
 interface Props {
-  kind: 'cake' | 'phone' | 'slice' | 'box';
+  kind: 'cake' | 'phone' | 'slice' | 'box' | 'door';
   class?: string;
 }
 
@@ -94,6 +94,21 @@ const flame = (x: number, y: number): string => `M${x} ${y}c-4-6 0-9 0-12 3 3 4 
         <path d="M42 102H158" stroke-width="7" stroke-linecap="butt" />
         <g data-pop>
           <Bow x="72" y="86" width="56" height="29" class="[&_ellipse]:fill-wine [&_path]:fill-cream" />
+        </g>
+      </>
+    )
+  }
+  {
+    kind === 'door' && (
+      <>
+        <path d="M22 132H178" />
+        <path d="M62 132V26H138V132" />
+        <path d="M72 36H128V78H72Z" stroke-width="1" opacity="0.5" />
+        <circle cx="126" cy="92" r="3" />
+        <g data-pop>
+          <path class="fill-cream" d="M112 132l3-26h44l3 26z" />
+          <path d="M114 118h46" stroke-width="5" stroke-linecap="butt" />
+          <Bow x="122" y="108" width="30" height="16" class="[&_ellipse]:fill-wine [&_path]:fill-cream" />
         </g>
       </>
     )

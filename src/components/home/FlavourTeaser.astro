@@ -1,0 +1,44 @@
+---
+// A taste of the Flavours page: the names only, each with a dot in its own
+// colour. Everything else about a flavour lives on /flavours.
+import { flavours } from '../../content/flavours';
+import { paths } from '../../content/site';
+import Button from '../ui/Button.astro';
+---
+
+<section class="overflow-x-clip px-5 py-20 text-center" data-teaser>
+  <p class="label-caps opacity-80">{flavours.length} flavours</p>
+
+  <ul class="mx-auto mt-6 max-w-3xl">
+    {
+      flavours.map((flavour) => (
+        <li class="flex items-center justify-center gap-4" data-teaser-name>
+          <span class="size-3 shrink-0 rounded-full" style={`background:${flavour.accent}`} aria-hidden="true" />
+          <span class="font-display text-5xl leading-[1.1] font-semibold italic sm:text-7xl">{flavour.name}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <Button class="mt-10" href={paths.flavours}>Meet the flavours</Button>
+</section>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { lazyScene } from '../../lib/scene';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // The names slide in from alternate sides as the section scrolls up.
+  lazyScene('[data-teaser]', (scene) => {
+    gsap.utils.toArray<HTMLElement>('[data-teaser-name]', scene).forEach((name, index) => {
+      gsap.from(name, {
+        xPercent: index % 2 ? 30 : -30,
+        opacity: 0,
+        ease: 'none',
+        scrollTrigger: { trigger: name, start: 'top 95%', end: 'top 60%', scrub: true },
+      });
+    });
+  });
+</script>

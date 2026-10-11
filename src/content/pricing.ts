@@ -14,8 +14,8 @@ export const currency = { code: 'INR', symbol: '₹' } as const;
 
 // Same price for every flavour.
 export const pricing = {
-  box: { name: 'Box of five', label: 'Box of five (pick any mix)', bites: 5, regular: 150, offer: 125 },
-  single: { name: 'Single bite', label: 'Single bite', bites: 1, regular: 65, offer: 50 },
+  box: { name: 'Box of five pieces', label: 'Box of five pieces (pick any mix)', bites: 5, regular: 150, offer: 125 },
+  single: { name: 'Single piece', label: 'Single piece', bites: 1, regular: 65, offer: 50 },
 } as const satisfies Record<string, Price>;
 
 // Flip to false when the launch offer ends.

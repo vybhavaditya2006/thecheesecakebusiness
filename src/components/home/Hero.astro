@@ -3,7 +3,7 @@
 // plays the intro on top of it, and reduced motion simply shows it as is.
 import { brand } from '../../content/brand';
 import { flavours } from '../../content/flavours';
-import { orderPath } from '../../content/site';
+import { boxLabel, orderPath } from '../../content/site';
 import { wordmarkPaths } from '../../lib/wordmark-paths';
 import BitePhoto from '../ui/BitePhoto.astro';
 import Bow from '../ui/Bow.astro';
@@ -120,7 +120,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
   </div>
 
   <div data-intro data-hero-cta>
-    <Button href={orderPath}>Order now</Button>
+    <Button href={orderPath}>{boxLabel}</Button>
   </div>
 </section>
 

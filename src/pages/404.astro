@@ -1,0 +1,38 @@
+---
+import Button from '../components/ui/Button.astro';
+import SectionTitle from '../components/ui/SectionTitle.astro';
+import { boxLabel, notFound, orderPath, paths, seo } from '../content/site';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title={seo.notFound.title} description={seo.notFound.description} noindex>
+  <section class="flex min-h-[70svh] flex-col items-center justify-center gap-6 px-5 py-16 text-center">
+    <!-- A bite with a mouthful missing, and the crumbs it left. -->
+    <svg
+      class="w-40 text-wine"
+      viewBox="0 0 160 130"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path
+        class="fill-cream"
+        d="M80 14a48 48 0 1 0 47 58c-9 3-17-2-18-10-9 2-17-5-15-14-9 0-15-8-12-17-1-6-1-11-2-17z"
+      ></path>
+      <path d="M56 50h.1M70 78h.1M52 84h.1" stroke-width="5"></path>
+      <path d="M124 30l5-4M138 46h6M132 18l2-6M146 30l5-2" stroke-width="2"></path>
+      <path d="M30 122h100" opacity="0.4"></path>
+    </svg>
+
+    <SectionTitle as="h1" label="404" title={notFound.heading} immediate />
+    <p>{notFound.detail}</p>
+
+    <div class="flex flex-wrap items-center justify-center gap-4">
+      <Button href={orderPath}>{boxLabel}</Button>
+      <Button href={paths.home} variant="outline">Back home</Button>
+    </div>
+  </section>
+</Base>

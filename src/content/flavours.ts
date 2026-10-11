@@ -5,11 +5,27 @@ export interface Flavour {
   name: string;
   // Accent colour, used only inside this flavour's scene.
   accent: string;
-  // One-line taste note.
+  // One-line taste note. TODO: these are draft wording, not yet confirmed by Shlok.
   note: string;
   // What bursts out around the bite in the flavour's scene.
   ingredient: string;
+  // What the bite is made of, from the top down.
+  layers: readonly Layer[];
 }
+
+export interface Layer {
+  part: string;
+  what: string;
+}
+
+// TODO: placeholders. Replace each `what` with the real layer once Shlok
+// confirms it, flavour by flavour. Nothing here may be invented.
+const unconfirmed = 'To be confirmed';
+const layersToConfirm: readonly Layer[] = [
+  { part: 'Topping', what: unconfirmed },
+  { part: 'Filling', what: unconfirmed },
+  { part: 'Base', what: unconfirmed },
+];
 
 export const flavours: readonly Flavour[] = [
   {
@@ -18,6 +34,7 @@ export const flavours: readonly Flavour[] = [
     accent: '#5B3FA0',
     note: 'Tangy blueberry swirl on a buttery crumb.',
     ingredient: 'Blueberries',
+    layers: layersToConfirm,
   },
   {
     id: 'kitkat',
@@ -25,6 +42,7 @@ export const flavours: readonly Flavour[] = [
     accent: '#D2232A',
     note: 'Creamy cheesecake with a crisp wafer crunch.',
     ingredient: 'KitKat pieces',
+    layers: layersToConfirm,
   },
   {
     id: 'oreo',
@@ -32,6 +50,7 @@ export const flavours: readonly Flavour[] = [
     accent: '#111111',
     note: 'Cookies and cream, all the way down.',
     ingredient: 'Oreo crumbs',
+    layers: layersToConfirm,
   },
   {
     id: 'coffee',
@@ -39,6 +58,7 @@ export const flavours: readonly Flavour[] = [
     accent: '#6F4E37',
     note: 'A smooth espresso kick in every bite.',
     ingredient: 'Coffee beans',
+    layers: layersToConfirm,
   },
   {
     id: 'biscoff',
@@ -46,6 +66,7 @@ export const flavours: readonly Flavour[] = [
     accent: '#C8813C',
     note: 'Caramelised biscuit, warm with spice.',
     ingredient: 'Biscoff crumbs',
+    layers: layersToConfirm,
   },
 ];
 

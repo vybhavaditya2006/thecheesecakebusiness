@@ -1,0 +1,43 @@
+---
+// How a bite is made, in four steps. The steps are placeholders until Shlok
+// confirms them; see src/content/story.ts.
+import { howItsMade } from '../../content/story';
+import SectionTitle from '../ui/SectionTitle.astro';
+---
+
+<section class="px-5 py-20" data-made>
+  <SectionTitle label="In the kitchen" title={howItsMade.heading} />
+
+  <ol class="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-5 md:grid-cols-4">
+    {
+      howItsMade.steps.map((step, index) => (
+        <li class="rounded-3xl border border-dashed border-wine/40 p-5 text-center" data-made-step>
+          <span class="font-display text-5xl leading-none font-semibold" aria-hidden="true">
+            {index + 1}
+          </span>
+          <h3 class="label-caps mt-3 font-sans">{step.title}</h3>
+          <p class="mt-2 text-sm opacity-80">{step.detail}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { lazyScene } from '../../lib/scene';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  lazyScene('[data-made]', (scene) => {
+    gsap.from(gsap.utils.toArray<HTMLElement>('[data-made-step]', scene), {
+      y: 40,
+      opacity: 0,
+      duration: 0.6,
+      ease: 'back.out(1.6)',
+      stagger: 0.1,
+      scrollTrigger: { trigger: scene, start: 'top 75%', once: true },
+    });
+  });
+</script>

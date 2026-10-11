@@ -1,5 +1,5 @@
 import { brand } from '../content/brand';
-import { contact } from '../content/site';
+import { contact } from '../content/info';
 
 const WEB3FORMS_URL = 'https://api.web3forms.com/submit';
 

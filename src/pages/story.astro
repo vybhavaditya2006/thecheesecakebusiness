@@ -1,0 +1,13 @@
+---
+import HowItsMade from '../components/story/HowItsMade.astro';
+import Story from '../components/story/Story.astro';
+import Divider from '../components/ui/Divider.astro';
+import { seo } from '../content/site';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title={seo.story.title} description={seo.story.description} entrance="turn">
+  <Story />
+  <Divider class="mx-auto max-w-md px-5" />
+  <HowItsMade />
+</Base>
