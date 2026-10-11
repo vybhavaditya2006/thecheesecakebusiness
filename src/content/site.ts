@@ -21,9 +21,8 @@ export const delivery = {
 export const paymentMethods = ['UPI', 'Cash on delivery'] as const;
 
 export const contact = {
-  // WhatsApp number in international format without "+", e.g. 919876543210.
-  // TODO: not provided yet.
-  whatsapp: '',
+  // Shlok's WhatsApp number, in international format without the "+".
+  whatsapp: '916362813519',
   // Web3Forms access key for order emails, set as PUBLIC_WEB3FORMS_KEY in .env.
   // Orders are emailed to the address that key was created for.
   web3formsKey: import.meta.env?.PUBLIC_WEB3FORMS_KEY ?? '',
