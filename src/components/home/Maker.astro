@@ -1,0 +1,263 @@
+---
+// The maker beside their story. They spring up from behind the box, a bite
+// lands in their open palm, doodles draw around them and a speech bubble pops.
+// Hover or tap: a little more tilt, wiggling doodles and two orbiting bites.
+import type { ImageMetadata } from 'astro';
+import { Picture } from 'astro:assets';
+import { brand } from '../../content/brand';
+import { story } from '../../content/site';
+import Bow from '../ui/Bow.astro';
+
+// The cut-out photo is optional until it has been added to src/assets/photos.
+const photos = import.meta.glob<{ default: ImageMetadata }>('../../assets/photos/shlok.webp', {
+  eager: true,
+});
+const photo = Object.values(photos)[0]?.default;
+
+const heart = 'c-6-12-22-4-12 8l12 12 12-12c10-12-6-20-12-8z';
+const sparkle = 'l3 9 9 3-9 3-3 9-3-9-9-3 9-3z';
+---
+
+<div class="mx-auto mt-24 grid max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-16" data-maker>
+  <figure class="mx-auto w-[min(78vw,22rem)]">
+    <!--
+      --palm-x / --palm-y: where the open palm is, as % of this stage. Tune
+      these (and the doodle positions below) to the real photo.
+    -->
+    <div class="maker-stage relative aspect-[4/5]" style="--palm-x:81%;--palm-y:48%" data-maker-stage>
+      <!-- Clipped at the box's rim, so the maker rises from behind the box. -->
+      <div class="absolute inset-x-0 top-0 bottom-[16%] overflow-clip">
+        <div class="absolute inset-x-[8%] top-[10%] bottom-0" data-maker-person>
+          {/* The tilt lives on its own element: GSAP owns the transform of the one above. */}
+          <div class="maker-tilt size-full">
+          {
+            photo ? (
+              <Picture
+                src={photo}
+                formats={['avif', 'webp']}
+                widths={[320, 480, 640]}
+                sizes="(min-width: 48rem) 20rem, 66vw"
+                alt={`${brand.maker}, shrugging with an open palm`}
+                class="size-full object-contain object-bottom"
+              />
+            ) : (
+              <svg
+                class="size-full text-wine"
+                viewBox="0 0 300 400"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                role="img"
+                aria-label={`Sketch standing in for a photo of ${brand.maker}`}
+              >
+                <path
+                  class="fill-cream"
+                  d="M62 400V306c0-42 38-62 88-62s88 20 88 62v94z"
+                />
+                <path class="fill-cream" d="M238 300c22-12 38-40 44-74l14 4c-4 44-24 84-58 104z" />
+                <path class="fill-cream" d="M62 300c-22-12-38-40-44-74l-14 4c4 44 24 84 58 104z" />
+                <path d="M266 216h34M0 216h34" />
+                <circle class="fill-cream" cx="150" cy="150" r="52" />
+                <path d="M100 138c-10-22 4-40 22-38 4-18 30-22 40-8 16-10 38 2 36 22 14 6 14 26 2 32" />
+                <path d="M132 158h.1M168 158h.1" stroke-width="5" />
+                <path d="M134 176c10 10 22 10 32 0" />
+              </svg>
+            )
+          }
+          </div>
+        </div>
+      </div>
+
+      <!-- Two bites that orbit while hovered or tapped. -->
+      <div class="maker-orbit absolute inset-[4%]" aria-hidden="true">
+        <span class="maker-dot absolute -top-[3%] left-1/2"></span>
+        <span class="maker-dot absolute -bottom-[3%] left-1/2"></span>
+      </div>
+
+      <!-- Wine-ink doodles: crown of bites, hearts, sparkles, a swirl. -->
+      <svg
+        class="absolute inset-0 size-full overflow-visible text-wine"
+        viewBox="0 0 400 500"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        data-maker-doodles
+      >
+        <g class="maker-doodle">
+          <path d="M158 126c26-12 58-12 84 0" />
+          <circle cx="164" cy="108" r="10" />
+          <circle cx="200" cy="98" r="10" />
+          <circle cx="236" cy="108" r="10" />
+        </g>
+        <g class="maker-doodle"><path d={`M54 168${heart}`} /></g>
+        <g class="maker-doodle"><path d={`M346 290${heart}`} /></g>
+        <g class="maker-doodle"><path d={`M322 118${sparkle}`} /></g>
+        <g class="maker-doodle"><path d={`M66 330${sparkle}`} /></g>
+        <g class="maker-doodle"><path d={`M300 392${sparkle}`} /></g>
+        <g class="maker-doodle"><path d="M22 262c10-22 42-20 40 2s-30 18-28 0 18-13 20-2" /></g>
+      </svg>
+
+      <!-- The bite that lands in the open palm. -->
+      <span class="maker-bite maker-dot absolute" aria-hidden="true" data-maker-bite></span>
+
+      <p
+        class="maker-bubble absolute -top-2 -right-3 rotate-6 rounded-2xl rounded-bl-none border border-wine bg-cream px-3 py-2 font-display text-lg leading-none italic sm:-right-10"
+        data-maker-bubble
+      >
+        {story.speechBubble}
+      </p>
+
+      <!-- The box of five he springs up from. -->
+      <svg
+        class="absolute inset-x-[6%] bottom-0 h-[26%] w-[88%] overflow-visible text-wine"
+        viewBox="0 0 200 74"
+        preserveAspectRatio="none"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path class="fill-cream" d="M4 14H196L190 72H10Z" />
+        <path d="M5 40H195" stroke-width="12" />
+        <Bow x="68" y="22" width="64" height="33" class="[&_ellipse]:fill-wine [&_path]:fill-cream" />
+      </svg>
+    </div>
+
+    <figcaption class="label-caps mt-5 text-center">{story.caption}</figcaption>
+  </figure>
+
+  <div class="mx-auto max-w-md space-y-4 text-center md:text-left">
+    {story.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+  </div>
+</div>
+
+<style>
+  .maker-stage {
+    cursor: pointer;
+  }
+
+  .maker-tilt {
+    transform-origin: 50% 100%;
+    rotate: -2deg;
+    transition: rotate 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .maker-dot {
+    width: 13%;
+    aspect-ratio: 1;
+    margin-left: -6.5%;
+    border: 2px solid var(--color-wine);
+    border-radius: 50%;
+    background: var(--color-cream);
+  }
+
+  .maker-bite {
+    left: var(--palm-x);
+    bottom: calc(100% - var(--palm-y));
+    transform-origin: 50% 100%;
+  }
+
+  .maker-bubble {
+    transform-origin: 0 100%;
+  }
+
+  .maker-orbit {
+    opacity: 0;
+    transition: opacity 400ms;
+    animation: maker-orbit 14s linear infinite paused;
+  }
+
+  .maker-doodle {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* Hover (mouse) or tap (data-active): tilt, wiggle, orbit. */
+  @media (prefers-reduced-motion: no-preference) {
+    .maker-stage[data-active] .maker-tilt {
+      rotate: -6deg;
+    }
+
+    .maker-stage[data-active] .maker-orbit {
+      opacity: 1;
+      animation-play-state: running;
+    }
+
+    .maker-stage[data-active] .maker-doodle {
+      animation: maker-wiggle 700ms ease-in-out infinite alternate;
+    }
+
+    .maker-stage[data-active] .maker-doodle:nth-child(even) {
+      animation-direction: alternate-reverse;
+    }
+  }
+
+  @keyframes maker-orbit {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  @keyframes maker-wiggle {
+    from {
+      rotate: -7deg;
+    }
+    to {
+      rotate: 7deg;
+    }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { lazyScene } from '../../lib/scene';
+
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
+
+  // Hover with a mouse, tap to toggle on touch. Registered once.
+  const stageOf = (event: Event): HTMLElement | null =>
+    (event.target as Element).closest?.<HTMLElement>('[data-maker-stage]') ?? null;
+
+  document.addEventListener('pointerover', (event) => {
+    if (event.pointerType === 'mouse') stageOf(event)?.setAttribute('data-active', '');
+  });
+  document.addEventListener('pointerout', (event) => {
+    const stage = stageOf(event);
+    if (event.pointerType !== 'mouse' || !stage) return;
+    if (!stage.contains(event.relatedTarget as Node | null)) stage.removeAttribute('data-active');
+  });
+  document.addEventListener('click', (event) => {
+    if (window.matchMedia('(hover: hover)').matches) return;
+    stageOf(event)?.toggleAttribute('data-active');
+  });
+
+  lazyScene('[data-maker]', (scene) => {
+    const find = (selector: string) => gsap.utils.toArray<HTMLElement>(selector, scene);
+
+    gsap
+      .timeline({ scrollTrigger: { trigger: find('[data-maker-stage]'), start: 'top 70%', once: true } })
+      // Springs up from behind the box, overshooting before settling.
+      .from(find('[data-maker-person]'), { yPercent: 105, duration: 0.9, ease: 'back.out(1.7)' }, 0)
+      // The bite arcs in, lands in the palm with a squash, and springs back.
+      .from(find('[data-maker-bite]'), { opacity: 0, duration: 0.1 }, 0.55)
+      .from(find('[data-maker-bite]'), { x: -160, duration: 0.45, ease: 'none' }, 0.55)
+      .from(find('[data-maker-bite]'), { y: -260, duration: 0.45, ease: 'power2.in' }, 0.55)
+      .to(find('[data-maker-bite]'), { scaleX: 1.25, scaleY: 0.7, duration: 0.07, ease: 'power1.out' }, 1)
+      .to(find('[data-maker-bite]'), { scaleX: 1, scaleY: 1, duration: 0.45, ease: 'elastic.out(1.1, 0.45)' }, 1.07)
+      // Doodles draw themselves, then the speech bubble pops out.
+      .from(
+        find('[data-maker-doodles] path, [data-maker-doodles] circle'),
+        { drawSVG: 0, duration: 0.5, stagger: 0.07, ease: 'power1.inOut' },
+        0.9,
+      )
+      .from(find('[data-maker-bubble]'), { scale: 0, duration: 0.45, ease: 'back.out(3)' }, 1.6);
+  });
+</script>

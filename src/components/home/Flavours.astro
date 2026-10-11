@@ -49,15 +49,17 @@ const crumbs = [
 >
   <!-- Motion only: flavour colour washes and drifting crumbs, held behind the panels. -->
   <div class="flavours-backdrop" aria-hidden="true">
-    {flavours.map((flavour) => <div class="flavour-tint absolute inset-0 opacity-0" style={`--accent:${flavour.accent}`} data-flavour-wash />)}
-    {
-      crumbs.map(([left, top, size, dx, dy, seconds]) => (
-        <span
-          class="flavours-crumb"
-          style={`left:${left}%;top:${top}%;width:${size}px;height:${size}px;--dx:${dx}px;--dy:${dy}px;--drift:${seconds}s`}
-        />
-      ))
-    }
+    <div class="flavours-sticky">
+      {flavours.map((flavour) => <div class="flavour-tint absolute inset-0 opacity-0" style={`--accent:${flavour.accent}`} data-flavour-wash />)}
+      {
+        crumbs.map(([left, top, size, dx, dy, seconds]) => (
+          <span
+            class="flavours-crumb"
+            style={`left:${left}%;top:${top}%;width:${size}px;height:${size}px;--dx:${dx}px;--dy:${dy}px;--drift:${seconds}s`}
+          />
+        ))
+      }
+    </div>
   </div>
 
   <div class="flavours-pin">
@@ -107,7 +109,7 @@ const crumbs = [
                       stroke-linecap="round"
                       aria-hidden="true"
                     >
-                      <path d="M2 13C20 3 32 17 52 9S84 4 98 11" vector-effect="non-scaling-stroke" data-flavour-strike />
+                      <path d="M2 12C30 6 62 15 98 8" vector-effect="non-scaling-stroke" data-flavour-strike />
                     </svg>
                   </span>
                 )}
@@ -182,12 +184,17 @@ const crumbs = [
     height: calc(var(--flavours-height) * var(--flavours-count));
   }
 
+  /* Spans the whole section; its child sticks for exactly that long. */
   .motion .flavours-backdrop {
     display: block;
+    position: absolute;
+    inset: 0;
+  }
+
+  .motion .flavours-sticky {
     position: sticky;
     top: var(--flavours-top);
     height: var(--flavours-height);
-    margin-bottom: calc(-1 * var(--flavours-height));
     overflow: clip;
   }
 
@@ -367,7 +374,7 @@ const crumbs = [
     const find = (selector: string, within: Element = scene) =>
       gsap.utils.toArray<HTMLElement>(selector, within);
     const pin = scene.querySelector<HTMLElement>('.flavours-pin')!;
-    const backdrop = scene.querySelector<HTMLElement>('.flavours-backdrop')!;
+    const backdrop = scene.querySelector<HTMLElement>('.flavours-sticky')!;
     const track = scene.querySelector<HTMLElement>('[data-flavours-track]')!;
     const panels = find('[data-flavour-panel]');
     const washes = find('[data-flavour-wash]');

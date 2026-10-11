@@ -1,0 +1,115 @@
+---
+// Made your way: the custom options, held like a hand of cards. They fan out
+// on entering view and wobble on hover; each opens the custom order tab.
+import { customOptions } from '../../content/custom';
+import { customOrderLink } from '../../content/site';
+import Bow from '../ui/Bow.astro';
+import SectionTitle from '../ui/SectionTitle.astro';
+
+// Tilt (degrees) and drop (px) of each card across the fan.
+const spread = (index: number, total: number) => {
+  const position = total > 1 ? (index / (total - 1)) * 2 - 1 : 0; // -1 … 1
+  return { turn: position * 12, lift: Math.abs(position) * 22, nudge: index % 2 ? 3 : -3 };
+};
+---
+
+<section class="overflow-x-clip px-5 py-20" data-fan>
+  <SectionTitle label="Made your way" title="Tell us what you’re craving" />
+
+  <ul class="fan mx-auto mt-14 grid max-w-xs grid-cols-2 gap-4 sm:flex sm:max-w-none sm:justify-center sm:gap-0">
+    {
+      customOptions.map((option, index) => {
+        const { turn, lift, nudge } = spread(index, customOptions.length);
+        return (
+          <li class="fan-card" style={`--turn:${turn}deg;--lift:${lift}px;--nudge:${nudge}deg`} data-fan-card>
+            <a
+              href={customOrderLink(option.id)}
+              class="flex aspect-[3/4] flex-col items-center justify-between rounded-2xl border border-wine bg-cream p-4 text-center shadow-[0_6px_0_0_rgb(74_15_24/0.15)] sm:w-44"
+            >
+              <span class="label-caps opacity-70">{String(index + 1).padStart(2, '0')}</span>
+              <span>
+                <span class="block font-display text-2xl leading-none font-semibold">{option.name}</span>
+                {option.sizes && (
+                  <span class="label-caps mt-2 block text-[0.65rem]">{option.sizes.join(' or ')}</span>
+                )}
+                <span class="mt-2 block text-xs">{option.description}</span>
+              </span>
+              <Bow class="w-9" />
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</section>
+
+<style>
+  /* Phones: a 2 × 2 grid with a slight tilt. */
+  .fan-card {
+    rotate: var(--nudge);
+  }
+
+  /* Wider screens: a real fan, cards overlapping. */
+  @media (min-width: 40rem) {
+    .fan-card {
+      margin-inline: -0.6rem;
+      rotate: var(--turn);
+      translate: 0 var(--lift);
+      transform-origin: 50% 120%;
+    }
+  }
+
+  .fan-card:hover,
+  .fan-card:focus-within {
+    z-index: 1;
+  }
+
+  .fan-card a {
+    transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .fan-card a:hover {
+      transform: translateY(-14px);
+      animation: fan-wobble 600ms ease-in-out;
+    }
+  }
+
+  @keyframes fan-wobble {
+    20% {
+      rotate: 4deg;
+    }
+    45% {
+      rotate: -3deg;
+    }
+    70% {
+      rotate: 2deg;
+    }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { lazyScene } from '../../lib/scene';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  lazyScene('[data-fan]', (scene) => {
+    const hand = scene.querySelector<HTMLElement>('.fan')!;
+    const cards = gsap.utils.toArray<HTMLElement>('[data-fan-card]', scene);
+
+    // Starts as a closed, upright stack in the middle, then fans out.
+    gsap.from(cards, {
+      x: (_, card: HTMLElement) => hand.clientWidth / 2 - (card.offsetLeft + card.offsetWidth / 2),
+      y: (_, card: HTMLElement) => hand.clientHeight / 2 - (card.offsetTop + card.offsetHeight / 2) + 40,
+      // GSAP folds the CSS tilt into its own transform, so 0 means upright.
+      rotation: 0,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'back.out(1.4)',
+      stagger: 0.06,
+      scrollTrigger: { trigger: hand, start: 'top 80%', once: true },
+    });
+  });
+</script>

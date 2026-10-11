@@ -1,40 +1,24 @@
 ---
+import DeliveryFaq from '../components/home/DeliveryFaq.astro';
 import Flavours from '../components/home/Flavours.astro';
 import Hero from '../components/home/Hero.astro';
+import MadeYourWay from '../components/home/MadeYourWay.astro';
+import Pricing from '../components/home/Pricing.astro';
+import Story from '../components/home/Story.astro';
 import WhyBites from '../components/home/WhyBites.astro';
 import Divider from '../components/ui/Divider.astro';
-import SectionTitle from '../components/ui/SectionTitle.astro';
-import { brand } from '../content/brand';
-import { formatPrice, pricing } from '../content/pricing';
 import Base from '../layouts/Base.astro';
 ---
 
 <Base>
   <Hero />
-
   <WhyBites />
-
   <Flavours />
-
-  <section class="px-5 py-16 text-center">
-    <SectionTitle label={brand.campaign} title="Launch prices" />
-    <ul class="mt-6 space-y-2">
-      {
-        Object.values(pricing).map((price) => (
-          <li>
-            {price.label}: <s class="opacity-60">{formatPrice(price.regular)}</s>{' '}
-            <strong>{formatPrice(price.offer)}</strong>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
-
+  <Pricing />
   <Divider class="mx-auto max-w-md px-5" />
-
-  <!-- The story timeline scene goes here. -->
-  <section id="story" class="px-5 py-16 text-center">
-    <SectionTitle label={brand.descriptor} title="Our story" />
-    <p class="mx-auto mt-6 max-w-md">{brand.pitch}</p>
-  </section>
+  <MadeYourWay />
+  <Divider class="mx-auto max-w-md px-5" />
+  <Story />
+  <Divider class="mx-auto max-w-md px-5" />
+  <DeliveryFaq />
 </Base>

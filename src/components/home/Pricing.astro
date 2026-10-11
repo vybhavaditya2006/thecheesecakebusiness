@@ -1,0 +1,85 @@
+---
+// Pricing: two cards. On entering view a hand-drawn line strikes the old
+// price and the offer price pops in.
+import { brand } from '../../content/brand';
+import { formatPrice, pricing, saleActive } from '../../content/pricing';
+import SectionTitle from '../ui/SectionTitle.astro';
+
+const cards = [
+  { ...pricing.box, blurb: 'Any mix of flavours, packed and tied with a bow.', sticker: true },
+  { ...pricing.single, blurb: 'Just the one. There is no minimum order.', sticker: false },
+];
+const boxPrice = saleActive ? pricing.box.offer : pricing.box.regular;
+const perBite = formatPrice(Math.round(boxPrice / pricing.box.bites));
+---
+
+<section class="px-5 py-20" data-pricing>
+  <SectionTitle label={saleActive ? brand.campaign : 'Pricing'} title="Same price, every flavour" />
+
+  <ul class="mx-auto mt-14 grid max-w-3xl gap-10 sm:grid-cols-2 sm:gap-8">
+    {
+      cards.map((card) => (
+        <li class="relative rounded-3xl border border-wine/25 p-8 text-center" data-price-card>
+          <h3 class="label-caps font-sans">{card.label}</h3>
+
+          <p class="mt-6 flex items-baseline justify-center gap-4">
+            {saleActive && (
+              <span class="relative font-display text-3xl opacity-70">
+                <span class="sr-only">Was </span>
+                {formatPrice(card.regular)}
+                <svg
+                  class="absolute -inset-x-2 top-1/2 h-4 w-[calc(100%+1rem)] -translate-y-1/2 overflow-visible"
+                  viewBox="0 0 100 20"
+                  preserveAspectRatio="none"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M2 12C30 6 62 15 98 8" vector-effect="non-scaling-stroke" data-price-strike />
+                </svg>
+              </span>
+            )}
+            <span class="inline-block font-display text-7xl leading-none font-semibold" data-price-offer>
+              {formatPrice(saleActive ? card.offer : card.regular)}
+            </span>
+          </p>
+
+          <p class="mt-5 text-sm">{card.blurb}</p>
+
+          {card.sticker && (
+            <p
+              class="absolute -bottom-9 -left-2 flex size-24 -rotate-12 flex-col items-center justify-center rounded-full bg-wine p-2 text-cream sm:-left-8"
+              data-price-sticker
+            >
+              <strong class="font-display text-3xl leading-none">{perBite}</strong>
+              <span class="label-caps mt-1 text-[0.55rem] leading-tight tracking-[0.15em]">a bite in a box</span>
+            </p>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { lazyScene } from '../../lib/scene';
+
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
+
+  lazyScene('[data-pricing]', (scene) => {
+    gsap.utils.toArray<HTMLElement>('[data-price-card]', scene).forEach((card) => {
+      const find = (selector: string) => gsap.utils.toArray<HTMLElement>(selector, card);
+
+      gsap
+        .timeline({ scrollTrigger: { trigger: card, start: 'top 78%', once: true } })
+        .from(find('[data-price-strike]'), { drawSVG: 0, duration: 0.5, ease: 'power2.inOut' })
+        .from(find('[data-price-offer]'), { scale: 0, opacity: 0, duration: 0.5, ease: 'back.out(2.5)' }, '-=0.1')
+        .from(find('[data-price-sticker]'), { scale: 0, rotation: -60, duration: 0.5, ease: 'back.out(2)' }, '-=0.25');
+    });
+  });
+</script>

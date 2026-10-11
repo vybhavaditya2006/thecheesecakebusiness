@@ -1,0 +1,126 @@
+---
+// Delivery + FAQ: a sketch map where the free-delivery ring draws itself
+// around the kitchen pin, then the questions from site.ts.
+import { delivery, faq } from '../../content/site';
+import SectionTitle from '../ui/SectionTitle.astro';
+
+const ringLabel = `${delivery.freeRadiusKm} km`;
+---
+
+<section class="px-5 py-20" data-delivery>
+  <SectionTitle label="Delivery" title={`Free delivery within ${ringLabel}`} />
+
+  <figure class="mx-auto mt-10 max-w-md">
+    <svg
+      class="w-full overflow-visible text-wine"
+      viewBox="0 0 400 300"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      role="img"
+      aria-label={`Sketch map: a ${ringLabel} ring around ${delivery.area} ${delivery.pincode}`}
+    >
+      <!-- Roads -->
+      <g opacity="0.45">
+        <path d="M-6 214C80 192 122 242 200 202S330 122 406 142" />
+        <path d="M122 -4C142 82 102 162 152 304" />
+        <path d="M292 -4C272 92 322 192 282 304" />
+        <path d="M-6 82C100 102 222 62 406 72" stroke-width="1" />
+        <path d="M40 304C70 250 60 200 20 150" stroke-width="1" />
+      </g>
+
+      <!-- The free-delivery ring -->
+      <path
+        d="M200 45c60-2 106 44 105 104s-46 107-106 106S94 209 95 149 141 46 200 45"
+        stroke-width="2.5"
+        data-delivery-ring
+      ></path>
+      <g data-delivery-label>
+        <path d="M278 78l22-22" stroke-width="1.5"></path>
+        <text
+          x="304"
+          y="52"
+          class="label-caps"
+          fill="currentColor"
+          stroke="none"
+        >
+          {ringLabel}
+        </text>
+      </g>
+
+      <!-- The kitchen pin -->
+      <g data-delivery-pin>
+        <path
+          d="M200 150c-14-18-22-28-22-40a22 22 0 0 1 44 0c0 12-8 22-22 40z"
+          fill="currentColor"
+        ></path>
+        <circle cx="200" cy="110" r="7" class="fill-cream" stroke="none"></circle>
+      </g>
+    </svg>
+    <figcaption class="mt-4 text-center">
+      <span class="label-caps block">{delivery.area} {delivery.pincode}</span>
+      <span class="mt-2 block text-sm">{delivery.paidNote}</span>
+    </figcaption>
+  </figure>
+
+  <div class="mx-auto mt-20 max-w-2xl">
+    <SectionTitle label="Questions" title="Good to know" />
+
+    <div class="mt-8 border-t border-wine/25">
+      {
+        faq.map((item) => (
+          <details class="faq-item border-b border-wine/25" name="faq">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-display text-xl">
+              {item.question}
+              <span class="faq-mark text-2xl leading-none" aria-hidden="true">
+                +
+              </span>
+            </summary>
+            <p class="pb-5 text-sm">{item.answer}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-mark {
+    transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .faq-item[open] .faq-mark {
+    transform: rotate(45deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-mark {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { lazyScene } from '../../lib/scene';
+
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
+
+  lazyScene('[data-delivery]', (scene) => {
+    const find = (selector: string) => gsap.utils.toArray<SVGElement>(selector, scene);
+
+    gsap
+      .timeline({ scrollTrigger: { trigger: find('[data-delivery-ring]'), start: 'top 75%', once: true } })
+      .from(find('[data-delivery-pin]'), { y: -60, opacity: 0, duration: 0.6, ease: 'bounce.out' })
+      .from(find('[data-delivery-ring]'), { drawSVG: 0, duration: 1.2, ease: 'power2.inOut' }, '-=0.1')
+      .from(find('[data-delivery-label]'), { opacity: 0, duration: 0.3 }, '-=0.2');
+  });
+</script>

@@ -1,0 +1,87 @@
+---
+// Scene 4: a little about me. A four-step timeline whose sketches draw
+// themselves as you scroll, followed by the maker and the full story.
+import { story } from '../../content/site';
+import SectionTitle from '../ui/SectionTitle.astro';
+import Maker from './Maker.astro';
+import StorySketch from './StorySketch.astro';
+---
+
+<section id="story" class="px-5 py-20" data-story>
+  <SectionTitle label="Our story" title={story.heading} />
+
+  <ol class="relative mx-auto mt-14 max-w-3xl space-y-14 md:space-y-20">
+    <!-- The line the steps hang from; it grows with the scroll. -->
+    <li
+      class="absolute top-0 bottom-0 left-4 w-px origin-top bg-wine/40 md:left-1/2"
+      aria-hidden="true"
+      data-story-line
+    >
+    </li>
+    {
+      story.steps.map((step, index) => (
+        <li
+          class:list={[
+            'relative grid items-center gap-4 pl-12 md:grid-cols-2 md:gap-16 md:pl-0',
+            index % 2 && 'md:[&>div:first-child]:order-2',
+          ]}
+          data-story-step
+        >
+          <span
+            class="label-caps absolute top-0 left-0 flex size-8 items-center justify-center rounded-full border border-wine bg-cream tracking-normal md:left-1/2 md:-translate-x-1/2"
+            aria-hidden="true"
+          >
+            {index + 1}
+          </span>
+          <div class:list={['text-wine', index % 2 ? 'md:pl-6' : 'md:pr-6']}>
+            <StorySketch kind={step.sketch} class="w-44 overflow-visible md:mx-auto md:w-56" />
+          </div>
+          <p class="font-display text-2xl leading-tight md:text-3xl" data-story-text>{step.title}</p>
+        </li>
+      ))
+    }
+  </ol>
+
+  <Maker />
+</section>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { lazyScene } from '../../lib/scene';
+
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
+
+  lazyScene('[data-story]', (scene) => {
+    const line = scene.querySelector('[data-story-line]');
+    gsap.from(line, {
+      scaleY: 0,
+      ease: 'none',
+      scrollTrigger: { trigger: line, start: 'top 70%', end: 'bottom 60%', scrub: true },
+    });
+
+    // Each sketch draws itself as its step scrolls into place.
+    gsap.utils.toArray<HTMLElement>('[data-story-step]', scene).forEach((step) => {
+      const find = (selector: string) => gsap.utils.toArray<SVGElement>(selector, step);
+      const strokes = find('[data-sketch] > :not([data-pop])');
+      const pops = find('[data-pop]');
+
+      const drawing = gsap
+        .timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: { trigger: step, start: 'top 85%', end: 'top 35%', scrub: true },
+        })
+        .from(find('[data-story-text]'), { opacity: 0, y: 24, duration: 0.3 }, 0)
+        .from(strokes, { drawSVG: 0, duration: 0.5, stagger: 0.08 }, 0);
+
+      if (pops.length) {
+        drawing.from(
+          pops,
+          { scale: 0, transformOrigin: '50% 50%', duration: 0.2, stagger: 0.08, ease: 'back.out(3)' },
+          '>-0.1',
+        );
+      }
+    });
+  });
+</script>

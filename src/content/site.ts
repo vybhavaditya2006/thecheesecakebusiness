@@ -1,3 +1,7 @@
+import { brand } from './brand';
+import { customOptions } from './custom';
+import { pricing } from './pricing';
+
 export const delivery = {
   area: 'Nagarabhavi, Bengaluru',
   pincode: '560072',
@@ -21,6 +25,55 @@ export const contact = {
 } as const;
 
 export const orderPath = '/order';
+
+// Link that opens the custom-order tab on the order page for one option.
+export const customOrderLink = (optionId: string): string =>
+  `${orderPath}?tab=custom&type=${optionId}`;
+
+// "A little about me": the four-step timeline, then the maker's own story.
+export const story = {
+  heading: 'A little about me',
+  steps: [
+    { sketch: 'cake', title: 'One blueberry cheesecake for my nephew’s birthday' },
+    { sketch: 'phone', title: 'Pre-orders the very same day, without a business' },
+    {
+      sketch: 'slice',
+      title: 'A whole slice can be a little too much. So why not bite-sized?',
+    },
+    { sketch: 'box', title: `${brand.name}: building a dream one bite at a time` },
+  ],
+  caption: `${brand.maker}, the person behind the bites`,
+  speechBubble: 'no judgement here!',
+  // TODO: placeholder stitched from the timeline above. Replace with
+  // Shlok's full story, one string per paragraph.
+  paragraphs: [
+    'It started with one blueberry cheesecake for my nephew’s birthday. The pre-orders came in the very same day, before there was any business to speak of.',
+    'A whole slice can be a little too much, so I made them bite-sized. One bite at a time, that is how this is being built.',
+  ],
+} as const;
+
+export const faq = [
+  {
+    question: 'Where do you deliver?',
+    answer: `${delivery.freeNote} ${delivery.paidNote}`,
+  },
+  {
+    question: 'Is there a minimum order?',
+    answer: 'No. Order a single bite if that is all you are craving.',
+  },
+  {
+    question: 'How do I pay?',
+    answer: `${paymentMethods.join(' or ')}.`,
+  },
+  {
+    question: 'Can I mix flavours in a box?',
+    answer: `Yes. A box of ${pricing.box.bites} is any mix you like, and every flavour costs the same.`,
+  },
+  {
+    question: 'Do you take custom orders?',
+    answer: `Yes: ${customOptions.map((option) => option.name.toLowerCase()).join(', ')}. Tell us what you have in mind and we will confirm the details on WhatsApp.`,
+  },
+] as const;
 
 export const pages = [
   { path: '/', label: 'Home' },
