@@ -1,0 +1,62 @@
+---
+import { brand } from '../../content/brand';
+import { contact, delivery, jumpLinks, orderPath, paymentMethods } from '../../content/site';
+import { whatsappLink } from '../../lib/whatsapp';
+import Bow from './Bow.astro';
+import Wordmark from './Wordmark.astro';
+
+const links = [...jumpLinks, { href: orderPath, label: 'Order' }];
+---
+
+<footer class="bg-wine-deep px-5 py-12 text-cream">
+  <div class="mx-auto grid max-w-5xl gap-10 sm:grid-cols-3">
+    <div>
+      <Wordmark class="text-5xl" />
+      <p class="label-caps mt-3">{brand.descriptor}</p>
+      <p class="mt-2 font-display text-xl italic">{brand.tagline}</p>
+    </div>
+
+    <div>
+      <h2 class="label-caps font-sans opacity-70">Delivery &amp; payment</h2>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li>{delivery.freeNote}</li>
+        <li>{delivery.paidNote}</li>
+        <li>Pay by {paymentMethods.join(' or ')}.</li>
+        <li>{delivery.minimumOrderNote}</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="label-caps font-sans opacity-70">Find your way</h2>
+      <ul class="mt-3 space-y-2 text-sm">
+        {
+          links.map((link) => (
+            <li>
+              <a href={link.href} class="underline-offset-4 hover:underline">
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+        {
+          contact.whatsapp && (
+            <li>
+              <a
+                href={whatsappLink(`Hi ${brand.name}!`)}
+                class="underline-offset-4 hover:underline"
+                rel="noopener"
+              >
+                WhatsApp us
+              </a>
+            </li>
+          )
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="mx-auto mt-10 flex max-w-5xl items-center gap-4 text-xs opacity-70">
+    <Bow class="w-10" />
+    <p>© {new Date().getFullYear()} {brand.name}. {delivery.area} {delivery.pincode}.</p>
+  </div>
+</footer>

@@ -1,0 +1,23 @@
+---
+import { brand } from '../../content/brand';
+import { jumpLinks, orderPath } from '../../content/site';
+import Button from './Button.astro';
+import Wordmark from './Wordmark.astro';
+---
+
+<nav class="flex items-center justify-between gap-4 bg-cream px-5 py-3" aria-label="Main">
+  <a href="/" aria-label={`${brand.name} home`}>
+    <Wordmark class="text-4xl" />
+  </a>
+
+  <div class="flex items-center gap-6">
+    {
+      jumpLinks.map((link) => (
+        <a href={link.href} class="label-caps hidden sm:block">
+          {link.label}
+        </a>
+      ))
+    }
+    <Button href={orderPath} size="sm">Order now</Button>
+  </div>
+</nav>

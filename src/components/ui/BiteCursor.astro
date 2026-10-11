@@ -1,0 +1,90 @@
+---
+// Desktop-only cursor: a small wine dot with a bite taken out. Over anything
+// tappable it grows and says "Taste".
+---
+
+<div id="bite-cursor" aria-hidden="true" transition:persist="bite-cursor">
+  <div class="bite">
+    <span class="bite-label label-caps">Taste</span>
+  </div>
+</div>
+
+<style>
+  #bite-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 90;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms;
+  }
+
+  #bite-cursor[data-visible] {
+    opacity: 1;
+  }
+
+  .bite {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    margin: -38px 0 0 -38px;
+    border-radius: 50%;
+    background: var(--color-wine);
+    color: var(--color-cream);
+    /* The bite. */
+    mask-image: radial-gradient(circle at 84% 16%, transparent 17px, #000 18px);
+    transform: scale(0.22);
+    transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .bite-label {
+    font-size: 0.625rem;
+    opacity: 0;
+    transition: opacity 150ms;
+  }
+
+  #bite-cursor[data-taste] .bite {
+    transform: scale(1);
+  }
+
+  #bite-cursor[data-taste] .bite-label {
+    opacity: 1;
+    transition-delay: 100ms;
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { canAffordEffects } from '../../lib/motion';
+
+  const TAPPABLE = 'a, button, [role="button"], input, select, textarea, label, summary';
+
+  // The cursor persists across pages, so this runs once per visit.
+  const cursor = document.getElementById('bite-cursor');
+
+  if (cursor && canAffordEffects()) {
+    const moveX = gsap.quickTo(cursor, 'x', { duration: 0.25, ease: 'power3.out' });
+    const moveY = gsap.quickTo(cursor, 'y', { duration: 0.25, ease: 'power3.out' });
+
+    document.addEventListener('pointermove', (event) => {
+      if (event.pointerType !== 'mouse') return;
+      if (!('visible' in cursor.dataset)) {
+        // First sighting: jump straight to the pointer instead of gliding in.
+        gsap.set(cursor, { x: event.clientX, y: event.clientY });
+        cursor.dataset.visible = '';
+      }
+      moveX(event.clientX);
+      moveY(event.clientY);
+      cursor.toggleAttribute('data-taste', !!(event.target as Element).closest?.(TAPPABLE));
+    });
+
+    document.documentElement.addEventListener('pointerleave', () => {
+      delete cursor.dataset.visible;
+    });
+
+    // After a page change the pointer may no longer be over a link.
+    document.addEventListener('astro:after-swap', () => cursor.removeAttribute('data-taste'));
+  }
+</script>

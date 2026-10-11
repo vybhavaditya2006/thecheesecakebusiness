@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import SectionTitle from '../components/ui/SectionTitle.astro';
 import { customOptions } from '../content/custom';
 import { flavours } from '../content/flavours';
 import { formatPrice, pricing } from '../content/pricing';
@@ -8,8 +9,7 @@ import { delivery, paymentMethods } from '../content/site';
 
 <Base title="Order">
   <section class="px-5 py-16 text-center">
-    <p class="label-caps">Pack your box</p>
-    <h1 class="mt-4 text-5xl">Order</h1>
+    <SectionTitle as="h1" label="Pack your box" title="Order" />
     <p class="mt-4">
       {pricing.box.label}: <s class="opacity-60">{formatPrice(pricing.box.regular)}</s>{' '}
       <strong>{formatPrice(pricing.box.offer)}</strong>
@@ -28,7 +28,7 @@ import { delivery, paymentMethods } from '../content/site';
   </section>
 
   <section class="px-5 py-12">
-    <h2 class="text-center text-4xl">Custom orders</h2>
+    <SectionTitle label="Something special" title="Custom orders" />
     <ul class="mx-auto mt-6 max-w-md space-y-3">
       {
         customOptions.map((option) => (

@@ -20,7 +20,15 @@ export const contact = {
   web3formsKey: import.meta.env?.PUBLIC_WEB3FORMS_KEY ?? '',
 } as const;
 
+export const orderPath = '/order';
+
 export const pages = [
   { path: '/', label: 'Home' },
-  { path: '/order', label: 'Order' },
+  { path: orderPath, label: 'Order' },
+] as const;
+
+// Jump links to sections of the home page.
+export const jumpLinks = [
+  { href: '/#flavours', label: 'Flavours' },
+  { href: '/#story', label: 'Our story' },
 ] as const;

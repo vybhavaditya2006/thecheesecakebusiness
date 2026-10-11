@@ -1,0 +1,124 @@
+---
+// Dev-only review page at /dev/styleguide. Injected by astro.config.mjs in
+// `astro dev` only, so it never reaches the build or the sitemap.
+import Bow from '../components/ui/Bow.astro';
+import Button from '../components/ui/Button.astro';
+import Divider from '../components/ui/Divider.astro';
+import SectionTitle from '../components/ui/SectionTitle.astro';
+import Wordmark from '../components/ui/Wordmark.astro';
+import { brand } from '../content/brand';
+import { flavours } from '../content/flavours';
+import { formatPrice, pricing, saleActive } from '../content/pricing';
+import { orderPath } from '../content/site';
+import Base from '../layouts/Base.astro';
+
+const palette = [
+  { name: 'Cream', value: '#F3E7DA', class: 'bg-cream' },
+  { name: 'Wine', value: '#7A1F2B', class: 'bg-wine' },
+  { name: 'Deep wine', value: '#4A0F18', class: 'bg-wine-deep' },
+];
+---
+
+<Base title="Styleguide">
+  <div class="mx-auto max-w-4xl space-y-20 px-5 py-16">
+    <SectionTitle as="h1" label="Dev only" title="Styleguide" />
+
+    <section>
+      <SectionTitle align="left" label="Brand" title="Wordmark & bow" />
+      <div class="mt-8 flex flex-wrap items-center gap-10">
+        <Wordmark class="text-7xl" />
+        <Bow class="w-32" />
+        <div class="rounded-2xl bg-wine-deep p-6 text-cream">
+          <Wordmark class="text-5xl" />
+        </div>
+      </div>
+      <p class="mt-4 text-sm opacity-80">
+        Temporary script wordmark of the working name “{brand.name}”, read from brand.ts.
+      </p>
+    </section>
+
+    <section>
+      <SectionTitle align="left" label="Colour" title="Palette" />
+      <ul class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {
+          palette.map((colour) => (
+            <li>
+              <div class:list={['h-20 rounded-xl border border-wine/20', colour.class]} />
+              <p class="label-caps mt-2">{colour.name}</p>
+              <p class="text-sm opacity-80">{colour.value}</p>
+            </li>
+          ))
+        }
+        {
+          flavours.map((flavour) => (
+            <li>
+              <div class="h-20 rounded-xl" style={`background:${flavour.accent}`} />
+              <p class="label-caps mt-2">{flavour.name}</p>
+              <p class="text-sm opacity-80">{flavour.accent} · flavour scenes only</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <SectionTitle align="left" label="Type" title="Typography" />
+      <div class="mt-8 space-y-5">
+        <p class="font-display text-6xl">Cormorant Garamond</p>
+        <p class="font-display text-4xl italic">{brand.tagline}</p>
+        <p class="label-caps">DM Sans caps label · letter-spaced</p>
+        <p class="max-w-prose">DM Sans body. {brand.pitch}</p>
+        <p>
+          Prices: <s class="opacity-60">{formatPrice(pricing.box.regular)}</s>
+          <strong>{formatPrice(pricing.box.offer)}</strong>
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <SectionTitle align="left" label="Press and hover" title="Buttons" />
+      <div class="mt-8 flex flex-wrap items-center gap-6">
+        <Button href={orderPath}>Order now</Button>
+        <Button variant="outline">Outline</Button>
+        <Button size="sm">Small</Button>
+        <div class="rounded-2xl bg-wine-deep p-6">
+          <Button variant="cream">On wine</Button>
+        </div>
+      </div>
+      <p class="mt-4 text-sm opacity-80">
+        Squishes on press everywhere. On desktop it leans towards the pointer and the bite cursor
+        grows to say “Taste”.
+      </p>
+    </section>
+
+    <section>
+      <SectionTitle align="left" label="Section title" title="Letters rise in a wave" />
+      <p class="mt-4 text-sm opacity-80">
+        Each heading on this page is a SectionTitle; scroll or reload to replay the wave.
+      </p>
+    </section>
+
+    <section>
+      <SectionTitle align="left" label="Divider" title="The bow divider" />
+      <Divider class="mt-8" />
+    </section>
+
+    <section>
+      <SectionTitle align="left" label="Global layer" title="Ribbon, cursor, curtain" />
+      <ul class="mt-6 list-disc space-y-2 pl-5 text-sm">
+        <li>
+          Sale ribbon: {saleActive ? 'on' : 'off'} (saleActive in pricing.ts). Scroll fast to speed
+          it up; × dismisses it for this browser session.
+        </li>
+        <li>Bite cursor: desktop only, on devices with a mouse and at least 4 cores.</li>
+        <li>
+          Curtain: <a href="/" class="underline">go to Home</a> or
+          <a href={orderPath} class="underline">go to Order</a> to see the wipe.
+        </li>
+        <li>Reduced motion: no smooth scroll, wave, magnet or cursor; the curtain fades.</li>
+      </ul>
+    </section>
+
+    <div class="h-[60vh]"></div>
+  </div>
+</Base>

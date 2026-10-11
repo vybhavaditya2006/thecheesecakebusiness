@@ -1,0 +1,83 @@
+---
+// Page transition: a wine curtain carrying the bow wipes across the screen.
+import Bow from './Bow.astro';
+---
+
+<div
+  id="page-curtain"
+  aria-hidden="true"
+  class="pointer-events-none fixed inset-0 z-100 flex items-center justify-center bg-wine text-cream"
+  style="transform: translateX(-101%)"
+  transition:persist="page-curtain"
+>
+  <Bow class="w-40" />
+</div>
+
+<script>
+  import { reducedMotion } from '../../lib/motion';
+
+  const EASE = 'cubic-bezier(0.76, 0, 0.24, 1)';
+  const OFF_LEFT = 'translateX(-101%)';
+  const OFF_RIGHT = 'translateX(101%)';
+  const ON = 'translateX(0)';
+
+  let covered = false;
+
+  const curtain = (): HTMLElement | null => document.getElementById('page-curtain');
+
+  const cover = async (): Promise<void> => {
+    const element = curtain();
+    if (!element) return;
+
+    // Reduced motion: a short fade instead of a wipe.
+    const animation = reducedMotion()
+      ? element.animate(
+          [
+            { transform: ON, opacity: 0 },
+            { transform: ON, opacity: 1 },
+          ],
+          { duration: 200 },
+        )
+      : element.animate([{ transform: OFF_LEFT }, { transform: ON }], {
+          duration: 550,
+          easing: EASE,
+        });
+
+    await animation.finished;
+    element.style.transform = ON;
+    covered = true;
+  };
+
+  const reveal = async (): Promise<void> => {
+    const element = curtain();
+    if (!element || !covered) return;
+    covered = false;
+
+    const animation = reducedMotion()
+      ? element.animate(
+          [
+            { transform: ON, opacity: 1 },
+            { transform: ON, opacity: 0 },
+          ],
+          { duration: 200 },
+        )
+      : element.animate([{ transform: ON }, { transform: OFF_RIGHT }], {
+          duration: 600,
+          delay: 80,
+          easing: EASE,
+        });
+
+    await animation.finished;
+    element.style.transform = OFF_LEFT;
+  };
+
+  // Hold the swap until the curtain covers the screen and the page is fetched.
+  document.addEventListener('astro:before-preparation', (event) => {
+    const load = event.loader;
+    event.loader = async () => {
+      await Promise.all([cover(), load()]);
+    };
+  });
+
+  document.addEventListener('astro:page-load', reveal);
+</script>

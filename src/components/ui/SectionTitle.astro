@@ -1,0 +1,69 @@
+---
+// Letter-spaced caps label above a serif heading whose letters rise in a wave.
+interface Props {
+  label?: string;
+  title: string;
+  as?: 'h1' | 'h2' | 'h3';
+  align?: 'center' | 'left';
+  class?: string;
+}
+
+const { label, title, as: Heading = 'h2', align = 'center', class: className } = Astro.props;
+---
+
+<div class:list={[align === 'center' ? 'text-center' : 'text-left', className]}>
+  {label && <p class="label-caps opacity-80">{label}</p>}
+  <Heading class="wave-heading mt-3 text-4xl leading-tight sm:text-5xl" data-wave>{title}</Heading>
+</div>
+
+<style is:global>
+  /* The "motion" class is set in Base.astro only when motion is allowed. */
+  .motion [data-wave]:not([data-wave-ready]) {
+    opacity: 0;
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { SplitText } from 'gsap/SplitText';
+  import { reducedMotion } from '../../lib/motion';
+
+  gsap.registerPlugin(SplitText);
+
+  const wave = (heading: HTMLElement): void => {
+    const split = SplitText.create(heading, { type: 'words,chars' });
+    heading.dataset.waveReady = '';
+
+    gsap.from(split.chars, {
+      yPercent: 70,
+      rotate: 8,
+      opacity: 0,
+      duration: 0.7,
+      ease: 'back.out(2.2)',
+      stagger: 0.035,
+      onComplete: () => split.revert(),
+    });
+  };
+
+  document.addEventListener('astro:page-load', async () => {
+    const headings = document.querySelectorAll<HTMLElement>('[data-wave]:not([data-wave-ready])');
+    if (!headings.length || reducedMotion()) return;
+
+    await document.fonts.ready;
+
+    // Each heading is split only when it is about to be seen.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          observer.unobserve(entry.target);
+          wave(entry.target as HTMLElement);
+        }
+      },
+      { rootMargin: '0px 0px -10% 0px' },
+    );
+
+    headings.forEach((heading) => observer.observe(heading));
+    document.addEventListener('astro:before-swap', () => observer.disconnect(), { once: true });
+  });
+</script>

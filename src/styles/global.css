@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'lenis/dist/lenis.css';
 
 @theme {
   --color-cream: #f3e7da;
@@ -12,8 +13,10 @@
   --color-coffee: #6f4e37;
   --color-biscoff: #c8813c;
 
-  --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
-  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  /* Self-hosted through Fontsource; imported in Base.astro. */
+  --font-display: 'Cormorant Garamond Variable', ui-serif, Georgia, serif;
+  --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-script: 'Pinyon Script', 'Cormorant Garamond Variable', cursive;
 }
 
 @layer base {
@@ -25,6 +28,11 @@
   h2,
   h3 {
     @apply font-display;
+  }
+
+  /* Keeps jump-link targets clear of the sticky header. */
+  [id] {
+    scroll-margin-top: 7rem;
   }
 }
 

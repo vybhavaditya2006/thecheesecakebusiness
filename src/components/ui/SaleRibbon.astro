@@ -1,0 +1,105 @@
+---
+// Scrolling sale ribbon. Speeds up with scroll velocity; dismissible.
+import { brand } from '../../content/brand';
+import { formatPrice, pricing, saleActive } from '../../content/pricing';
+import Bow from './Bow.astro';
+
+const offers = Object.values(pricing);
+// Enough copies for one group to be wider than any screen.
+const copies = Array.from({ length: 6 });
+---
+
+{
+  saleActive && (
+    <div
+      id="sale-ribbon"
+      class="relative flex h-9 items-center overflow-hidden bg-wine text-cream"
+      transition:persist="sale-ribbon"
+    >
+      <div class="flex w-max will-change-transform" data-ribbon-track>
+        {[0, 1].map((group) => (
+          <div class="flex shrink-0" aria-hidden={group === 1 ? 'true' : undefined}>
+            {copies.map((_, copy) => (
+              <p
+                class="label-caps flex shrink-0 items-center gap-5 pr-5"
+                aria-hidden={copy > 0 ? 'true' : undefined}
+              >
+                <span>{brand.campaign}</span>
+                <Bow class="w-6" />
+                {offers.map((offer) => (
+                  <>
+                    <span>
+                      {offer.label} <s class="opacity-60">{formatPrice(offer.regular)}</s>{' '}
+                      {formatPrice(offer.offer)}
+                    </span>
+                    <Bow class="w-6" />
+                  </>
+                ))}
+              </p>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        class="absolute inset-y-0 right-0 flex w-10 items-center justify-center bg-wine text-lg leading-none"
+        aria-label="Dismiss sale banner"
+        data-ribbon-dismiss
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
+<script is:inline>
+  try {
+    if (sessionStorage.getItem('sale-ribbon-dismissed')) {
+      document.getElementById('sale-ribbon')?.setAttribute('hidden', '');
+    }
+  } catch {}
+</script>
+
+<script>
+  import gsap from 'gsap';
+  import { reducedMotion } from '../../lib/motion';
+  import { getLenis } from '../../lib/smooth-scroll';
+
+  const BASE_SPEED = 50; // px per second
+  const VELOCITY_BOOST = 14;
+  const MAX_BOOST = 900;
+
+  // The ribbon persists across pages, so this runs once per visit.
+  const ribbon = document.getElementById('sale-ribbon');
+  const track = ribbon?.querySelector<HTMLElement>('[data-ribbon-track]');
+  const group = track?.firstElementChild as HTMLElement | null | undefined;
+
+  if (ribbon && track && group) {
+    let width = group.offsetWidth;
+    new ResizeObserver(() => (width = group.offsetWidth)).observe(group);
+
+    let x = 0;
+    const setX = gsap.quickSetter(track, 'x', 'px');
+
+    const tick = (_time: number, deltaMs: number): void => {
+      if (!width) return;
+      const boost = Math.min(Math.abs(getLenis()?.velocity ?? 0) * VELOCITY_BOOST, MAX_BOOST);
+      x -= ((BASE_SPEED + boost) * deltaMs) / 1000;
+      if (x <= -width) x %= width;
+      setX(x);
+    };
+
+    // Reduced motion: the ribbon stays still.
+    const moving = !reducedMotion() && !ribbon.hidden;
+    if (moving) gsap.ticker.add(tick);
+
+    ribbon.querySelector('[data-ribbon-dismiss]')?.addEventListener('click', () => {
+      gsap.ticker.remove(tick);
+      ribbon.hidden = true;
+      try {
+        sessionStorage.setItem('sale-ribbon-dismissed', '1');
+      } catch {}
+    });
+  }
+</script>

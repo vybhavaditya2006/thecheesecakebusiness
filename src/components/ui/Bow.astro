@@ -1,0 +1,27 @@
+---
+// The poster's bow, redrawn as a line sketch. Inherits the text colour.
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<svg
+  class={className}
+  viewBox="0 0 120 62"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  <path d="M54 26C40 6 14 4 10 18C7 30 34 38 54 29Z"></path>
+  <path d="M66 26C80 6 106 4 110 18C113 30 86 38 66 29Z"></path>
+  <path d="M52 26C42 20 30 16 20 19" stroke-width="1.2"></path>
+  <path d="M68 26C78 20 90 16 100 19" stroke-width="1.2"></path>
+  <path d="M56 33C51 43 43 51 33 58L40 44"></path>
+  <path d="M64 33C69 43 77 51 87 58L80 44"></path>
+  <ellipse cx="60" cy="27" rx="6.5" ry="7.5"></ellipse>
+</svg>

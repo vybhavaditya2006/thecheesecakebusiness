@@ -1,0 +1,102 @@
+---
+// Wine pill. Squishes on press; on desktop it leans towards the pointer.
+interface Props {
+  href?: string;
+  variant?: 'solid' | 'outline' | 'cream';
+  size?: 'md' | 'sm';
+  type?: 'button' | 'submit';
+  class?: string;
+  [attribute: string]: unknown;
+}
+
+const {
+  href,
+  variant = 'solid',
+  size = 'md',
+  type = 'button',
+  class: className,
+  ...rest
+} = Astro.props;
+
+const Tag = href ? 'a' : 'button';
+
+const faces = {
+  solid: 'bg-wine text-cream',
+  outline: 'border border-wine text-wine',
+  cream: 'bg-cream text-wine',
+};
+const sizes = {
+  md: 'px-8 py-4',
+  sm: 'px-5 py-2.5',
+};
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  class:list={['btn inline-block cursor-pointer rounded-full', className]}
+  data-magnetic
+  {...rest}
+>
+  <span class:list={['btn-face label-caps block rounded-full', faces[variant], sizes[size]]}>
+    <slot />
+  </span>
+</Tag>
+
+<style>
+  .btn-face {
+    transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @media (hover: hover) {
+    .btn:hover .btn-face {
+      transform: scale(1.04);
+    }
+  }
+
+  .btn:active .btn-face {
+    transform: scale(1.07, 0.88);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-face {
+      transition: none;
+    }
+
+    .btn:hover .btn-face,
+    .btn:active .btn-face {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { canAffordEffects } from '../../lib/motion';
+
+  const PULL = 0.3;
+
+  document.addEventListener('astro:page-load', () => {
+    if (!canAffordEffects()) return;
+
+    document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach((button) => {
+      const moveX = gsap.quickTo(button, 'x', { duration: 0.4, ease: 'power3.out' });
+      const moveY = gsap.quickTo(button, 'y', { duration: 0.4, ease: 'power3.out' });
+
+      button.addEventListener('pointermove', (event) => {
+        const box = button.getBoundingClientRect();
+        moveX((event.clientX - (box.left + box.width / 2)) * PULL);
+        moveY((event.clientY - (box.top + box.height / 2)) * PULL);
+      });
+
+      button.addEventListener('pointerleave', () => {
+        gsap.to(button, { x: 0, y: 0, duration: 0.8, ease: 'elastic.out(1, 0.4)' });
+      });
+    });
+  });
+</script>

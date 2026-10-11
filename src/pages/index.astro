@@ -1,26 +1,25 @@
 ---
-import Base from '../layouts/Base.astro';
+import Button from '../components/ui/Button.astro';
+import Divider from '../components/ui/Divider.astro';
+import SectionTitle from '../components/ui/SectionTitle.astro';
 import { brand } from '../content/brand';
 import { flavours } from '../content/flavours';
 import { formatPrice, pricing } from '../content/pricing';
+import { orderPath } from '../content/site';
+import Base from '../layouts/Base.astro';
 ---
 
 <Base>
   <section class="px-5 py-16 text-center">
-    <p class="label-caps">{brand.campaign}</p>
-    <h1 class="mt-4 text-6xl italic">{brand.name}</h1>
-    <p class="mt-3 font-display text-2xl">{brand.tagline}</p>
+    <SectionTitle as="h1" label={brand.campaign} title={brand.tagline} />
     <p class="mx-auto mt-6 max-w-md">{brand.pitch}</p>
-    <a
-      href="/order"
-      class="label-caps mt-8 inline-block rounded-full bg-wine px-8 py-4 text-cream"
-    >
-      Order now
-    </a>
+    <Button href={orderPath} class="mt-8">Order now</Button>
   </section>
 
-  <section class="px-5 py-12">
-    <h2 class="text-center text-4xl">Flavours</h2>
+  <Divider class="mx-auto max-w-md px-5" />
+
+  <section id="flavours" class="px-5 py-16">
+    <SectionTitle label="Five to choose from" title="Flavours" />
     <ul class="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-5">
       {
         flavours.map((flavour) => (
@@ -32,8 +31,10 @@ import { formatPrice, pricing } from '../content/pricing';
     </ul>
   </section>
 
-  <section class="px-5 py-12 text-center">
-    <h2 class="text-4xl">Launch prices</h2>
+  <Divider class="mx-auto max-w-md px-5" />
+
+  <section class="px-5 py-16 text-center">
+    <SectionTitle label={brand.campaign} title="Launch prices" />
     <ul class="mt-6 space-y-2">
       {
         Object.values(pricing).map((price) => (
@@ -44,5 +45,13 @@ import { formatPrice, pricing } from '../content/pricing';
         ))
       }
     </ul>
+  </section>
+
+  <Divider class="mx-auto max-w-md px-5" />
+
+  <!-- The story timeline scene goes here. -->
+  <section id="story" class="px-5 py-16 text-center">
+    <SectionTitle label={brand.descriptor} title="Our story" />
+    <p class="mx-auto mt-6 max-w-md">{brand.pitch}</p>
   </section>
 </Base>

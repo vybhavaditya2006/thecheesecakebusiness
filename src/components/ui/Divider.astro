@@ -1,0 +1,15 @@
+---
+import Bow from './Bow.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['flex items-center gap-4 text-wine', className]} role="separator">
+  <span class="h-px flex-1 bg-wine/30"></span>
+  <Bow class="w-16 shrink-0" />
+  <span class="h-px flex-1 bg-wine/30"></span>
+</div>

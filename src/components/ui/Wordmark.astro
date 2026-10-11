@@ -1,0 +1,13 @@
+---
+// Temporary script wordmark of the working name. Swap for the logo SVG at
+// brand.logoPath once the final name and logo exist.
+import { brand } from '../../content/brand';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span class:list={['font-script leading-none', className]}>{brand.name}</span>
