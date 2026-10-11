@@ -54,6 +54,8 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
 
   <div class="@container w-full max-w-[30rem]" data-intro data-hero-stage>
     <div class="relative" style={`aspect-ratio:${STAGE.width}/${STAGE.height}`}>
+      <!-- The drawn box: the first paint, and the fallback when 3D is not used. -->
+      <div class="absolute inset-0" data-hero-flat>
       <!-- Behind the bites: shadow, open lid, inside of the box. -->
       <svg
         class="absolute inset-0 size-full overflow-visible text-wine"
@@ -116,6 +118,10 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
           />
         </g>
       </svg>
+      </div>
+
+      <!-- The 3D box mounts here. It reaches above the box so bites can fall in. -->
+      <div class="hero-3d pointer-events-none absolute -inset-x-[8%] -top-[45%] -bottom-[4%]" data-hero-3d></div>
     </div>
   </div>
 
@@ -131,6 +137,10 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
     visibility: hidden;
   }
 
+  .hero-3d {
+    opacity: 0;
+  }
+
   .hero-bite {
     /* Squash against the floor of the box. */
     transform-origin: 50% 100%;
@@ -144,6 +154,8 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
   import { SplitText } from 'gsap/SplitText';
   import { curtainClear } from '../../lib/curtain-state';
   import { reducedMotion } from '../../lib/motion';
+  import type { HeroBox } from '../../lib/three/hero-box';
+  import { canUse3D } from '../../lib/three/support';
 
   gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger, SplitText);
 
@@ -151,11 +163,14 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
   const AT = { logo: 0, tagline: 0.15, bites: 0.3, ribbon: 1.45, bow: 1.9, cta: 2.15 };
   const BITE_GAP = 0.18;
   const FALL = 0.3;
+  // How long the intro waits for the 3D box before playing the drawn one (ms).
+  const WAIT_FOR_3D = 650;
 
   // Don't let a slow font hold the intro back.
   const fontsReady = (): Promise<unknown> =>
     Promise.race([document.fonts.ready, new Promise((resolve) => setTimeout(resolve, 400))]);
 
+  // Logo, tagline and button: the same whichever box is shown.
   const playIntro = (hero: HTMLElement): gsap.core.Timeline => {
     const find = (selector: string) => gsap.utils.toArray<HTMLElement>(selector, hero);
     const split = SplitText.create(find('[data-hero-tagline]'), { type: 'words,chars' });
@@ -174,11 +189,20 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
         split.chars,
         { yPercent: 80, opacity: 0, duration: 0.35, stagger: 0.018, ease: 'back.out(2)' },
         AT.tagline,
-      );
+      )
+      .from(find('[data-hero-cta]'), { scale: 0, duration: 0.3, ease: 'back.out(2.5)' }, AT.cta);
+
+    return intro;
+  };
+
+  // The drawn box's own intro, timed from when the bites start to fall.
+  const playFlatBox = (hero: HTMLElement): gsap.core.Timeline => {
+    const find = (selector: string) => gsap.utils.toArray<HTMLElement>(selector, hero);
+    const intro = gsap.timeline();
 
     // Bites tumble in one by one, squash on landing, then spring back.
     find('[data-hero-bite]').forEach((bite, index) => {
-      const start = AT.bites + index * BITE_GAP;
+      const start = index * BITE_GAP;
       const spin = index % 2 ? 200 : -200;
 
       intro
@@ -198,23 +222,48 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
       .from(
         find('[data-hero-ribbon]'),
         { drawSVG: 0, duration: 0.55, ease: 'power2.inOut' },
-        AT.ribbon,
+        AT.ribbon - AT.bites,
       )
-      .from(find('[data-hero-bow]'), { opacity: 0, duration: 0.05 }, AT.bow)
+      .from(find('[data-hero-bow]'), { opacity: 0, duration: 0.05 }, AT.bow - AT.bites)
       .from(
         find('[data-hero-bow] path, [data-hero-bow] ellipse'),
         { drawSVG: 0, duration: 0.25, stagger: 0.02 },
-        AT.bow,
+        AT.bow - AT.bites,
       )
-      .from(find('[data-hero-bow] path'), { fillOpacity: 0, duration: 0.2 }, AT.bow + 0.1)
+      .from(find('[data-hero-bow] path'), { fillOpacity: 0, duration: 0.2 }, AT.bow - AT.bites + 0.1)
       .from(
         find('[data-hero-bow]'),
         { scale: 0.5, svgOrigin: '180 183', duration: 0.35, ease: 'back.out(3)' },
-        AT.bow,
-      )
-      .from(find('[data-hero-cta]'), { scale: 0, duration: 0.3, ease: 'back.out(2.5)' }, AT.cta);
+        AT.bow - AT.bites,
+      );
 
     return intro;
+  };
+
+  // Fetches the 3D kit and mounts the box. Resolves to null if that fails.
+  const load3D = async (hero: HTMLElement): Promise<HeroBox | null> => {
+    const flat = hero.querySelector<HTMLElement>('[data-hero-flat]');
+    const deep = hero.querySelector<HTMLElement>('[data-hero-3d]');
+    const handle = hero.querySelector<HTMLElement>('[data-hero-stage]');
+    if (!flat || !deep || !handle) return null;
+
+    try {
+      const { mountHeroBox } = await import('../../lib/three/hero-box');
+      if (!hero.isConnected) return null;
+      const box: HeroBox = mountHeroBox(deep, {
+        handle,
+        // Too slow here: back to the drawn box.
+        onFallback: () => {
+          box.dispose();
+          gsap.set(flat, { opacity: 1 });
+          gsap.set(deep, { opacity: 0 });
+        },
+      });
+      document.addEventListener('astro:before-swap', () => box.dispose(), { once: true });
+      return box;
+    } catch {
+      return null;
+    }
   };
 
   document.addEventListener('astro:page-load', async () => {
@@ -230,11 +279,41 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
       scrollTrigger: { trigger: hero, start: 0, end: 'bottom top', scrub: true },
     });
 
+    // The 3D box loads while the curtain clears; the drawn one is the fallback.
+    const loading = canUse3D() ? load3D(hero) : null;
+    const flat = hero.querySelector<HTMLElement>('[data-hero-flat]');
+    const deep = hero.querySelector<HTMLElement>('[data-hero-3d]');
+
     await Promise.all([curtainClear(), fontsReady()]);
     if (!hero.isConnected) return;
 
+    if (loading) gsap.set(flat, { opacity: 0 });
     hero.dataset.ready = '';
-    const intro = playIntro(hero);
-    document.addEventListener('astro:before-swap', () => intro.kill(), { once: true });
+    const playing = [playIntro(hero)];
+    document.addEventListener('astro:before-swap', () => playing.forEach((intro) => intro.kill()), { once: true });
+
+    const waited = new Promise<null>((resolve) => setTimeout(() => resolve(null), WAIT_FOR_3D));
+    const box = loading && (await Promise.race([loading, waited]));
+    if (!hero.isConnected) return;
+
+    if (box) {
+      gsap.set(deep, { opacity: 1 });
+      void box.playIntro();
+      return;
+    }
+
+    // Not ready in time (or not used): the drawn box plays, and the 3D one
+    // takes over quietly once both it and the intro are done.
+    gsap.set(flat, { opacity: 1 });
+    const flatIntro = playFlatBox(hero);
+    playing.push(flatIntro);
+    const late = await loading;
+    if (!late) return;
+    // A finished timeline never resolves, so only wait for one still playing.
+    if (flatIntro.progress() < 1) await flatIntro;
+    if (!hero.isConnected) return;
+    late.showFinished();
+    gsap.to(flat, { opacity: 0, duration: 0.4 });
+    gsap.to(deep, { opacity: 1, duration: 0.4 });
   });
 </script>

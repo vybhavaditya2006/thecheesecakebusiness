@@ -15,6 +15,7 @@ import {
 } from '../../lib/order-store';
 import CrumbMonster from '../monster/CrumbMonster';
 import { Bite, BowPaths } from './parts';
+import { useBox3D } from './useBox3D';
 
 const BOX = pricing.box.bites;
 
@@ -70,6 +71,8 @@ export default function BoxBuilder() {
   const [lidShut, setLidShut] = useState(false);
   const [flyers, setFlyers] = useState<Flyer[]>([]);
   const slots = useRef<(HTMLDivElement | null)[]>([]);
+  const stage = useRef<HTMLDivElement>(null);
+  const mount3D = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const nextKey = useRef(0);
 
@@ -79,6 +82,12 @@ export default function BoxBuilder() {
   const boxNumber = closing ? packedCount - 1 : packedCount;
   const visiblePacked = closing ? packed.slice(0, -1) : packed;
   const { toNextBox } = priceBreakdown(bites.length);
+
+  // The 3D box, when this device can run it; the drawn box otherwise.
+  const three = useBox3D(stage, mount3D, shown, lidShut, !singles);
+  const flat = three ? 'opacity-0' : '';
+  // The top of the box's front wall, in percent of the stage's height.
+  const rim = three?.rim ?? 56;
 
   // A bite has landed: add it, and close the box if that was the fifth.
   const land = (id: FlavourId): void => {
@@ -103,7 +112,8 @@ export default function BoxBuilder() {
     if (slotIndex >= BOX) return;
 
     const slot = slots.current[slotIndex];
-    if (reduceMotion || !slot) return land(id);
+    // In 3D the bite drops into the box by itself; nothing flies across the page.
+    if (reduceMotion || three || !slot) return land(id);
 
     const from = centre(event.currentTarget);
     const to = centre(slot);
@@ -163,8 +173,11 @@ export default function BoxBuilder() {
       ) : (
         <>
           {/* The box: lid and inside behind, bites in the slots, front on top. */}
-          <div className="relative mx-auto w-full max-w-[19rem] text-wine sm:mt-6 sm:max-w-[26rem]" style={{ aspectRatio: `${STAGE.width}/${STAGE.height}` }}>
-            <svg className="absolute inset-0 size-full overflow-visible" {...svgProps}>
+          <div ref={stage} className="relative mx-auto w-full max-w-[19rem] text-wine sm:mt-6 sm:max-w-[26rem]" style={{ aspectRatio: `${STAGE.width}/${STAGE.height}` }}>
+            {/* The 3D box mounts here. It reaches above the box so bites can fall in. */}
+            <div ref={mount3D} className="pointer-events-none absolute -inset-x-[5%] -top-[40%] -bottom-[4%]" />
+
+            <svg className={`absolute inset-0 size-full overflow-visible ${flat}`} {...svgProps}>
               <ellipse cx="180" cy="231" rx="158" ry="7" fill="currentColor" stroke="none" opacity="0.1" />
               <motion.path
                 d="M34 82L48 26H312L326 82Z"
@@ -186,9 +199,9 @@ export default function BoxBuilder() {
                     slots.current[slot] = element;
                   }}
                   className="absolute aspect-square"
-                  style={slotStyle(slot)}
+                  style={three?.slots[slot] ?? slotStyle(slot)}
                 >
-                  <span className="absolute inset-[8%] rounded-full border border-dashed border-wine/40" aria-hidden="true" />
+                  <span className={`absolute inset-[8%] rounded-full border border-dashed border-wine/40 ${flat}`} aria-hidden="true" />
                   <AnimatePresence initial={false}>
                     {flavour && (
                       <motion.button
@@ -211,7 +224,7 @@ export default function BoxBuilder() {
                         exit={lidShut ? { opacity: 0 } : { y: '-90%', scale: 0, rotate: 120 }}
                         transition={{ type: 'spring', stiffness: 520, damping: 13 }}
                       >
-                        <Bite flavour={flavour} className="size-full text-[clamp(0.5rem,2.4vw,0.72rem)]" />
+                        <Bite flavour={flavour} className={`size-full text-[clamp(0.5rem,2.4vw,0.72rem)] ${flat}`} />
                       </motion.button>
                     )}
                   </AnimatePresence>
@@ -219,24 +232,26 @@ export default function BoxBuilder() {
               );
             })}
 
-            {/* An empty box has the Crumb Monster waiting in it. */}
-            <AnimatePresence initial={false}>
-              {shown.length === 0 && flyers.length === 0 && !lidShut && (
-                <motion.div
-                  key="monster"
-                  className="pointer-events-none absolute top-[17%] left-[33%] w-[34%]"
-                  style={{ originY: 1 }}
-                  initial={{ y: '60%', opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: '60%', opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-                >
-                  <CrumbMonster mood="hungry" className="block w-full" />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* An empty box has the Crumb Monster waiting in it, cut off at the
+                front wall so it looks out from inside. */}
+            <div className="pointer-events-none absolute inset-x-0 -top-1/2 overflow-hidden" style={{ bottom: `${100 - rim}%` }}>
+              <AnimatePresence initial={false}>
+                {shown.length === 0 && flyers.length === 0 && !lidShut && (
+                  <motion.div
+                    key="monster"
+                    className="absolute -bottom-[7%] left-[33%] w-[34%]"
+                    initial={{ y: '60%', opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: '60%', opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+                  >
+                    <CrumbMonster mood="hungry" className="block w-full" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-            <svg className="pointer-events-none absolute inset-0 size-full overflow-visible" {...svgProps}>
+            <svg className={`pointer-events-none absolute inset-0 size-full overflow-visible ${flat}`} {...svgProps}>
               <clipPath id="order-box-front">
                 <path d="M14 140H346L338 228H22Z" />
               </clipPath>
