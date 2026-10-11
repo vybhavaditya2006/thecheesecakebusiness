@@ -123,44 +123,43 @@ const ringPlace =
   };
 
 const toppings: Record<FlavourId, () => Group> = {
-  // Blueberry compote: a glossy pool with whole berries in it.
+  // Blueberry: a glossy pool of compote, off to one side, as on the real bite.
   blueberry: () => {
     const group = new Group();
-    const pool = mesh(
-      once('pool', () => new SphereGeometry(0.33, 48, 16).scale(1, 0.14, 1)),
-      matte('compote', () => ({ map: compoteTexture(), roughness: 0.22 })),
-    );
-    pool.position.y = TOP + 0.01;
-    const berry = matte('berry', () => ({ color: '#2f2152', roughness: 0.35 }));
-    const berries = scatter(6, ringPlace(0.3, 0.07), () =>
-      mesh(
-        once('berry', () => new SphereGeometry(0.075, 24, 16)),
-        berry,
-      ),
-    );
-    group.add(pool, berries);
+    const compote = matte('compote', () => ({ map: compoteTexture(), roughness: 0.22 }));
+    const pool = (x: number, z: number, wide: number, long: number): Mesh => {
+      const one = mesh(
+        once('pool', () => new SphereGeometry(0.3, 48, 16).scale(1, 0.14, 1)),
+        compote,
+      );
+      one.position.set(x, TOP + 0.008, z);
+      one.scale.set(wide, 1, long);
+      return one;
+    };
+    group.add(pool(-0.03, -0.06, 0.62, 0.8), pool(0.07, 0.12, 0.8, 0.62));
+    group.rotation.y = 0.5;
     return group;
   },
 
-  // KitKat: a broken-off chunk of two fingers, wafer showing at the break.
+  // KitKat: two pieces of a finger laid side by side, wafer showing at the break.
   kitkat: () => {
     const group = new Group();
     const chocolate = matte('chocolate', () => ({
-      color: '#5a3320',
-      roughness: 0.45,
+      color: '#74442a',
+      roughness: 0.4,
     }));
     const cut = matte('wafer', () => ({ map: waferTexture(), roughness: 0.9 }));
     for (const side of [-1, 1]) {
-      const finger = new Mesh(
-        once('finger', () => new BoxGeometry(0.16, 0.13, 0.36)),
+      const piece = new Mesh(
+        once('finger', () => new BoxGeometry(0.22, 0.1, 0.3)),
         // Box faces: right, left, top, bottom, front, back. The break is at the front.
         [chocolate, chocolate, chocolate, chocolate, cut, chocolate],
       );
-      finger.position.set(side * 0.085, TOP + 0.07, 0);
-      group.add(finger);
+      piece.position.set(side * 0.125, TOP + 0.05, side * 0.02);
+      piece.rotation.y = side * -0.14;
+      group.add(piece);
     }
-    group.rotation.y = 0.5;
-    group.rotation.z = 0.06;
+    group.rotation.y = 0.35;
     return group;
   },
 
@@ -201,21 +200,21 @@ const toppings: Record<FlavourId, () => Group> = {
     return group;
   },
 
-  // Biscoff: a caramel-brown biscuit crumb.
+  // Biscoff: biscuit crumbled over the bare top, in pieces of every size.
   biscoff: () => {
-    const group = new Group();
     const crumb = matte('biscoff-crumb', () => ({
       map: crumbTexture('#b9753b', ['#8a5226', '#dba367', '#6e3f1c'], 71),
     }));
-    const biscuit = matte('biscuit', () => ({ color: '#a9652e' }));
-    const pieces = scatter(6, ringPlace(0.3, 0.035), () =>
+    return scatter(16, (piece, index) => {
+      ringPlace(0.36, 0.02)(piece, index);
+      const size = 0.7 + ((index * 0.61) % 1) * 1.1;
+      piece.scale.set(size, size * 0.6, size);
+    }, () =>
       mesh(
         once('chunk', () => new DodecahedronGeometry(0.07, 0)),
-        biscuit,
+        crumb,
       ),
     );
-    group.add(disc('crumb', 0.36, crumb), pieces);
-    return group;
   },
 };
 

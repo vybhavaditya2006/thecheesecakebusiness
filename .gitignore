@@ -15,3 +15,6 @@ npm-debug.log*
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# raw photos, before they are cropped into src/assets
+photodump/
