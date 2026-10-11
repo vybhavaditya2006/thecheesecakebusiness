@@ -1,20 +1,15 @@
 ---
-import Button from '../components/ui/Button.astro';
+import Hero from '../components/home/Hero.astro';
 import Divider from '../components/ui/Divider.astro';
 import SectionTitle from '../components/ui/SectionTitle.astro';
 import { brand } from '../content/brand';
 import { flavours } from '../content/flavours';
 import { formatPrice, pricing } from '../content/pricing';
-import { orderPath } from '../content/site';
 import Base from '../layouts/Base.astro';
 ---
 
 <Base>
-  <section class="px-5 py-16 text-center">
-    <SectionTitle as="h1" label={brand.campaign} title={brand.tagline} />
-    <p class="mx-auto mt-6 max-w-md">{brand.pitch}</p>
-    <Button href={orderPath} class="mt-8">Order now</Button>
-  </section>
+  <Hero />
 
   <Divider class="mx-auto max-w-md px-5" />
 

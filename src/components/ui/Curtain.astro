@@ -14,6 +14,7 @@ import Bow from './Bow.astro';
 </div>
 
 <script>
+  import { setCurtainBusy } from '../../lib/curtain-state';
   import { reducedMotion } from '../../lib/motion';
 
   const EASE = 'cubic-bezier(0.76, 0, 0.24, 1)';
@@ -21,7 +22,11 @@ import Bow from './Bow.astro';
   const OFF_RIGHT = 'translateX(101%)';
   const ON = 'translateX(0)';
 
+  // How far into the reveal scenes behind the curtain may start.
+  const CLEAR_AFTER_MS = 400;
+
   let covered = false;
+  let markClear = (): void => {};
 
   const curtain = (): HTMLElement | null => document.getElementById('page-curtain');
 
@@ -50,8 +55,9 @@ import Bow from './Bow.astro';
 
   const reveal = async (): Promise<void> => {
     const element = curtain();
-    if (!element || !covered) return;
+    if (!element || !covered) return markClear();
     covered = false;
+    setTimeout(markClear, reducedMotion() ? 0 : CLEAR_AFTER_MS);
 
     const animation = reducedMotion()
       ? element.animate(
@@ -74,6 +80,7 @@ import Bow from './Bow.astro';
   // Hold the swap until the curtain covers the screen and the page is fetched.
   document.addEventListener('astro:before-preparation', (event) => {
     const load = event.loader;
+    setCurtainBusy(new Promise((resolve) => (markClear = resolve)));
     event.loader = async () => {
       await Promise.all([cover(), load()]);
     };

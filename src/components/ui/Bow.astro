@@ -1,10 +1,12 @@
 ---
 // The poster's bow, redrawn as a line sketch. Inherits the text colour.
+// Extra attributes (x, y, width, height) allow nesting inside another SVG.
 interface Props {
   class?: string;
+  [attribute: string]: unknown;
 }
 
-const { class: className } = Astro.props;
+const { class: className, ...rest } = Astro.props;
 ---
 
 <svg
@@ -16,6 +18,7 @@ const { class: className } = Astro.props;
   stroke-linecap="round"
   stroke-linejoin="round"
   aria-hidden="true"
+  {...rest}
 >
   <path d="M54 26C40 6 14 4 10 18C7 30 34 38 54 29Z"></path>
   <path d="M66 26C80 6 106 4 110 18C113 30 86 38 66 29Z"></path>

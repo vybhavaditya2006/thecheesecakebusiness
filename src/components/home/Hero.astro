@@ -1,0 +1,241 @@
+---
+// Scene 1: the box drop. The markup below is the finished state; the script
+// plays the intro on top of it, and reduced motion simply shows it as is.
+import { brand } from '../../content/brand';
+import { flavours } from '../../content/flavours';
+import { orderPath } from '../../content/site';
+import { wordmarkPaths } from '../../lib/wordmark-paths';
+import Bow from '../ui/Bow.astro';
+import Button from '../ui/Button.astro';
+
+const wordmark = wordmarkPaths(brand.name);
+
+// Box artwork units (both SVG layers and the bites share this 360 × 250 grid).
+const STAGE = { width: 360, height: 250 };
+const BITE = { size: 58, pitch: 62, centreY: 112 };
+
+const bites = flavours.map((flavour, index) => {
+  const centreX = STAGE.width / 2 + (index - (flavours.length - 1) / 2) * BITE.pitch;
+  return {
+    ...flavour,
+    left: ((centreX - BITE.size / 2) / STAGE.width) * 100,
+    top: ((BITE.centreY - BITE.size / 2) / STAGE.height) * 100,
+  };
+});
+const biteWidth = (BITE.size / STAGE.width) * 100;
+const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
+---
+
+<section
+  class="hero flex min-h-[calc(100svh-6.25rem)] flex-col items-center justify-center gap-5 overflow-x-clip px-5 py-8 text-center"
+  data-hero
+>
+  <p class="label-caps opacity-80" data-intro data-hero-label>{brand.campaign}</p>
+
+  <svg
+    class="w-[min(62vw,21rem)] overflow-visible text-wine"
+    viewBox={wordmark.viewBox}
+    role="img"
+    aria-label={brand.name}
+    fill="currentColor"
+    stroke="currentColor"
+    stroke-width="0.6"
+    data-intro
+    data-hero-logo
+  >
+    {wordmark.letters.map((letter) => <path d={letter} />)}
+  </svg>
+
+  <h1 class="text-3xl leading-tight italic sm:text-4xl" data-intro data-hero-tagline>
+    {brand.tagline}
+  </h1>
+
+  <div class="@container w-full max-w-[30rem]" data-intro data-hero-stage>
+    <div class="relative" style={`aspect-ratio:${STAGE.width}/${STAGE.height}`}>
+      <!-- Behind the bites: shadow, open lid, inside of the box. -->
+      <svg
+        class="absolute inset-0 size-full overflow-visible text-wine"
+        viewBox={viewBox}
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <ellipse cx="180" cy="231" rx="158" ry="7" fill="currentColor" stroke="none" opacity="0.1"
+        ></ellipse>
+        <path d="M34 82L48 26H312L326 82Z" class="fill-cream"></path>
+        <path d="M60 37H300M66 46H294" stroke-width="1" opacity="0.45"></path>
+        <path d="M34 82H326L346 140H14Z" fill="currentColor" fill-opacity="0.1"></path>
+      </svg>
+
+      <ul aria-label="A box of five bites">
+        {
+          bites.map((bite) => (
+            <li
+              class="hero-bite absolute aspect-square"
+              style={`left:${bite.left}%;top:${bite.top}%;width:${biteWidth}%`}
+              data-hero-bite
+            >
+              {/* Placeholder until real photos exist: cream circle + name. */}
+              <span class="flex size-full items-center justify-center rounded-full border-[1.5px] border-wine bg-cream p-[6%] font-display text-[3.1cqw] leading-none font-semibold">
+                {bite.name}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <!-- In front of the bites: box front, ribbon and bow. -->
+      <svg
+        class="absolute inset-0 size-full overflow-visible text-wine"
+        viewBox={viewBox}
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <clipPath id="hero-box-front">
+          <path d="M14 140H346L338 228H22Z"></path>
+        </clipPath>
+        <path d="M14 140H346L338 228H22Z" class="fill-cream"></path>
+        <path d="M30 151l12-6M30 159l20-10M312 216l16-9M320 220l10-6" stroke-width="1" opacity="0.45"
+        ></path>
+        <g clip-path="url(#hero-box-front)">
+          <path d="M10 183H350" stroke-width="24" stroke-linecap="butt" data-hero-ribbon></path>
+        </g>
+        <g data-hero-bow>
+          <Bow
+            x="125"
+            y="158"
+            width="110"
+            height="57"
+            class="[&_ellipse]:fill-wine [&_path]:fill-cream"
+          />
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div data-intro data-hero-cta>
+    <Button href={orderPath}>Order now</Button>
+  </div>
+</section>
+
+<style is:global>
+  /* Hidden only while the intro is waiting to start. The "motion" class is
+     set in Base.astro when motion is allowed; reduced motion never hides. */
+  .motion [data-hero]:not([data-ready]) [data-intro] {
+    visibility: hidden;
+  }
+
+  .hero-bite {
+    /* Squash against the floor of the box. */
+    transform-origin: 50% 100%;
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { SplitText } from 'gsap/SplitText';
+  import { curtainClear } from '../../lib/curtain-state';
+  import { reducedMotion } from '../../lib/motion';
+
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger, SplitText);
+
+  // Intro beats, in seconds. The last one must end by 2.5.
+  const AT = { logo: 0, tagline: 0.15, bites: 0.3, ribbon: 1.45, bow: 1.9, cta: 2.15 };
+  const BITE_GAP = 0.18;
+  const FALL = 0.3;
+
+  // Don't let a slow font hold the intro back.
+  const fontsReady = (): Promise<unknown> =>
+    Promise.race([document.fonts.ready, new Promise((resolve) => setTimeout(resolve, 400))]);
+
+  const playIntro = (hero: HTMLElement): gsap.core.Timeline => {
+    const find = (selector: string) => gsap.utils.toArray<HTMLElement>(selector, hero);
+    const split = SplitText.create(find('[data-hero-tagline]'), { type: 'words,chars' });
+    const intro = gsap.timeline({ onComplete: () => split.revert() });
+
+    intro
+      .from(find('[data-hero-label], [data-hero-stage]'), { opacity: 0, duration: 0.3 }, 0)
+      // Logo: each letter's outline draws, then fills in.
+      .from(
+        find('[data-hero-logo] path'),
+        { drawSVG: 0, duration: 0.45, stagger: 0.04, ease: 'power1.inOut' },
+        AT.logo,
+      )
+      .from(find('[data-hero-logo] path'), { fillOpacity: 0, duration: 0.3 }, AT.logo + 0.4)
+      .from(
+        split.chars,
+        { yPercent: 80, opacity: 0, duration: 0.35, stagger: 0.018, ease: 'back.out(2)' },
+        AT.tagline,
+      );
+
+    // Bites tumble in one by one, squash on landing, then spring back.
+    find('[data-hero-bite]').forEach((bite, index) => {
+      const start = AT.bites + index * BITE_GAP;
+      const spin = index % 2 ? 200 : -200;
+
+      intro
+        .from(bite, { yPercent: -650, duration: FALL, ease: 'power2.in' }, start)
+        .from(bite, { opacity: 0, duration: 0.1 }, start)
+        .from(bite.firstElementChild, { rotation: spin, duration: FALL, ease: 'none' }, start)
+        .to(bite, { scaleX: 1.22, scaleY: 0.7, duration: 0.07, ease: 'power1.out' }, start + FALL)
+        .to(
+          bite,
+          { scaleX: 1, scaleY: 1, duration: 0.4, ease: 'elastic.out(1.1, 0.45)' },
+          start + FALL + 0.07,
+        );
+    });
+
+    intro
+      // The ribbon wraps the box, then ties into the bow.
+      .from(
+        find('[data-hero-ribbon]'),
+        { drawSVG: 0, duration: 0.55, ease: 'power2.inOut' },
+        AT.ribbon,
+      )
+      .from(find('[data-hero-bow]'), { opacity: 0, duration: 0.05 }, AT.bow)
+      .from(
+        find('[data-hero-bow] path, [data-hero-bow] ellipse'),
+        { drawSVG: 0, duration: 0.25, stagger: 0.02 },
+        AT.bow,
+      )
+      .from(find('[data-hero-bow] path'), { fillOpacity: 0, duration: 0.2 }, AT.bow + 0.1)
+      .from(
+        find('[data-hero-bow]'),
+        { scale: 0.5, svgOrigin: '180 183', duration: 0.35, ease: 'back.out(3)' },
+        AT.bow,
+      )
+      .from(find('[data-hero-cta]'), { scale: 0, duration: 0.3, ease: 'back.out(2.5)' }, AT.cta);
+
+    return intro;
+  };
+
+  document.addEventListener('astro:page-load', async () => {
+    const hero = document.querySelector<HTMLElement>('[data-hero]');
+    if (!hero || reducedMotion()) return;
+
+    // On scroll the box lifts and tilts. The intro animates the box's
+    // children, so the two never fight over the same element.
+    gsap.to(hero.querySelector('[data-hero-stage] > div'), {
+      yPercent: -14,
+      rotation: -4,
+      ease: 'none',
+      scrollTrigger: { trigger: hero, start: 0, end: 'bottom top', scrub: true },
+    });
+
+    await Promise.all([curtainClear(), fontsReady()]);
+    if (!hero.isConnected) return;
+
+    hero.dataset.ready = '';
+    const intro = playIntro(hero);
+    document.addEventListener('astro:before-swap', () => intro.kill(), { once: true });
+  });
+</script>
