@@ -244,14 +244,12 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
   const load3D = async (hero: HTMLElement): Promise<HeroBox | null> => {
     const flat = hero.querySelector<HTMLElement>('[data-hero-flat]');
     const deep = hero.querySelector<HTMLElement>('[data-hero-3d]');
-    const handle = hero.querySelector<HTMLElement>('[data-hero-stage]');
-    if (!flat || !deep || !handle) return null;
+    if (!flat || !deep) return null;
 
     try {
       const { mountHeroBox } = await import('../../lib/three/hero-box');
       if (!hero.isConnected) return null;
       const box: HeroBox = mountHeroBox(deep, {
-        handle,
         // Too slow here: back to the drawn box.
         onFallback: () => {
           box.dispose();

@@ -1,53 +1,51 @@
-// The Crumb Monster's drawing: a round cream cheesecake bite with golden crust
-// fur, a wide wine mouth, two tiny arms and big eyes. One drawing, shared by
-// the Astro and React wrappers; rig.ts moves the parts named in data-m.
+// The Crumb Monster's drawing: a round cheesecake bite as a quiet line
+// character, in the same etched wine line as the other illustrations. A
+// scalloped crust edge, two dot eyes, a small mouth and two thin arms. One
+// drawing, shared by the Astro and React wrappers; rig.ts moves the parts
+// named in data-m.
 
 export type Mood = 'hungry' | 'chomp' | 'chew' | 'thumbs-up' | 'peek' | 'lick';
 
 export const monsterViewBox = '-14 -20 228 230';
 
 // Where the middle of the mouth sits, as a fraction of the drawing's size.
-export const monsterMouth = { x: 0.5, y: 0.7 } as const;
+export const monsterMouth = { x: 0.5, y: 0.68 } as const;
 
 const CENTRE = { x: 100, y: 108 };
-const TUFTS = 26;
+const SCALLOPS = 30;
 
-// The crust: a ring of fur tufts around the body.
-const fur =
-  Array.from({ length: TUFTS * 2 }, (_, index) => {
-    const angle = (index / (TUFTS * 2)) * Math.PI * 2;
-    const radius = index % 2 ? 76 : 88;
-    const x = (CENTRE.x + Math.cos(angle) * radius).toFixed(1);
-    const y = (CENTRE.y + Math.sin(angle) * radius).toFixed(1);
-    return `${index ? 'L' : 'M'}${x} ${y}`;
-  }).join('') + 'Z';
+// The crust: a fine scalloped edge, like the rim of a paper cup from above.
+const crustEdge = (() => {
+  const point = (index: number, radius: number): string => {
+    const angle = (index / SCALLOPS) * Math.PI * 2;
+    return `${(CENTRE.x + Math.cos(angle) * radius).toFixed(1)} ${(CENTRE.y + Math.sin(angle) * radius).toFixed(1)}`;
+  };
+  let path = `M${point(0, 80)}`;
+  for (let index = 0; index < SCALLOPS; index += 1) {
+    path += `Q${point(index + 0.5, 90)} ${point(index + 1, 80)}`;
+  }
+  return `${path}Z`;
+})();
 
-const ink = 'var(--color-wine-deep)';
-const crust = 'var(--color-crust)';
-
-// An arm is a crust-coloured stroke with an ink outline behind it.
-const limb = (d: string): string =>
-  `<path d="${d}" stroke="${ink}" stroke-width="9"/><path d="${d}" stroke="${crust}" stroke-width="5"/>`;
+const ink = 'var(--color-wine)';
+const crust = 'color-mix(in srgb, var(--color-crust) 30%, var(--color-cream))';
 
 const eye = (x: number): string => `
-  <g data-m="eye">
-    <circle cx="${x}" cy="82" r="17" fill="#fff"/>
-    <circle data-m="pupil" cx="${x}" cy="84" r="7.5" fill="${ink}" stroke="none"/>
-  </g>`;
+  <g data-m="eye"><circle data-m="pupil" cx="${x}" cy="94" r="4.5" fill="${ink}" stroke="none"/></g>`;
 
 export const monsterMarkup = `
-<g data-m="root" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-  <g data-m="arm-l">${limb('M26 120c-14-4-22 2-24 14')}</g>
-  <g data-m="arm-r">${limb('M174 120c14-4 22 2 24 14')}</g>
+<g data-m="root" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path data-m="arm-l" d="M22 122c-10 2-16 8-18 17"/>
+  <path data-m="arm-r" d="M178 122c10 2 16 8 18 17"/>
   <g data-m="thumb">
-    ${limb('M172 120c14-2 22-10 24-24')}
-    ${limb('M196 86v-14')}
-    <circle cx="196" cy="94" r="9" fill="${crust}" stroke-width="2"/>
+    <path d="M178 122c10-3 16-11 18-22"/>
+    <path d="M196 100v-13"/>
   </g>
-  <path d="${fur}" fill="${crust}" stroke-width="2"/>
-  <circle cx="${CENTRE.x}" cy="${CENTRE.y}" r="70" fill="var(--color-cream)"/>
-  <path d="M44 138c6 12 14 20 24 26M52 132c5 10 11 16 19 21M150 150c-5 6-11 10-17 13" stroke-width="1.5" opacity="0.5"/>
-  ${eye(76)}${eye(124)}
-  <path data-m="mouth" d="M56 132c8 38 80 38 88 0c-28 8-60 8-88 0z" fill="var(--color-wine)"/>
-  <path data-m="tongue" d="M86 142c-2 26 30 26 28 0z" fill="color-mix(in srgb, var(--color-wine) 55%, var(--color-cream))" stroke-width="2"/>
+  <path d="${crustEdge}" fill="${crust}" stroke-width="1.5"/>
+  <circle cx="${CENTRE.x}" cy="${CENTRE.y}" r="72" fill="var(--color-cream)"/>
+  <path d="M42 132c5 13 13 23 24 30M50 128c5 11 11 19 20 25M58 126c4 8 9 14 15 19" stroke-width="1" opacity="0.45"/>
+  <path d="M128 52c10 4 18 10 24 18M134 46c9 4 16 9 22 16" stroke-width="1" opacity="0.3"/>
+  ${eye(80)}${eye(120)}
+  <path data-m="mouth" d="M82 131c6 12 30 12 36 0c-6-12-30-12-36 0z" fill="${ink}"/>
+  <path data-m="tongue" d="M94 133c-1 14 13 14 12 0z" fill="color-mix(in srgb, var(--color-wine) 45%, var(--color-cream))" stroke-width="1.5"/>
 </g>`;

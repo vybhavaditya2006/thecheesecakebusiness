@@ -65,9 +65,9 @@ export function createStage(container: HTMLElement, { onFallback }: Options): St
 
   // Warm key light from the front right, a soft fill from the sky and the
   // cream page below, and a little light from behind to lift the edges.
-  const key = new DirectionalLight('#fff3e2', 1.7);
+  const key = new DirectionalLight('#fffaf3', 1.8);
   key.position.set(3.5, 7, 5);
-  const fill = new HemisphereLight('#ffffff', '#f0dccb', 1.9);
+  const fill = new HemisphereLight('#ffffff', '#f3e7da', 1.7);
   const rim = new DirectionalLight('#ffe2c4', 0.6);
   rim.position.set(-4, 3, -5);
   scene.add(key, fill, rim);

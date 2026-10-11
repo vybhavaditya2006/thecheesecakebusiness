@@ -4,11 +4,8 @@ import {
   CircleGeometry,
   CylinderGeometry,
   DoubleSide,
-  EdgesGeometry,
   ExtrudeGeometry,
   Group,
-  LineBasicMaterial,
-  LineSegments,
   type Material,
   Mesh,
   MeshBasicMaterial,
@@ -16,8 +13,6 @@ import {
   Path,
   PlaneGeometry,
   Shape,
-  SphereGeometry,
-  TorusGeometry,
   Vector3,
 } from 'three';
 import { BITE } from './bite';
@@ -25,7 +20,7 @@ import type { Stage } from './renderer';
 import { boxPaperTexture, shadowTexture } from './textures';
 
 // The box of five: a cream box with a cavity for each bite, a lid hinged
-// along the back, and a wine ribbon tied in a bow on the front. It stands on
+// along the back, and a slim wine ribbon with a flat bow on the front. It stands on
 // the origin, centred, with the front towards +z.
 
 export interface Box3D {
@@ -48,7 +43,6 @@ export const BOX = {
 
 const LID = { height: 0.42, openAngle: -1.9 };
 const WINE = '#7a1f2b';
-const CREAM = '#f3e7da';
 
 export function createBox(): Box3D {
   const group = new Group();
@@ -58,18 +52,12 @@ export function createBox(): Box3D {
   const inside = new MeshStandardMaterial({ color: '#e6d4c2', roughness: 1, side: BackSide });
   const floor = new MeshStandardMaterial({ color: '#dcc7b3', roughness: 1 });
   const none = new MeshBasicMaterial({ visible: false });
-  const ink = new LineBasicMaterial({ color: WINE, transparent: true, opacity: 0.55 });
 
   // Box faces are ordered right, left, top, bottom, front, back.
   const sides = (top: Material, bottom: Material, wall: Material): Material[] => [wall, wall, top, bottom, wall, wall];
-  // The etched look: a fine wine line along every edge.
-  const outlined = (mesh: Mesh): Mesh => {
-    mesh.add(new LineSegments(new EdgesGeometry(mesh.geometry), ink));
-    return mesh;
-  };
 
   // The walls and base; the top is the plate with the cavities cut in it.
-  const body = outlined(new Mesh(new BoxGeometry(width, height, depth), sides(none, paper, paper)));
+  const body = new Mesh(new BoxGeometry(width, height, depth), sides(none, paper, paper));
   body.position.y = height / 2;
 
   const outline = new Shape();
@@ -105,39 +93,42 @@ export function createBox(): Box3D {
   const hinge = new Group();
   hinge.position.set(0, height, -depth / 2);
   const lidPaper = new MeshStandardMaterial({ map: paper.map, roughness: 0.92, side: DoubleSide });
-  const lid = outlined(
-    new Mesh(new BoxGeometry(width + 0.06, LID.height, depth + 0.06), sides(lidPaper, none, lidPaper)),
-  );
+  const lid = new Mesh(new BoxGeometry(width + 0.06, LID.height, depth + 0.06), sides(lidPaper, none, lidPaper));
   lid.position.set(0, LID.height / 2, depth / 2);
   hinge.add(lid);
 
   // The ribbon: a band around the walls. The bow sits on the front of it.
-  const satin = new MeshStandardMaterial({ color: WINE, roughness: 0.45 });
-  const ribbon = new Mesh(new BoxGeometry(width + 0.03, 0.24, depth + 0.03), sides(none, none, satin));
+  const satin = new MeshStandardMaterial({ color: WINE, roughness: 0.4 });
+  const ribbon = new Mesh(new BoxGeometry(width + 0.02, 0.15, depth + 0.02), sides(none, none, satin));
   ribbon.position.y = height * 0.45;
 
+  // The bow: flat satin, cut as two loops, two tails and a knot.
   const bow = new Group();
-  bow.position.set(0, height * 0.45, depth / 2 + 0.07);
-  // The bow group is scaled by the tying animation, so its size is set one level in.
-  const bowShape = new Group();
-  bowShape.scale.setScalar(1.5);
-  bow.add(bowShape);
-  const bowPaper = new MeshStandardMaterial({ color: CREAM, roughness: 0.6 });
-  const loop = new TorusGeometry(0.17, 0.055, 10, 22);
-  const tail = new BoxGeometry(0.1, 0.36, 0.02);
+  bow.position.set(0, ribbon.position.y, depth / 2 + 0.03);
+  const flat = { depth: 0.02, bevelEnabled: true, bevelSize: 0.006, bevelThickness: 0.006, bevelSegments: 1 };
   for (const side of [-1, 1]) {
-    const bowLoop = new Mesh(loop, bowPaper);
-    bowLoop.scale.set(1.3, 0.8, 0.5);
-    bowLoop.position.x = side * 0.25;
-    bowLoop.rotation.z = side * -0.25;
-    const bowTail = new Mesh(tail, bowPaper);
-    bowTail.position.set(side * 0.13, -0.22, -0.01);
-    bowTail.rotation.z = side * 0.5;
-    bowShape.add(bowLoop, bowTail);
+    const loop = new Shape();
+    loop.moveTo(0, 0);
+    loop.bezierCurveTo(side * 0.12, 0.2, side * 0.5, 0.22, side * 0.5, 0.02);
+    loop.bezierCurveTo(side * 0.5, -0.16, side * 0.14, -0.1, 0, 0);
+    // The opening of the loop: the same outline, smaller, about its middle.
+    const opening = new Path().setFromPoints(
+      loop.getPoints(16).map((point) => point.clone().sub({ x: side * 0.3, y: 0.03 }).multiplyScalar(0.55).add({ x: side * 0.3, y: 0.03 })),
+    );
+    loop.holes.push(opening);
+
+    const tail = new Shape();
+    tail.moveTo(0, 0);
+    tail.lineTo(side * 0.1, -0.02);
+    tail.lineTo(side * 0.3, -0.4);
+    tail.lineTo(side * 0.21, -0.33);
+    tail.lineTo(side * 0.15, -0.43);
+    tail.closePath();
+
+    bow.add(new Mesh(new ExtrudeGeometry(loop, flat), satin), new Mesh(new ExtrudeGeometry(tail, flat), satin));
   }
-  const knot = new Mesh(new SphereGeometry(0.085, 16, 12), satin);
-  knot.scale.set(1, 1.1, 0.7);
-  bowShape.add(knot);
+  const knot = new Mesh(new ExtrudeGeometry(new Shape().absellipse(0, 0, 0.055, 0.075, 0, Math.PI * 2), { ...flat, depth: 0.04 }), satin);
+  bow.add(knot);
 
   // The contact shadow: a soft blob on the table under the box.
   const shadow = new Mesh(

@@ -119,12 +119,12 @@ export function mountBuilderBox(container: HTMLElement, { onLayout, onFallback }
     }
     const timeline = gsap.timeline({ delay: wait });
     if (shut) {
-      // Swing shut with a little bounce, then tie the bow.
-      timeline.to(lid, { open: 0, duration: 0.4, ease: 'bounce.out', onUpdate: apply }).add(tieBow(stage, box));
+      // Swing shut, then tie the bow.
+      timeline.to(lid, { open: 0, duration: 0.5, ease: 'power2.inOut', onUpdate: apply }).add(tieBow(stage, box));
     } else {
       timeline
         .call(() => hide(box.ribbon, box.bow))
-        .to(lid, { open: 1, duration: 0.35, ease: 'back.out(1.4)', onUpdate: apply });
+        .to(lid, { open: 1, duration: 0.45, ease: 'power2.inOut', onUpdate: apply });
     }
     moving.set(lid, timeline);
   };

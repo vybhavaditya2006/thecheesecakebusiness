@@ -25,8 +25,8 @@ Removed in Round 2, do not bring back: Web3Forms, the details form, the address 
 ## Look and feel
 Look: the launch poster. Cream #F3E7DA background, wine #7A1F2B type and accents, deep wine #4A0F18 footer. Flavour accents only inside flavour scenes: blueberry #5B3FA0, kitkat #D2232A, oreo #111111, coffee #6F4E37, biscoff #C8813C. Script logo SVG, Cormorant Garamond headings, letter-spaced DM Sans caps labels, DM Sans body. Etched sketch illustrations.
 Graphics: illustrations get two-tone fills and soft shadows; light paper texture on cream; warm glow and contact shadows under products; tilted stickers; icons for practical info.
-Feel: fun, catchy, premium. Award-site level animation (reference: https://tubikstudio.com/works/planetono), but every animation features the cheesecake or makes ordering more fun.
-Mascot: the Crumb Monster, an original round cream cheesecake-bite creature with golden crust fur, a wide wine-red mouth, tiny arms and big eyes. Etched style with colour fills. An SVG rig animated with GSAP.
+Feel: premium first, then fun and catchy. Clean and professional; nothing that reads as made for children (no googly eyes, rubbery bounces or toy-like shapes). Award-site level animation (reference: https://tubikstudio.com/works/planetono), but every animation features the cheesecake or makes ordering more fun.
+Mascot: the Crumb Monster, an original round cheesecake-bite character drawn as a quiet etched line figure: a scalloped crust edge, two dot eyes, a small mouth and thin arms. Clean and grown-up, never cartoonish; small, unhurried movement. An SVG rig animated with GSAP.
 Micro-interactions: bite cursor on desktop, magnetic squishy buttons, letter-wave headings, hand-drawn price strikes, scroll-reactive sale ribbon, wine curtain transition between pages, drifting crumbs.
 
 ## 3D
