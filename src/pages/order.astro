@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import { customOptions } from '../content/custom';
+import { flavours } from '../content/flavours';
+import { formatPrice, pricing } from '../content/pricing';
+import { delivery, paymentMethods } from '../content/site';
+---
+
+<Base title="Order">
+  <section class="px-5 py-16 text-center">
+    <p class="label-caps">Pack your box</p>
+    <h1 class="mt-4 text-5xl">Order</h1>
+    <p class="mt-4">
+      {pricing.box.label}: <s class="opacity-60">{formatPrice(pricing.box.regular)}</s>{' '}
+      <strong>{formatPrice(pricing.box.offer)}</strong>
+    </p>
+
+    <!-- The pack-your-box React island goes here. -->
+    <ul class="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-5">
+      {
+        flavours.map((flavour) => (
+          <li class="flex size-28 items-center justify-center rounded-full border border-wine/20 bg-cream p-3 text-center font-display text-lg">
+            {flavour.name}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="px-5 py-12">
+    <h2 class="text-center text-4xl">Custom orders</h2>
+    <ul class="mx-auto mt-6 max-w-md space-y-3">
+      {
+        customOptions.map((option) => (
+          <li>
+            <strong>{option.name}</strong>
+            {option.sizes && <span> ({option.sizes.join(' or ')})</span>}
+            <span class="block text-sm opacity-80">{option.description}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="px-5 py-12 text-center text-sm">
+    <p>{delivery.freeNote}</p>
+    <p>{delivery.paidNote}</p>
+    <p class="mt-2">Payment: {paymentMethods.join(' or ')}. {delivery.minimumOrderNote}</p>
+  </section>
+</Base>

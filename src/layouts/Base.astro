@@ -1,0 +1,57 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import { brand } from '../content/brand';
+import { delivery, pages } from '../content/site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = brand.pitch } = Astro.props;
+const pageTitle = title ? `${title} · ${brand.name}` : `${brand.name} — ${brand.tagline}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#F3E7DA" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400..700;1,400..700&family=DM+Sans:opsz,wght@9..40,400..700&display=swap"
+    />
+    <title>{pageTitle}</title>
+    <ClientRouter />
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <header class="flex items-center justify-between px-5 py-4">
+      <a href="/" class="font-display text-2xl italic">{brand.name}</a>
+      <nav class="flex gap-5">
+        {
+          pages.map((page) => (
+            <a href={page.path} class="label-caps">
+              {page.label}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <footer class="bg-wine-deep px-5 py-8 text-cream">
+      <p class="font-display text-xl italic">{brand.name}</p>
+      <p class="label-caps mt-2">{brand.descriptor}</p>
+      <p class="mt-4 text-sm opacity-80">{delivery.freeNote}</p>
+    </footer>
+  </body>
+</html>

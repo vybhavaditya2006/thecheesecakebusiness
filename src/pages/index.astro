@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import { brand } from '../content/brand';
+import { flavours } from '../content/flavours';
+import { formatPrice, pricing } from '../content/pricing';
+---
+
+<Base>
+  <section class="px-5 py-16 text-center">
+    <p class="label-caps">{brand.campaign}</p>
+    <h1 class="mt-4 text-6xl italic">{brand.name}</h1>
+    <p class="mt-3 font-display text-2xl">{brand.tagline}</p>
+    <p class="mx-auto mt-6 max-w-md">{brand.pitch}</p>
+    <a
+      href="/order"
+      class="label-caps mt-8 inline-block rounded-full bg-wine px-8 py-4 text-cream"
+    >
+      Order now
+    </a>
+  </section>
+
+  <section class="px-5 py-12">
+    <h2 class="text-center text-4xl">Flavours</h2>
+    <ul class="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-5">
+      {
+        flavours.map((flavour) => (
+          <li class="flex size-28 items-center justify-center rounded-full border border-wine/20 bg-cream p-3 text-center font-display text-lg">
+            {flavour.name}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="px-5 py-12 text-center">
+    <h2 class="text-4xl">Launch prices</h2>
+    <ul class="mt-6 space-y-2">
+      {
+        Object.values(pricing).map((price) => (
+          <li>
+            {price.label}: <s class="opacity-60">{formatPrice(price.regular)}</s>{' '}
+            <strong>{formatPrice(price.offer)}</strong>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Base>
