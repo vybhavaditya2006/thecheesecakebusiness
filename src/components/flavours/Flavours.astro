@@ -6,6 +6,7 @@
 import { customOptions } from '../../content/custom';
 import { flavours } from '../../content/flavours';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
+import { biteImage } from '../../lib/bite-images';
 import BitePhoto from '../ui/BitePhoto.astro';
 import Button from '../ui/Button.astro';
 import { paths } from '../../content/site';
@@ -103,10 +104,11 @@ const crumbs = [
                   data-ingredient
                 />
               ))}
-              <div class="absolute inset-[27%]" data-flavour-bite>
+              {/* A cut-out photo stands larger than the placeholder circle. */}
+              <div class:list={['absolute', biteImage(flavour.id) ? 'inset-[14%]' : 'inset-[27%]']} data-flavour-bite>
                 <BitePhoto
                   flavour={flavour}
-                  sizes="(min-width: 48rem) min(18vw, 27svh), min(29vw, 15svh)"
+                  sizes="(min-width: 48rem) min(28vw, 42svh), min(40vw, 16svh)"
                   class="text-[clamp(0.8rem,2.2vw,1.6rem)]"
                 />
               </div>

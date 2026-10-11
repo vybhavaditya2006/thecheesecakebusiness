@@ -89,3 +89,11 @@
 @utility label-caps {
   @apply font-sans text-xs font-medium uppercase tracking-[0.25em];
 }
+
+/* Where a cut-out bite photo meets the table: a soft patch under its base. */
+.bite-cutout-shadow {
+  position: absolute;
+  inset: auto 10% 3% 10%;
+  height: 16%;
+  background: radial-gradient(closest-side, rgb(74 15 24 / 0.3), transparent);
+}

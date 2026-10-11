@@ -1,7 +1,8 @@
 ---
-// One bite, as a round photo. Until src/assets/bites/<id>.webp exists it shows
-// the placeholder instead: a cream circle with the flavour name (or whatever
-// is passed as the slot).
+// One bite: a cut-out photo of the real thing, standing on a soft shadow.
+// Until src/assets/bites/<id>.webp exists (a photo with its background
+// removed) it shows the placeholder instead: a cream circle with the flavour
+// name, or whatever is passed as the slot.
 import { Picture } from 'astro:assets';
 import type { Flavour } from '../../content/flavours';
 import { biteImage } from '../../lib/bite-images';
@@ -24,20 +25,21 @@ const frame = 'size-full rounded-full border-[1.5px] border-wine bg-cream';
 
 {
   photo ? (
-    <span class:list={['block overflow-hidden', frame]}>
+    <span class="bite-cutout relative block size-full">
+      <span class="bite-cutout-shadow" aria-hidden="true" />
       <Picture
         src={photo}
         formats={['avif']}
         fallbackFormat="webp"
         quality={80}
-        widths={[96, 160, 240, 480]}
+        widths={[96, 160, 240, 480, 720]}
         sizes={sizes}
         alt={`${flavour.name} cheesecake bite`}
         loading={priority ? 'eager' : 'lazy'}
         fetchpriority={priority ? 'high' : undefined}
         decoding={priority ? 'sync' : 'async'}
-        class="size-full object-cover"
-        pictureAttributes={{ class: 'block size-full' }}
+        class="size-full object-contain"
+        pictureAttributes={{ class: 'relative block size-full' }}
       />
     </span>
   ) : (

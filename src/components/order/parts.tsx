@@ -7,27 +7,29 @@ import type { Flavour, FlavourId } from '../../content/flavours';
 export type BiteImages = Partial<Record<FlavourId, { avif: string; webp: string }>>;
 export const BiteImagesContext = createContext<BiteImages>({});
 
-// A round bite photo. Without a photo for the flavour it is the placeholder:
-// cream circle + flavour name, with a faint ring of the flavour's accent.
+// One bite: a cut-out photo standing on a soft shadow. Without a photo for
+// the flavour it is the placeholder: cream circle + flavour name, with a
+// faint ring of the flavour's accent.
 export function Bite({ flavour, className }: { flavour: Flavour; className?: string }) {
   const photo = useContext(BiteImagesContext)[flavour.id];
 
   if (photo) {
     return (
-      <picture
-        className={clsx('block aspect-square overflow-hidden rounded-full border-[1.5px] border-wine bg-cream', className)}
-      >
-        <source srcSet={photo.avif} type="image/avif" />
-        <img
-          src={photo.webp}
-          alt={`${flavour.name} cheesecake bite`}
-          width={192}
-          height={192}
-          loading="lazy"
-          decoding="async"
-          className="size-full object-cover"
-        />
-      </picture>
+      <span className={clsx('bite-cutout relative block aspect-square', className)}>
+        <span className="bite-cutout-shadow" aria-hidden="true" />
+        <picture className="relative block size-full">
+          <source srcSet={photo.avif} type="image/avif" />
+          <img
+            src={photo.webp}
+            alt={`${flavour.name} cheesecake bite`}
+            width={192}
+            height={192}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-contain"
+          />
+        </picture>
+      </span>
     );
   }
 
