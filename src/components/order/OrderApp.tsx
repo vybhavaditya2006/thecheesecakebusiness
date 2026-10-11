@@ -6,6 +6,7 @@ import BoxBuilder from './BoxBuilder';
 import CustomBuilder from './CustomBuilder';
 import DetailsForm from './DetailsForm';
 import OrderSummary from './OrderSummary';
+import { BiteImagesContext, type BiteImages } from './parts';
 
 type Tab = 'box' | 'custom';
 
@@ -24,7 +25,7 @@ const fromUrl = (): { tab: Tab; type: CustomOptionId } => {
   };
 };
 
-export default function OrderApp() {
+export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages }) {
   const [tab, setTab] = useState<Tab>(() => fromUrl().tab);
   const [type, setType] = useState<CustomOptionId>(() => fromUrl().type);
 
@@ -36,6 +37,7 @@ export default function OrderApp() {
 
   return (
     <MotionConfig reducedMotion="user">
+      <BiteImagesContext.Provider value={biteImages}>
       <div className="mx-auto grid max-w-6xl items-start gap-10 px-5 pb-28 lg:grid-cols-[1fr_20rem] lg:pb-16">
         <div>
           <div className="mx-auto flex w-fit rounded-full border border-wine p-1" role="tablist" aria-label="Order type">
@@ -84,6 +86,7 @@ export default function OrderApp() {
 
         <OrderSummary />
       </div>
+      </BiteImagesContext.Provider>
     </MotionConfig>
   );
 }

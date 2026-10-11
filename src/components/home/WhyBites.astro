@@ -4,6 +4,7 @@
 // Without motion the markup reads as a plain before/after, side by side.
 import { brand } from '../../content/brand';
 import { flavours } from '../../content/flavours';
+import BitePhoto from '../ui/BitePhoto.astro';
 
 const { heading, before, after, reasons } = brand.whyBites;
 
@@ -102,10 +103,9 @@ const svgProps = {
                   data-angle={bite.angle}
                   data-row={bite.row}
                 >
-                  {/* Placeholder until real photos exist: cream circle + name. */}
-                  <span class="flex size-full items-center justify-center rounded-full border-[1.5px] border-wine bg-cream p-[6%] text-center font-display text-[min(1.9vw,0.6rem)] leading-none font-semibold">
+                  <BitePhoto flavour={bite} sizes="(min-width: 48rem) 100px, 13vw" class="text-[min(1.9vw,0.6rem)]">
                     <span data-why-name>{bite.name}</span>
-                  </span>
+                  </BitePhoto>
                 </div>
               ))
             }

@@ -5,6 +5,7 @@ import { brand } from '../../content/brand';
 import { flavours } from '../../content/flavours';
 import { orderPath } from '../../content/site';
 import { wordmarkPaths } from '../../lib/wordmark-paths';
+import BitePhoto from '../ui/BitePhoto.astro';
 import Bow from '../ui/Bow.astro';
 import Button from '../ui/Button.astro';
 
@@ -78,10 +79,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
               style={`left:${bite.left}%;top:${bite.top}%;width:${biteWidth}%`}
               data-hero-bite
             >
-              {/* Placeholder until real photos exist: cream circle + name. */}
-              <span class="flex size-full items-center justify-center rounded-full border-[1.5px] border-wine bg-cream p-[6%] font-display text-[3.1cqw] leading-none font-semibold">
-                {bite.name}
-              </span>
+              <BitePhoto flavour={bite} sizes="(min-width: 30rem) 78px, 16vw" priority class="text-[3.1cqw]" />
             </li>
           ))
         }

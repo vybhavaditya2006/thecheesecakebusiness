@@ -4,6 +4,7 @@
 // a plain grid of five cards.
 import { flavours } from '../../content/flavours';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
+import BitePhoto from '../ui/BitePhoto.astro';
 import Button from '../ui/Button.astro';
 import Ingredient from './Ingredient.astro';
 
@@ -78,12 +79,12 @@ const crumbs = [
                   data-ingredient
                 />
               ))}
-              {/* Placeholder until real photos exist: cream circle + name. */}
-              <div
-                class="absolute inset-[27%] flex items-center justify-center rounded-full border-2 border-wine bg-cream p-[4%] text-center font-display text-[clamp(0.8rem,2.2vw,1.6rem)] leading-none font-semibold"
-                data-flavour-bite
-              >
-                {flavour.name}
+              <div class="absolute inset-[27%]" data-flavour-bite>
+                <BitePhoto
+                  flavour={flavour}
+                  sizes="(min-width: 48rem) min(18vw, 27svh), min(29vw, 15svh)"
+                  class="text-[clamp(0.8rem,2.2vw,1.6rem)]"
+                />
               </div>
             </div>
 

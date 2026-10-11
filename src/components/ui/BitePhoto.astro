@@ -1,0 +1,54 @@
+---
+// One bite, as a round photo. Until src/assets/bites/<id>.webp exists it shows
+// the placeholder instead: a cream circle with the flavour name (or whatever
+// is passed as the slot).
+import { Picture } from 'astro:assets';
+import type { Flavour } from '../../content/flavours';
+import { biteImage } from '../../lib/bite-images';
+
+interface Props {
+  flavour: Flavour;
+  // The rendered width, as a `sizes` attribute, so the browser picks the
+  // smallest file that is sharp enough.
+  sizes: string;
+  // Only for images in the hero: load at once instead of lazily.
+  priority?: boolean;
+  // Classes for the placeholder's text (size, weight).
+  class?: string;
+}
+
+const { flavour, sizes, priority = false, class: className } = Astro.props;
+const photo = biteImage(flavour.id);
+const frame = 'size-full rounded-full border-[1.5px] border-wine bg-cream';
+---
+
+{
+  photo ? (
+    <span class:list={['block overflow-hidden', frame]}>
+      <Picture
+        src={photo}
+        formats={['avif']}
+        fallbackFormat="webp"
+        quality={80}
+        widths={[96, 160, 240, 480]}
+        sizes={sizes}
+        alt={`${flavour.name} cheesecake bite`}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : undefined}
+        decoding={priority ? 'sync' : 'async'}
+        class="size-full object-cover"
+        pictureAttributes={{ class: 'block size-full' }}
+      />
+    </span>
+  ) : (
+    <span
+      class:list={[
+        'flex items-center justify-center p-[6%] text-center font-display leading-none font-semibold',
+        frame,
+        className,
+      ]}
+    >
+      <slot>{flavour.name}</slot>
+    </span>
+  )
+}

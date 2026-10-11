@@ -1,10 +1,26 @@
 ---
+import { getImage } from 'astro:assets';
 import OrderApp from '../components/order/OrderApp.tsx';
+import type { BiteImages } from '../components/order/parts';
+import { flavours } from '../content/flavours';
+import { biteImage } from '../lib/bite-images';
 import SectionTitle from '../components/ui/SectionTitle.astro';
 import { saleActive, formatPrice, pricing } from '../content/pricing';
 import Base from '../layouts/Base.astro';
 
 const key = saleActive ? 'offer' : 'regular';
+
+// The island is React, so Astro optimises the bite photos here and passes
+// their URLs in. Flavours without a photo are left out and show a placeholder.
+const biteImages: BiteImages = {};
+for (const flavour of flavours) {
+  const src = biteImage(flavour.id);
+  if (!src) continue;
+  const [avif, webp] = await Promise.all(
+    (['avif', 'webp'] as const).map((format) => getImage({ src, width: 192, format, quality: 80 })),
+  );
+  if (avif && webp) biteImages[flavour.id] = { avif: avif.src, webp: webp.src };
+}
 ---
 
 <Base title="Order">
@@ -18,7 +34,7 @@ const key = saleActive ? 'offer' : 'regular';
   </section>
 
   <!-- The order lives in the browser, so the builder only renders there. -->
-  <OrderApp client:only="react">
+  <OrderApp client:only="react" biteImages={biteImages}>
     <p slot="fallback" class="px-5 py-24 text-center text-sm">Setting out the box…</p>
   </OrderApp>
 </Base>

@@ -1,10 +1,36 @@
 import clsx from 'clsx';
-import type { ReactNode } from 'react';
-import type { Flavour } from '../../content/flavours';
+import { createContext, useContext, type ReactNode } from 'react';
+import type { Flavour, FlavourId } from '../../content/flavours';
 
-// Placeholder until real photos exist: cream circle + flavour name, with a
-// faint ring of the flavour's accent.
+// Bite photo URLs per flavour, optimised by Astro in order.astro and handed
+// to the island (React cannot use Astro's <Image> itself).
+export type BiteImages = Partial<Record<FlavourId, { avif: string; webp: string }>>;
+export const BiteImagesContext = createContext<BiteImages>({});
+
+// A round bite photo. Without a photo for the flavour it is the placeholder:
+// cream circle + flavour name, with a faint ring of the flavour's accent.
 export function Bite({ flavour, className }: { flavour: Flavour; className?: string }) {
+  const photo = useContext(BiteImagesContext)[flavour.id];
+
+  if (photo) {
+    return (
+      <picture
+        className={clsx('block aspect-square overflow-hidden rounded-full border-[1.5px] border-wine bg-cream', className)}
+      >
+        <source srcSet={photo.avif} type="image/avif" />
+        <img
+          src={photo.webp}
+          alt={`${flavour.name} cheesecake bite`}
+          width={192}
+          height={192}
+          loading="lazy"
+          decoding="async"
+          className="size-full object-cover"
+        />
+      </picture>
+    );
+  }
+
   return (
     <span
       className={clsx(
