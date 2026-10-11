@@ -94,13 +94,17 @@ export const ordering = {
 // Booking: the Crumb Monster eats the order, then WhatsApp opens with it.
 export const booking = {
   button: 'Book',
-  heading: 'Gone in one bite',
-  detail: `Your order is written out. Send it to ${brand.maker} on WhatsApp.`,
+  sent: `Sent to ${brand.maker}!`,
+  // Shown if WhatsApp has not opened after a couple of seconds.
+  stuck: 'WhatsApp did not open?',
+  copy: 'Copy my order',
+  copied: 'Copied',
   open: 'Open WhatsApp',
   back: 'Back to my box',
+  hungry: 'Feed me a flavour',
 } as const;
 
 export const notFound = {
-  heading: 'Someone ate this page',
+  heading: 'This page got eaten',
   detail: 'There is nothing here but crumbs.',
 } as const;

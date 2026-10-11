@@ -87,3 +87,27 @@
 @utility label-caps {
   @apply font-sans text-xs font-medium uppercase tracking-[0.25em];
 }
+
+/* The bite the Crumb Monster takes out of the order card: a scalloped chunk
+   cut from one edge. The card sets --bite-x, --bite-y, --bite-r and --bite-in. */
+.bitten {
+  --bite-dent: calc(var(--bite-r) * 0.42);
+  mask-image:
+    radial-gradient(circle at var(--bite-x) var(--bite-y), transparent var(--bite-r), #000 calc(var(--bite-r) + 0.5px)),
+    radial-gradient(
+      circle at calc(var(--bite-x) - var(--bite-r) * 0.62) calc(var(--bite-y) + var(--bite-in) * var(--bite-r) * 0.72),
+      transparent var(--bite-dent),
+      #000 calc(var(--bite-dent) + 0.5px)
+    ),
+    radial-gradient(
+      circle at var(--bite-x) calc(var(--bite-y) + var(--bite-in) * var(--bite-r) * 0.98),
+      transparent var(--bite-dent),
+      #000 calc(var(--bite-dent) + 0.5px)
+    ),
+    radial-gradient(
+      circle at calc(var(--bite-x) + var(--bite-r) * 0.62) calc(var(--bite-y) + var(--bite-in) * var(--bite-r) * 0.72),
+      transparent var(--bite-dent),
+      #000 calc(var(--bite-dent) + 0.5px)
+    );
+  mask-composite: intersect;
+}
