@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { customOptions, isCustomOptionId, type CustomOptionId } from '../../content/custom';
 import BoxBuilder from './BoxBuilder';
 import CustomBuilder from './CustomBuilder';
-import DetailsForm from './DetailsForm';
 import OrderSummary from './OrderSummary';
 import { BiteImagesContext, type BiteImages } from './parts';
 
@@ -91,9 +90,6 @@ export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages 
               {tab === 'box' ? <BoxBuilder /> : <CustomBuilder type={type} onType={setType} />}
             </motion.div>
           </AnimatePresence>
-
-          {/* Shared by both tabs, so switching never loses what was typed. */}
-          <DetailsForm />
         </div>
 
         <OrderSummary />

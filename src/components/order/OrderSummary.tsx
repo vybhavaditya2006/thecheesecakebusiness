@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import { customPriceNote } from '../../content/custom';
 import { formatPrice, priceBreakdown, pricing, saleActive } from '../../content/pricing';
 import { delivery } from '../../content/info';
+import { booking } from '../../content/site';
 import { $bites, $custom, clearOrder, countByFlavour, removeCustom } from '../../lib/order-store';
+import { orderLink } from '../../lib/whatsapp';
+import BookingScreen from './BookingScreen';
 
 const plural = (count: number, word: string, many = `${word}s`): string =>
   `${count} ${count === 1 ? word : many}`;
@@ -25,7 +28,7 @@ function Total({ value }: { value: number }) {
 }
 
 // The itemised order, shared by the desktop panel and the mobile sheet.
-function Lines() {
+function Lines({ onBook }: { onBook: () => void }) {
   const bites = useStore($bites);
   const custom = useStore($custom);
   const { boxes, singles, total, regularTotal } = priceBreakdown(bites.length);
@@ -99,6 +102,14 @@ function Lines() {
       <p className="text-xs opacity-80">
         {delivery.short} of {delivery.area}.
       </p>
+      <motion.button
+        type="button"
+        className="label-caps block w-full rounded-full bg-wine px-8 py-4 text-cream"
+        whileTap={{ scaleX: 1.05, scaleY: 0.9 }}
+        onClick={onBook}
+      >
+        {booking.button}
+      </motion.button>
       <button type="button" className="label-caps underline underline-offset-4" onClick={clearOrder}>
         Clear order
       </button>
@@ -110,6 +121,13 @@ export default function OrderSummary() {
   const bites = useStore($bites);
   const custom = useStore($custom);
   const [open, setOpen] = useState(false);
+  // The WhatsApp link for the order as it stood when "Book" was pressed.
+  const [booked, setBooked] = useState<string | null>(null);
+  const empty = !bites.length && !custom.length;
+  const book = (): void => {
+    setOpen(false);
+    setBooked(orderLink(bites, custom));
+  };
   const { total } = priceBreakdown(bites.length);
   const count = [bites.length && plural(bites.length, 'piece'), custom.length && `${custom.length} custom`]
     .filter(Boolean)
@@ -121,7 +139,7 @@ export default function OrderSummary() {
       <aside className="sticky top-32 hidden rounded-3xl border border-wine/25 p-6 lg:block" aria-label="Your order">
         <h2 className="text-3xl">Your order</h2>
         <div className="mt-4">
-          <Lines />
+          <Lines onBook={book} />
         </div>
       </aside>
 
@@ -140,7 +158,7 @@ export default function OrderSummary() {
             >
               <h2 className="text-2xl">Your order</h2>
               <div className="mt-3">
-                <Lines />
+                <Lines onBook={book} />
               </div>
             </motion.div>
           )}
@@ -154,17 +172,31 @@ export default function OrderSummary() {
               {custom.length > 0 && <span className="text-sm font-normal"> + custom</span>}
             </span>
           </p>
-          <button
-            type="button"
-            className="label-caps shrink-0 rounded-full bg-cream px-4 py-3 whitespace-nowrap text-wine"
-            aria-expanded={open}
-            aria-controls="order-sheet"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? 'Close' : 'Review order'}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              className="label-caps rounded-full border border-cream px-4 py-3 whitespace-nowrap"
+              aria-expanded={open}
+              aria-controls="order-sheet"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? 'Close' : 'Review'}
+            </button>
+            <button
+              type="button"
+              className="label-caps rounded-full bg-cream px-5 py-3 whitespace-nowrap text-wine disabled:opacity-40"
+              disabled={empty}
+              onClick={book}
+            >
+              {booking.button}
+            </button>
+          </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {booked && <BookingScreen key="booking" link={booked} onClose={() => setBooked(null)} />}
+      </AnimatePresence>
     </>
   );
 }

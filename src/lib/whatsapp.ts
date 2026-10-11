@@ -3,7 +3,6 @@ import { customPriceNote } from '../content/custom';
 import type { FlavourId } from '../content/flavours';
 import { formatPrice, priceBreakdown, pricing } from '../content/pricing';
 import { contact } from '../content/info';
-import type { OrderDetails } from './order-details';
 import { countByFlavour, type CustomRequest } from './order-store';
 
 const plural = (count: number, word: string, many = `${word}s`): string =>
@@ -41,36 +40,14 @@ export const orderLines = (bites: readonly FlavourId[], custom: readonly CustomR
   return lines;
 };
 
-// The full WhatsApp message: the order, then whatever details were filled in.
-export const orderMessage = (
-  bites: readonly FlavourId[],
-  custom: readonly CustomRequest[],
-  details?: Partial<OrderDetails>,
-  deliveryCheck?: string,
-): string => {
-  const about = [
-    details?.name?.trim() && `Name: ${details.name.trim()}`,
-    details?.phone?.trim() && `Phone: ${details.phone.trim()}`,
-    details?.address?.trim() && `Address: ${details.address.trim()}`,
-    details?.date && `Delivery date: ${details.date}`,
-    deliveryCheck && `Delivery: ${deliveryCheck}`,
-    details?.notes?.trim() && `Notes: ${details.notes.trim()}`,
-  ].filter((line): line is string => Boolean(line));
-
-  return [
-    `Hi ${brand.name}! I'd like to order:`,
-    ...orderLines(bites, custom),
-    ...(about.length ? ['', ...about] : []),
-  ].join('\n');
-};
+// The WhatsApp message: just the order. Name, address and day are sorted out
+// in the chat.
+export const orderMessage = (bites: readonly FlavourId[], custom: readonly CustomRequest[]): string =>
+  [`Hi ${brand.name}! I'd like to order:`, ...orderLines(bites, custom)].join('\n');
 
 // With no number configured, WhatsApp asks the customer to pick a chat.
 export const whatsappLink = (message: string): string =>
   `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(message)}`;
 
-export const orderLink = (
-  bites: readonly FlavourId[],
-  custom: readonly CustomRequest[],
-  details?: Partial<OrderDetails>,
-  deliveryCheck?: string,
-): string => whatsappLink(orderMessage(bites, custom, details, deliveryCheck));
+export const orderLink = (bites: readonly FlavourId[], custom: readonly CustomRequest[]): string =>
+  whatsappLink(orderMessage(bites, custom));
