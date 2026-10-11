@@ -1,16 +1,23 @@
 ---
-// Scene 3: flavour worlds. One panel per flavour: horizontal and pinned on
-// desktop, stacked snap panels on phones. Without motion the same markup is
-// a plain grid of five cards.
+// Flavour worlds. One panel per flavour, then a last one pointing to custom
+// orders: horizontal and pinned on desktop, stacked snap panels on phones.
+// Without motion the same markup is a plain grid of cards. A small switcher
+// bite stays in a corner and turns to show whichever flavour is in view.
+import { customOptions } from '../../content/custom';
 import { flavours } from '../../content/flavours';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
 import BitePhoto from '../ui/BitePhoto.astro';
 import Button from '../ui/Button.astro';
+import { paths } from '../../content/site';
 import Ingredient from './Ingredient.astro';
+import LayerStack from './LayerStack.astro';
 
 const price = pricing.single;
 const count = flavours.length;
 const pad = (value: number): string => String(value).padStart(2, '0');
+const first = flavours[0]!;
+// The custom options by name, as one line.
+const customLine = customOptions.map((option) => option.name).join(' · ');
 
 // Where the ingredient pieces settle around the bite, as % of the visual box.
 const PIECES = 7;
@@ -43,7 +50,7 @@ const crumbs = [
 
 <section
   class="flavours relative"
-  style={`--flavours-count:${count}`}
+  style={`--flavours-count:${count + 1}`}
   aria-labelledby="flavours-heading"
   data-flavours
 >
@@ -62,13 +69,31 @@ const crumbs = [
     </div>
   </div>
 
+  <!-- The switcher bite: tap for the next flavour, drag to spin it. -->
+  <button
+    type="button"
+    class="flavour-switch"
+    style={`--accent:${first.accent}`}
+    aria-label={`Next flavour: ${flavours[1]?.name}`}
+    data-flavour-switch
+  >
+    <span class="flavour-switch-flat" data-switch-flat>{first.name}</span>
+    <span class="flavour-switch-3d" data-switch-3d></span>
+  </button>
+
   <div class="flavours-pin">
     <h1 id="flavours-heading" class="flavours-heading">Flavours</h1>
 
     <ul class="flavours-track" data-flavours-track>
       {
         flavours.map((flavour, index) => (
-          <li class="flavour-panel flavour-tint" style={`--accent:${flavour.accent}`} data-flavour-panel>
+          <li
+            class="flavour-panel flavour-tint"
+            style={`--accent:${flavour.accent}`}
+            data-flavour-panel
+            data-flavour-id={flavour.id}
+            data-flavour-name={flavour.name}
+          >
             <div class="flavour-visual relative aspect-square shrink-0" data-flavour-visual>
               {pieces(index).map((piece) => (
                 <Ingredient
@@ -93,15 +118,8 @@ const crumbs = [
               </p>
               <h3 class="flavour-name leading-[0.9]">{flavour.name}</h3>
               <p class="max-w-sm">{flavour.note}</p>
-              <dl class="flavour-layers">
-                {flavour.layers.map((layer) => (
-                  <div class="flex gap-2">
-                    <dt class="label-caps w-14 shrink-0 text-[0.6rem] tracking-[0.15em]">{layer.part}</dt>
-                    <dd class="text-xs whitespace-nowrap">{layer.what}</dd>
-                  </div>
-                ))}
-              </dl>
-              <p class="flex items-baseline gap-3">
+              <LayerStack flavour={flavour} />
+              <p class="flex items-center gap-3">
                 {saleActive && (
                   <span class="relative text-lg">
                     <span class="sr-only">Was </span>
@@ -121,10 +139,13 @@ const crumbs = [
                     </svg>
                   </span>
                 )}
-                <span class="font-display text-4xl font-semibold">
-                  {formatPrice(saleActive ? price.offer : price.regular)}
+                {/* The price tag. */}
+                <span class="flavour-tag">
+                  <span class="font-display text-3xl leading-none font-semibold">
+                    {formatPrice(saleActive ? price.offer : price.regular)}
+                  </span>
+                  <span class="label-caps text-[0.65rem]">a piece</span>
                 </span>
-                <span class="label-caps">a piece</span>
               </p>
               <Button class="mt-1" data-add-to-box={flavour.id}>
                 Add to box<span class="sr-only">: {flavour.name}</span>
@@ -133,6 +154,14 @@ const crumbs = [
           </li>
         ))
       }
+      <li class="flavour-panel flavour-else" data-flavour-panel>
+        <div class="flavour-text flex flex-col gap-3">
+          <p class="label-caps">{'Custom & gifts'}</p>
+          <h3 class="flavour-name leading-[0.9]">Something else?</h3>
+          <p class="max-w-sm">{customLine}</p>
+          <Button class="mt-1" href={paths.custom}>{'See Custom & Gifts'}</Button>
+        </div>
+      </li>
     </ul>
   </div>
 </section>
@@ -185,8 +214,84 @@ const crumbs = [
     font-size: 2.25rem;
   }
 
-  .flavour-layers {
-    text-align: left;
+  .flavour-else {
+    justify-content: center;
+    border: 1.5px dashed rgb(122 31 43 / 0.4);
+    background: color-mix(in srgb, var(--color-blush) 45%, var(--color-cream));
+  }
+
+  .flavour-else .flavour-text {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* The price, as a tag on a string. */
+  .flavour-tag {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem 0.4rem 1.5rem;
+    border-radius: 0.5rem 999px 999px 0.5rem;
+    background: var(--color-gold);
+    background-image: radial-gradient(circle at 0.75rem 50%, var(--color-cream) 0.2rem, transparent 0.24rem);
+    color: var(--color-wine-deep);
+    transform: rotate(-2deg);
+  }
+
+  /* The switcher bite: only in the animated version. */
+  .flavour-switch {
+    display: none;
+  }
+
+  .motion .flavour-switch {
+    display: block;
+    position: fixed;
+    top: calc(var(--flavours-top) + 0.75rem);
+    right: 1rem;
+    z-index: 30;
+    width: 4.75rem;
+    height: 4.75rem;
+    border: 1.5px solid var(--color-wine);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent, var(--color-blush)) 30%, var(--color-cream));
+    cursor: grab;
+    opacity: 0;
+    pointer-events: none;
+    touch-action: pan-y;
+    transition: opacity 0.3s;
+    perspective: 20rem;
+  }
+
+  .motion [data-inside] .flavour-switch {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .flavour-switch-flat {
+    display: flex;
+    position: absolute;
+    inset: 10%;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--color-wine);
+    border-radius: 50%;
+    background: var(--color-cream);
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+  }
+
+  /* Once the 3D bite is in, the flat one steps aside. */
+  .flavour-switch[data-three] .flavour-switch-flat {
+    opacity: 0;
+  }
+
+  .flavour-switch-3d {
+    position: absolute;
+    inset: -8%;
+    pointer-events: none;
   }
 
   /* ---- Animated version: stacked screen-high panels (phones). */
@@ -242,7 +347,12 @@ const crumbs = [
   }
 
   .motion .flavour-visual {
-    width: min(62vw, 27svh);
+    width: min(56vw, 21svh);
+  }
+
+  .motion .flavour-else {
+    border: 0;
+    background: none;
   }
 
   .motion .flavour-name {
@@ -289,6 +399,22 @@ const crumbs = [
 
     .motion .flavour-text {
       align-items: flex-start;
+    }
+
+    .motion .flavour-else .flavour-text {
+      align-items: center;
+    }
+
+    .motion .flavour-switch {
+      top: auto;
+      right: 1.5rem;
+      bottom: 1.5rem;
+      width: 7rem;
+      height: 7rem;
+    }
+
+    .flavour-switch-flat {
+      font-size: 1rem;
     }
 
     .motion .flavour-name {
@@ -342,6 +468,8 @@ const crumbs = [
   import { canAffordEffects, finePointer, reducedMotion } from '../../lib/motion';
   import { addBite, isFlavourId } from '../../lib/order-store';
   import { getLenis } from '../../lib/smooth-scroll';
+  import { canUse3D } from '../../lib/three/support';
+  import type { SwitcherBite } from '../../lib/three/switcher-bite';
 
   gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
@@ -397,9 +525,111 @@ const crumbs = [
     let active = -1; // flavour currently shown, -1 for none
     let arrival: gsap.core.Timeline | undefined;
 
+    // ---- The switcher bite.
+    const button = scene.querySelector<HTMLElement>('[data-flavour-switch]')!;
+    const flatFace = button.querySelector<HTMLElement>('[data-switch-flat]')!;
+    const flavourOf = (panel: number) => {
+      const id = panels[panel]?.dataset.flavourId;
+      return isFlavourId(id) ? id : null;
+    };
+    // Scrolls the page to a panel, in either layout.
+    const goTo = (target: number): void => {
+      const box = scene.getBoundingClientRect();
+      const from = box.top + window.scrollY - (parseFloat(getComputedStyle(backdrop).top) || 0);
+      const to = box.bottom + window.scrollY - window.innerHeight;
+      const y = from + (target / steps) * (to - from);
+
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(y, { duration: 0.6 });
+      else window.scrollTo(0, y);
+    };
+    // The colour, name and label that go with the panel now showing.
+    const dress = (panel: number): void => {
+      const now = panels[panel];
+      const next = panels[(panel + 1) % panels.length];
+      button.style.setProperty('--accent', now?.style.getPropertyValue('--accent') || 'var(--color-blush)');
+      flatFace.textContent = now?.dataset.flavourName ?? '';
+      const nextName = next?.dataset.flavourName;
+      button.setAttribute('aria-label', nextName ? `Next flavour: ${nextName}` : 'More than flavours');
+    };
+
+    // The flat bite: what turns until (or unless) the 3D one is ready.
+    let flatFlip: gsap.core.Timeline | undefined;
+    const flatBite: SwitcherBite = {
+      flip: (_flavour, onEdge) => {
+        flatFlip?.kill();
+        flatFlip = gsap
+          .timeline()
+          .to(flatFace, { rotationY: 90, duration: 0.22, ease: 'power2.in' })
+          .call(onEdge)
+          .fromTo(flatFace, { rotationY: -90 }, { rotationY: 0, duration: 0.22, ease: 'power2.out' });
+      },
+      spinBy: (radians) => gsap.set(flatFace, { rotationY: `+=${(radians * 180) / Math.PI}` }),
+      release: () => gsap.to(flatFace, { rotationY: 0, duration: 0.6, ease: 'power3.out' }),
+      dispose: () => flatFlip?.kill(),
+    };
+    let switcher = flatBite;
+    let deepBite: SwitcherBite | undefined;
+    let onSwitcher = 0; // the panel the switcher is dressed as
+    let gone = false;
+
+    if (canUse3D()) {
+      import('../../lib/three/switcher-bite')
+        .then(({ mountSwitcherBite }) => {
+          if (gone) return;
+          const mount = button.querySelector<HTMLElement>('[data-switch-3d]')!;
+          deepBite = mountSwitcherBite(mount, flavourOf(onSwitcher), {
+            // Too slow here: back to the flat bite.
+            onFallback: () => {
+              switcher = flatBite;
+              button.removeAttribute('data-three');
+            },
+          });
+          switcher = deepBite;
+          button.dataset.three = '';
+        })
+        .catch(() => {});
+    }
+
+    // A tap goes to the next panel; a sideways drag spins the bite instead.
+    let grab: { x: number; moved: boolean } | null = null;
+    let dragged = false;
+    const onDown = (event: PointerEvent): void => {
+      grab = { x: event.clientX, moved: false };
+      button.setPointerCapture(event.pointerId);
+    };
+    const onMove = (event: PointerEvent): void => {
+      if (!grab) return;
+      const dx = event.clientX - grab.x;
+      if (!grab.moved && Math.abs(dx) < 6) return;
+      grab = { x: event.clientX, moved: true };
+      switcher.spinBy(dx * 0.03);
+    };
+    const onUp = (): void => {
+      if (grab?.moved) {
+        dragged = true;
+        switcher.release();
+      }
+      grab = null;
+    };
+    const onTap = (): void => {
+      if (dragged) {
+        dragged = false;
+        return;
+      }
+      goTo((index + 1) % panels.length);
+    };
+    button.addEventListener('pointerdown', onDown);
+    button.addEventListener('pointermove', onMove);
+    button.addEventListener('pointerup', onUp);
+    button.addEventListener('pointercancel', onUp);
+    button.addEventListener('click', onTap);
+
     // The bite spins in and scales up; ingredients burst out and settle.
     const arrive = (panel: HTMLElement): void => {
-      const visual = panel.querySelector<HTMLElement>('[data-flavour-visual]')!;
+      const visual = panel.querySelector<HTMLElement>('[data-flavour-visual]');
+      // The last panel has no bite to bring in.
+      if (!visual) return;
       const centreX = visual.clientWidth / 2;
       const centreY = visual.clientHeight / 2;
 
@@ -447,6 +677,12 @@ const crumbs = [
       active = next;
       const panel = panels[next];
       if (panel) arrive(panel);
+
+      // The switcher makes its half-turn and comes round as this flavour.
+      if (panel && next !== onSwitcher) {
+        onSwitcher = next;
+        switcher.flip(flavourOf(next), () => dress(next));
+      }
     };
     const sync = (): void => show(inside ? index : -1);
 
@@ -507,18 +743,19 @@ const crumbs = [
       const target = panel ? panels.indexOf(panel) : -1;
       if (target < 0 || target === index || !window.matchMedia('(min-width: 48rem)').matches) return;
 
-      const box = scene.getBoundingClientRect();
-      const from = box.top + window.scrollY - (parseFloat(getComputedStyle(backdrop).top) || 0);
-      const to = box.bottom + window.scrollY - window.innerHeight;
-      const y = from + (target / steps) * (to - from);
-
-      const lenis = getLenis();
-      if (lenis) lenis.scrollTo(y, { duration: 0.6 });
-      else window.scrollTo(0, y);
+      goTo(target);
     };
     scene.addEventListener('focusin', reveal);
 
     return () => {
+      gone = true;
+      button.removeEventListener('pointerdown', onDown);
+      button.removeEventListener('pointermove', onMove);
+      button.removeEventListener('pointerup', onUp);
+      button.removeEventListener('pointercancel', onUp);
+      button.removeEventListener('click', onTap);
+      flatBite.dispose();
+      deepBite?.dispose();
       scene.removeEventListener('focusin', reveal);
       media.revert();
       presence.kill();

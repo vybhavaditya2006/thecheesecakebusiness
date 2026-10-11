@@ -32,6 +32,8 @@ export interface Bite3D {
   group: Group;
   flavour: FlavourId;
   setFlavour: (flavour: FlavourId) => void;
+  // A plain bite has no topping on it.
+  setPlain: (plain: boolean) => void;
 }
 
 export const BITE = { radius: 0.5, height: 0.56 } as const;
@@ -249,9 +251,14 @@ export function createBite(flavour: FlavourId): Bite3D {
     setFlavour: (next) => {
       if (next === bite.flavour) return;
       group.remove(topping);
+      const shown = topping.visible;
       topping = toppings[next]();
+      topping.visible = shown;
       group.add(topping);
       bite.flavour = next;
+    },
+    setPlain: (plain) => {
+      topping.visible = !plain;
     },
   };
   return bite;

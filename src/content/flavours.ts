@@ -24,7 +24,7 @@ const unconfirmed = 'To be confirmed';
 const layersToConfirm: readonly Layer[] = [
   { part: 'Topping', what: unconfirmed },
   { part: 'Filling', what: unconfirmed },
-  { part: 'Base', what: unconfirmed },
+  { part: 'Crust', what: unconfirmed },
 ];
 
 export const flavours: readonly Flavour[] = [
