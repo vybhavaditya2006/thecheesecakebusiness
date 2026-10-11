@@ -1,0 +1,517 @@
+---
+// Scene 3: flavour worlds. One panel per flavour: horizontal and pinned on
+// desktop, stacked snap panels on phones. Without motion the same markup is
+// a plain grid of five cards.
+import { flavours } from '../../content/flavours';
+import { formatPrice, pricing, saleActive } from '../../content/pricing';
+import Button from '../ui/Button.astro';
+import Ingredient from './Ingredient.astro';
+
+const price = pricing.single;
+const count = flavours.length;
+const pad = (value: number): string => String(value).padStart(2, '0');
+
+// Where the ingredient pieces settle around the bite, as % of the visual box.
+const PIECES = 7;
+const pieces = (flavourIndex: number) =>
+  Array.from({ length: PIECES }, (_, piece) => {
+    const angle = ((piece * 360) / PIECES + flavourIndex * 17 - 80) * (Math.PI / 180);
+    const radius = 39 + (piece % 3) * 4;
+    const size = 11 + (piece % 2) * 4;
+    return {
+      size,
+      left: 50 + radius * Math.cos(angle) - size / 2,
+      top: 50 + radius * Math.sin(angle) - size / 2,
+      turn: (piece * 53 + flavourIndex * 31) % 360,
+    };
+  });
+
+// Background crumbs: position (%), size (px), drift (px) and duration (s).
+const crumbs = [
+  [8, 18, 7, 40, 60, 26],
+  [22, 72, 5, -30, 50, 31],
+  [37, 34, 9, 50, -40, 22],
+  [51, 84, 6, -45, -35, 28],
+  [63, 12, 8, 35, 55, 34],
+  [74, 58, 5, -55, 30, 24],
+  [86, 28, 7, 30, -50, 30],
+  [93, 78, 9, -35, -45, 27],
+  [45, 55, 4, 60, 40, 36],
+];
+---
+
+<section
+  id="flavours"
+  class="flavours relative"
+  style={`--flavours-count:${count}`}
+  aria-labelledby="flavours-heading"
+  data-flavours
+>
+  <!-- Motion only: flavour colour washes and drifting crumbs, held behind the panels. -->
+  <div class="flavours-backdrop" aria-hidden="true">
+    {flavours.map((flavour) => <div class="flavour-tint absolute inset-0 opacity-0" style={`--accent:${flavour.accent}`} data-flavour-wash />)}
+    {
+      crumbs.map(([left, top, size, dx, dy, seconds]) => (
+        <span
+          class="flavours-crumb"
+          style={`left:${left}%;top:${top}%;width:${size}px;height:${size}px;--dx:${dx}px;--dy:${dy}px;--drift:${seconds}s`}
+        />
+      ))
+    }
+  </div>
+
+  <div class="flavours-pin">
+    <h2 id="flavours-heading" class="flavours-heading">Flavours</h2>
+
+    <ul class="flavours-track" data-flavours-track>
+      {
+        flavours.map((flavour, index) => (
+          <li class="flavour-panel flavour-tint" style={`--accent:${flavour.accent}`} data-flavour-panel>
+            <div class="flavour-visual relative aspect-square shrink-0" data-flavour-visual>
+              {pieces(index).map((piece) => (
+                <Ingredient
+                  kind={flavour.id}
+                  class="absolute"
+                  style={`left:${piece.left}%;top:${piece.top}%;width:${piece.size}%;rotate:${piece.turn}deg`}
+                  data-ingredient
+                />
+              ))}
+              {/* Placeholder until real photos exist: cream circle + name. */}
+              <div
+                class="absolute inset-[27%] flex items-center justify-center rounded-full border-2 border-wine bg-cream p-[4%] text-center font-display text-[clamp(0.8rem,2.2vw,1.6rem)] leading-none font-semibold"
+                data-flavour-bite
+              >
+                {flavour.name}
+              </div>
+            </div>
+
+            <div class="flavour-text flex flex-col gap-3">
+              <p class="label-caps opacity-70">
+                {pad(index + 1)} / {pad(count)}
+              </p>
+              <h3 class="flavour-name leading-[0.9]">{flavour.name}</h3>
+              <p class="max-w-sm">{flavour.note}</p>
+              <p class="flex items-baseline gap-3">
+                {saleActive && (
+                  <span class="relative text-lg opacity-70">
+                    <span class="sr-only">Was </span>
+                    {formatPrice(price.regular)}
+                    {/* Hand-drawn strike through the old price. */}
+                    <svg
+                      class="absolute -inset-x-1 top-1/2 h-3 w-[calc(100%+0.5rem)] -translate-y-1/2 overflow-visible"
+                      viewBox="0 0 100 20"
+                      preserveAspectRatio="none"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M2 13C20 3 32 17 52 9S84 4 98 11" vector-effect="non-scaling-stroke" data-flavour-strike />
+                    </svg>
+                  </span>
+                )}
+                <span class="font-display text-4xl font-semibold">
+                  {formatPrice(saleActive ? price.offer : price.regular)}
+                </span>
+                <span class="label-caps opacity-70">per bite</span>
+              </p>
+              <Button class="mt-1" data-add-to-box={flavour.id}>
+                Add to box<span class="sr-only">: {flavour.name}</span>
+              </Button>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style is:global>
+  /* ---- Calm version (no "motion" class on <html>): a grid of five cards. */
+  .flavour-tint {
+    background: color-mix(in srgb, var(--accent) 20%, var(--color-cream));
+  }
+
+  .flavours-backdrop,
+  [data-ingredient] {
+    display: none;
+  }
+
+  .flavours-heading {
+    padding: 4rem 1.25rem 2rem;
+    font-size: 2.25rem;
+    text-align: center;
+  }
+
+  .flavours-track {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1rem;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding: 0 1.25rem 4rem;
+  }
+
+  .flavour-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    text-align: center;
+  }
+
+  .flavour-visual {
+    width: 11rem;
+  }
+
+  .flavour-text {
+    align-items: center;
+  }
+
+  .flavour-name {
+    font-size: 2.25rem;
+  }
+
+  /* ---- Animated version: stacked screen-high panels (phones). */
+  .motion [data-flavours] {
+    --flavours-top: 6.25rem;
+    --flavours-height: calc(100svh - var(--flavours-top));
+    height: calc(var(--flavours-height) * var(--flavours-count));
+  }
+
+  .motion .flavours-backdrop {
+    display: block;
+    position: sticky;
+    top: var(--flavours-top);
+    height: var(--flavours-height);
+    margin-bottom: calc(-1 * var(--flavours-height));
+    overflow: clip;
+  }
+
+  .motion .flavours-pin {
+    position: relative;
+  }
+
+  .motion .flavours-heading {
+    position: absolute;
+    top: 1rem;
+    left: 1.25rem;
+    z-index: 1;
+    padding: 0;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  .motion .flavours-track {
+    display: block;
+    max-width: none;
+    padding: 0;
+  }
+
+  .motion .flavour-panel {
+    justify-content: center;
+    height: var(--flavours-height);
+    padding: 2.5rem 1.25rem 1rem;
+    border-radius: 0;
+    background: none;
+  }
+
+  .motion .flavour-visual {
+    width: min(62vw, 33svh);
+  }
+
+  .motion .flavour-name {
+    font-size: 3rem;
+  }
+
+  .motion [data-ingredient] {
+    display: block;
+  }
+
+  /* Hidden until the flavour arrives. */
+  .motion [data-flavour-bite],
+  .motion [data-ingredient] {
+    opacity: 0;
+  }
+
+  /* ---- Animated version: pinned, horizontal (desktop). */
+  @media (min-width: 48rem) {
+    .motion .flavours-pin {
+      position: sticky;
+      top: var(--flavours-top);
+      height: var(--flavours-height);
+      overflow: clip;
+    }
+
+    .motion .flavours-track {
+      display: flex;
+      height: 100%;
+      will-change: transform;
+    }
+
+    .motion .flavour-panel {
+      flex: 0 0 100%;
+      flex-direction: row;
+      gap: 5vw;
+      height: 100%;
+      padding: 2rem 6vw;
+      text-align: left;
+    }
+
+    .motion .flavour-visual {
+      width: min(38vw, 58svh);
+    }
+
+    .motion .flavour-text {
+      align-items: flex-start;
+    }
+
+    .motion .flavour-name {
+      font-size: clamp(3.5rem, 8.5vw, 8rem);
+    }
+  }
+
+  /* ---- Drifting crumbs: only on capable devices, only while in view. */
+  .flavours-crumb {
+    display: none;
+    position: absolute;
+    border-radius: 40% 60% 55% 45%;
+    background: var(--color-wine);
+    opacity: 0.16;
+    animation: flavours-drift var(--drift) ease-in-out infinite alternate paused;
+  }
+
+  [data-crumbs] .flavours-crumb {
+    display: block;
+  }
+
+  [data-crumbs][data-inside] .flavours-crumb {
+    animation-play-state: running;
+  }
+
+  @keyframes flavours-drift {
+    to {
+      transform: translate3d(var(--dx), var(--dy), 0) rotate(160deg);
+    }
+  }
+
+  .flavour-fling {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: -1.125rem 0 0 -1.125rem;
+    border: 2px solid var(--color-wine);
+    border-radius: 50%;
+    background: var(--color-cream);
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { canAffordEffects, finePointer, reducedMotion } from '../../lib/motion';
+  import { addBite, isFlavourId } from '../../lib/order-store';
+
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
+
+  // ---- Add to box: flings a mini bite to the nav, then adds it to the order.
+  const fling = (from: Element, onLand: () => void): void => {
+    const target = document.querySelector('[data-cart-target]');
+    if (!target || reducedMotion()) return onLand();
+
+    const start = from.getBoundingClientRect();
+    const end = target.getBoundingClientRect();
+    const startX = start.left + start.width / 2;
+    const startY = start.top + start.height / 2;
+
+    const bite = document.createElement('span');
+    bite.className = 'flavour-fling';
+    document.body.append(bite);
+
+    // Sideways at a steady pace, upwards fast then slowing: an arc.
+    gsap
+      .timeline({
+        onComplete: () => {
+          bite.remove();
+          onLand();
+        },
+      })
+      .set(bite, { x: startX, y: startY })
+      .to(bite, { x: end.left + end.width / 2, duration: 0.55, ease: 'power1.in' }, 0)
+      .to(bite, { y: end.top + end.height / 2, duration: 0.55, ease: 'power2.out' }, 0)
+      .to(bite, { scale: 0.4, rotation: 360, duration: 0.55, ease: 'power1.in' }, 0);
+  };
+
+  // Registered once; works in every mode, including reduced motion.
+  document.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest?.<HTMLElement>('[data-add-to-box]');
+    const id = button?.dataset.addToBox;
+    if (!button || !isFlavourId(id)) return;
+    fling(button, () => addBite(id));
+  });
+
+  // ---- The scene itself.
+  const build = (scene: HTMLElement): (() => void) => {
+    const find = (selector: string, within: Element = scene) =>
+      gsap.utils.toArray<HTMLElement>(selector, within);
+    const pin = scene.querySelector<HTMLElement>('.flavours-pin')!;
+    const backdrop = scene.querySelector<HTMLElement>('.flavours-backdrop')!;
+    const track = scene.querySelector<HTMLElement>('[data-flavours-track]')!;
+    const panels = find('[data-flavour-panel]');
+    const washes = find('[data-flavour-wash]');
+    const steps = panels.length - 1;
+
+    let index = 0; // flavour nearest the middle of the scroll
+    let inside = false; // is the section on screen
+    let active = -1; // flavour currently shown, -1 for none
+    let arrival: gsap.core.Timeline | undefined;
+
+    // The bite spins in and scales up; ingredients burst out and settle.
+    const arrive = (panel: HTMLElement): void => {
+      const visual = panel.querySelector<HTMLElement>('[data-flavour-visual]')!;
+      const centreX = visual.clientWidth / 2;
+      const centreY = visual.clientHeight / 2;
+
+      arrival?.kill();
+      arrival = gsap.timeline().fromTo(
+        find('[data-flavour-bite]', panel),
+        { scale: 0.2, rotation: -220, opacity: 0 },
+        { scale: 1, rotation: 0, opacity: 1, duration: 0.7, ease: 'back.out(1.5)' },
+        0,
+      );
+
+      find('[data-ingredient]', panel).forEach((piece, order) => {
+        arrival!.fromTo(
+          piece,
+          {
+            x: centreX - (piece.offsetLeft + piece.offsetWidth / 2),
+            y: centreY - (piece.offsetTop + piece.offsetHeight / 2),
+            scale: 0,
+            rotation: order % 2 ? -200 : 200,
+            opacity: 1,
+          },
+          { x: 0, y: 0, scale: 1, rotation: 0, duration: 0.8, ease: 'back.out(2.2)' },
+          0.25 + order * 0.03,
+        );
+      });
+
+      arrival.fromTo(
+        find('[data-flavour-strike]', panel),
+        { drawSVG: 0 },
+        { drawSVG: '100%', duration: 0.4, ease: 'power1.inOut' },
+        0.5,
+      );
+    };
+
+    const show = (next: number): void => {
+      if (next === active) return;
+      const previous = panels[active];
+      if (previous) gsap.set(find('[data-flavour-bite], [data-ingredient]', previous), { opacity: 0 });
+
+      // The background warms to the new flavour's colour.
+      washes.forEach((wash, wave) => {
+        gsap.to(wash, { opacity: wave === next ? 1 : 0, duration: 0.6, overwrite: true });
+      });
+
+      active = next;
+      const panel = panels[next];
+      if (panel) arrive(panel);
+    };
+    const sync = (): void => show(inside ? index : -1);
+
+    const start = (): string => `top ${parseFloat(getComputedStyle(backdrop).top) || 0}px`;
+    const follow = (self: ScrollTrigger): void => {
+      index = Math.round(self.progress * steps);
+      sync();
+    };
+
+    const media = gsap.matchMedia();
+
+    // Desktop: the track slides sideways while the section is pinned.
+    media.add('(min-width: 48rem)', () => {
+      gsap.to(track, {
+        x: () => -(track.scrollWidth - pin.clientWidth),
+        ease: 'none',
+        scrollTrigger: {
+          trigger: scene,
+          start,
+          end: 'bottom bottom',
+          scrub: true,
+          invalidateOnRefresh: true,
+          onUpdate: follow,
+        },
+      });
+    });
+
+    // Phones: stacked panels, with a gentle snap on touch screens.
+    media.add('(max-width: 47.99rem)', () => {
+      ScrollTrigger.create({
+        trigger: scene,
+        start,
+        end: 'bottom bottom',
+        onUpdate: follow,
+        snap: finePointer()
+          ? undefined
+          : { snapTo: 1 / steps, duration: { min: 0.2, max: 0.5 }, delay: 0.1, ease: 'power1.inOut' },
+      });
+    });
+
+    const presence = ScrollTrigger.create({
+      trigger: scene,
+      start: 'top 60%',
+      end: 'bottom 40%',
+      onToggle: (self) => {
+        inside = self.isActive;
+        scene.toggleAttribute('data-inside', inside);
+        sync();
+      },
+    });
+
+    scene.toggleAttribute('data-crumbs', canAffordEffects());
+
+    return () => {
+      media.revert();
+      presence.kill();
+      arrival?.kill();
+    };
+  };
+
+  document.addEventListener('astro:page-load', () => {
+    const scene = document.querySelector<HTMLElement>('[data-flavours]');
+    if (!scene || reducedMotion()) return;
+
+    let cleanUp: (() => void) | undefined;
+
+    // Build the scene only when it is about a screen away.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        cleanUp = build(scene);
+      },
+      { rootMargin: '100% 0px' },
+    );
+    observer.observe(scene);
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        observer.disconnect();
+        cleanUp?.();
+      },
+      { once: true },
+    );
+  });
+</script>

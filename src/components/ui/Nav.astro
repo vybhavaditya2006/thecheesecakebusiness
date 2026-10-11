@@ -18,6 +18,43 @@ import Wordmark from './Wordmark.astro';
         </a>
       ))
     }
-    <Button href={orderPath} size="sm">Order now</Button>
+    <span class="relative" data-cart-target>
+      <Button href={orderPath} size="sm">Order now</Button>
+      <!-- Number of bites in the box; filled in from the order store. -->
+      <span
+        class="pointer-events-none absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border border-wine bg-cream px-1 text-[0.65rem] leading-none font-semibold text-wine"
+        role="status"
+        hidden
+        data-cart-badge
+      >
+        <span data-cart-count></span>
+        <span class="sr-only">&nbsp;in your box</span>
+      </span>
+    </span>
   </div>
 </nav>
+
+<script>
+  import { reducedMotion } from '../../lib/motion';
+  import { $totalBites } from '../../lib/order-store';
+
+  const render = (count: number, bump: boolean): void => {
+    const badge = document.querySelector<HTMLElement>('[data-cart-badge]');
+    const label = badge?.querySelector('[data-cart-count]');
+    if (!badge || !label) return;
+
+    badge.hidden = count === 0;
+    label.textContent = String(count);
+
+    if (bump && count > 0 && !reducedMotion()) {
+      badge.animate(
+        [{ transform: 'scale(1)' }, { transform: 'scale(1.7)' }, { transform: 'scale(1)' }],
+        { duration: 380, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' },
+      );
+    }
+  };
+
+  $totalBites.listen((count) => render(count, true));
+  // The nav is re-rendered on every page change.
+  document.addEventListener('astro:page-load', () => render($totalBites.get(), false));
+</script>

@@ -1,10 +1,10 @@
 ---
+import Flavours from '../components/home/Flavours.astro';
 import Hero from '../components/home/Hero.astro';
 import WhyBites from '../components/home/WhyBites.astro';
 import Divider from '../components/ui/Divider.astro';
 import SectionTitle from '../components/ui/SectionTitle.astro';
 import { brand } from '../content/brand';
-import { flavours } from '../content/flavours';
 import { formatPrice, pricing } from '../content/pricing';
 import Base from '../layouts/Base.astro';
 ---
@@ -14,22 +14,7 @@ import Base from '../layouts/Base.astro';
 
   <WhyBites />
 
-  <Divider class="mx-auto max-w-md px-5" />
-
-  <section id="flavours" class="px-5 py-16">
-    <SectionTitle label="Five to choose from" title="Flavours" />
-    <ul class="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-5">
-      {
-        flavours.map((flavour) => (
-          <li class="flex size-28 items-center justify-center rounded-full border border-wine/20 bg-cream p-3 text-center font-display text-lg">
-            {flavour.name}
-          </li>
-        ))
-      }
-    </ul>
-  </section>
-
-  <Divider class="mx-auto max-w-md px-5" />
+  <Flavours />
 
   <section class="px-5 py-16 text-center">
     <SectionTitle label={brand.campaign} title="Launch prices" />
