@@ -27,6 +27,8 @@ export const brand = {
   },
   // The same pitch as three lines, for the 3D cake scene on Home.
   wholeCake: ['A whole cheesecake?', 'Too much to finish.', 'Too heavy. Too pricey.'],
+  // The turn from the problem to the answer, in the same scene.
+  brokeDown: 'So we broke it down.',
   // Script logo SVG, imported from src/assets once it exists.
   logoPath: 'src/assets/logo.svg',
   // Placeholder until the real domain is bought.

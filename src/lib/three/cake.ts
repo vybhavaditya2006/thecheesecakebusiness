@@ -23,16 +23,27 @@ import {
 } from './textures';
 
 // A whole round blueberry cheesecake on cream linen, with one wedge that can
-// be cut and pulled out. The cake stands on the origin; angles are measured
-// round the upright axis, and the wedge runs from 0 to WEDGE.
+// be cut and pulled out, and that wedge's three layers can be lifted apart.
+// The cake stands on the origin; angles are measured round the upright axis,
+// and the wedge runs from 0 to WEDGE.
+
+export type LayerId = 'topping' | 'filling' | 'crust';
 
 export interface Cake3D {
   group: Group;
   // The cake and its wedge, without the cloth: turn this to turn the cake.
   cake: Group;
+  // Everything except the wedge: the rest of the cake, the cloth, the shadow.
+  setting: Group;
+  // The wedge's layers, each its own group so they can be moved apart.
+  layers: Record<LayerId, Group>;
   // The gap the wedge leaves (in the cake's own space): a point inside it,
   // between the two cut faces, and the way out of it past the rim.
   gap: { centre: Vector3; outward: Vector3 };
+  // The wedge's own cut face, seen from the side (in the cake's own space):
+  // its middle, the way it faces, the way along it to the rim, and where
+  // each layer meets the rim.
+  side: { centre: Vector3; normal: Vector3; alongRim: Vector3; rim: Record<LayerId, Vector3> };
   // 0 to 1: the knife line being drawn, first one side of the wedge then the other.
   setCut: (drawn: number) => void;
   setCutVisible: (opacity: number) => void;
@@ -43,17 +54,21 @@ export interface Cake3D {
 }
 
 export const CAKE = { radius: 2, height: 0.95 } as const;
-const WEDGE = Math.PI / 3;
-const CRUST = 0.22;
-const TOPPING = 0.07;
+export const WEDGE = Math.PI / 3;
+// How thick each layer is, and where it starts.
+export const LAYER = {
+  crust: { from: 0, thick: 0.22 },
+  filling: { from: 0.22, thick: 0.66 },
+  topping: { from: 0.88, thick: 0.07 },
+} as const satisfies Record<LayerId, { from: number; thick: number }>;
 const WINE = '#7a1f2b';
 
 // Where a point at `radius` and `angle` lies on the table.
-const around = (radius: number, angle: number, y = 0): Vector3 =>
+export const around = (radius: number, angle: number, y = 0): Vector3 =>
   new Vector3(Math.sin(angle) * radius, y, Math.cos(angle) * radius);
 
 // A steady stand-in for random numbers, so the cake is the same every visit.
-const scatter = (index: number, salt: number): number => {
+export const scatter = (index: number, salt: number): number => {
   const value = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
   return value - Math.floor(value);
 };
@@ -61,45 +76,73 @@ const scatter = (index: number, salt: number): number => {
 export function createCake(): Cake3D {
   const group = new Group();
   const cake = new Group();
+  const setting = new Group();
   const wedge = new Group();
   const { radius, height } = CAKE;
 
   const crumb = new MeshStandardMaterial({
     map: crumbTexture('#c79a5b', ['#9a6e3a', '#e3c08a', '#7d5527'], 3),
     roughness: 0.9,
+    side: DoubleSide,
   });
   const cream = new MeshStandardMaterial({ map: bakedCreamTexture(), roughness: 0.7 });
+  const creamCut = new MeshStandardMaterial({
+    map: crumbTexture('#f7e8c4', ['#ecd7a4', '#fff6dc'], 19),
+    roughness: 0.8,
+    side: DoubleSide,
+  });
   const fruitMap = compoteTexture();
   fruitMap.wrapS = fruitMap.wrapT = RepeatWrapping;
   fruitMap.repeat.set(4, 4);
-  const fruit = new MeshStandardMaterial({ map: fruitMap, roughness: 0.25 });
+  const fruit = new MeshStandardMaterial({ map: fruitMap, roughness: 0.25, side: DoubleSide });
   const berry = new MeshStandardMaterial({ color: '#2f2152', roughness: 0.35 });
   const cut = new MeshStandardMaterial({ map: cutFaceTexture(), roughness: 0.8, side: DoubleSide });
 
-  // One piece of cake: the three layers through an arc, and its two cut faces.
-  const piece = (from: number, arc: number): Group => {
-    const part = new Group();
-    const segments = Math.max(8, Math.round((arc / (Math.PI * 2)) * 72));
-    const layer = (r: number, h: number, y: number, material: MeshStandardMaterial): void => {
-      const mesh = new Mesh(new CylinderGeometry(r, r, h, segments, 1, false, from, arc), material);
-      mesh.position.y = y + h / 2;
-      part.add(mesh);
-    };
-    layer(radius, CRUST, 0, crumb);
-    layer(radius - 0.03, height - CRUST - TOPPING, CRUST, cream);
-    layer(radius - 0.1, TOPPING, height - TOPPING, fruit);
+  // What each layer looks like round its edge, and where it has been cut.
+  const look = {
+    crust: { inset: 0, edge: crumb, cut: crumb },
+    filling: { inset: 0.03, edge: cream, cut: creamCut },
+    topping: { inset: 0.1, edge: fruit, cut: fruit },
+  } as const;
 
-    for (const angle of [from, from + arc]) {
-      const face = new Mesh(new PlaneGeometry(radius, height), cut);
-      face.position.copy(around(radius / 2, angle, height / 2));
-      face.rotation.y = angle - Math.PI / 2;
-      part.add(face);
+  // One layer through an arc. With `faces`, its own cut ends are closed too.
+  const layer = (id: LayerId, from: number, arc: number, faces: boolean): Group => {
+    const part = new Group();
+    const { from: y, thick } = LAYER[id];
+    const r = radius - look[id].inset;
+    const segments = Math.max(8, Math.round((arc / (Math.PI * 2)) * 72));
+    const round = new Mesh(new CylinderGeometry(r, r, thick, segments, 1, false, from, arc), look[id].edge);
+    round.position.y = y + thick / 2;
+    part.add(round);
+
+    if (faces) {
+      for (const angle of [from, from + arc]) {
+        const face = new Mesh(new PlaneGeometry(r, thick), look[id].cut);
+        face.position.copy(around(r / 2, angle, y + thick / 2));
+        face.rotation.y = angle - Math.PI / 2;
+        part.add(face);
+      }
     }
     return part;
   };
 
-  const rest = piece(WEDGE, Math.PI * 2 - WEDGE);
-  wedge.add(piece(0, WEDGE));
+  // The rest of the cake: three layers, and one painted face at each cut.
+  const rest = new Group();
+  for (const id of ['crust', 'filling', 'topping'] as const) rest.add(layer(id, WEDGE, Math.PI * 2 - WEDGE, false));
+  for (const angle of [WEDGE, Math.PI * 2]) {
+    const face = new Mesh(new PlaneGeometry(radius, height), cut);
+    face.position.copy(around(radius / 2, angle, height / 2));
+    face.rotation.y = angle - Math.PI / 2;
+    rest.add(face);
+  }
+
+  // The wedge: the same three layers, each on its own.
+  const layers: Record<LayerId, Group> = {
+    crust: layer('crust', 0, WEDGE, true),
+    filling: layer('filling', 0, WEDGE, true),
+    topping: layer('topping', 0, WEDGE, true),
+  };
+  wedge.add(layers.crust, layers.filling, layers.topping);
 
   // Whole berries over the top, each on whichever piece it sits over.
   const berryShape = new SphereGeometry(0.11, 12, 8);
@@ -109,31 +152,28 @@ export function createCake(): Cake3D {
     const one = new Mesh(berryShape, berry);
     one.position.copy(around(reach, angle, height + 0.06));
     one.scale.setScalar(0.8 + scatter(index, 3) * 0.5);
-    (angle < WEDGE ? wedge : rest).add(one);
+    (angle < WEDGE ? layers.topping : rest).add(one);
   }
 
   // The knife line: one wine stroke along each side of the wedge, drawn from
   // the rim to the middle and then out again.
   const ink = new MeshBasicMaterial({ color: WINE, transparent: true });
-  const strokes = [0, WEDGE].map((angle) => {
-    const stroke = new Mesh(new BoxGeometry(radius, 0.01, 0.045).translate(radius / 2, 0, 0), ink);
-    stroke.position.y = height + 0.015;
-    // The box runs along x; turn it to lie along the radius.
-    stroke.rotation.y = angle - Math.PI / 2;
-    stroke.scale.x = 0.0001;
-    cake.add(stroke);
-    return stroke;
-  });
-  // The first stroke is drawn inwards, so it grows from the rim.
-  strokes[0]!.geometry = new BoxGeometry(radius, 0.01, 0.045).translate(-radius / 2, 0, 0);
-  strokes[0]!.position.copy(around(radius, 0, height + 0.015));
+  const lineUp = height + 0.015;
+  // The first stroke runs inwards from the rim, the second outwards from the middle.
+  const inwards = new Mesh(new BoxGeometry(radius, 0.01, 0.045).translate(-radius / 2, 0, 0), ink);
+  inwards.position.copy(around(radius, 0, lineUp));
+  inwards.rotation.y = -Math.PI / 2;
+  const outwardsStroke = new Mesh(new BoxGeometry(radius, 0.01, 0.045).translate(radius / 2, 0, 0), ink);
+  outwardsStroke.position.y = lineUp;
+  outwardsStroke.rotation.y = WEDGE - Math.PI / 2;
+  const strokes = [inwards, outwardsStroke];
+  strokes.forEach((stroke) => (stroke.visible = false));
 
   // Crumbs that puff out of the cut as the wedge comes free.
   const crumbShape = new DodecahedronGeometry(0.05, 0);
   const crumbs = Array.from({ length: 16 }, (_, index) => {
     const one = new Mesh(crumbShape, crumb);
     one.visible = false;
-    cake.add(one);
     const angle = scatter(index, 4) > 0.5 ? 0 : WEDGE;
     return {
       mesh: one,
@@ -142,8 +182,6 @@ export function createCake(): Cake3D {
       lift: 0.5 + scatter(index, 9) * 0.9,
     };
   });
-
-  cake.add(rest, wedge);
 
   // The table: cream linen, and a soft shadow where the cake stands.
   const cloth = new Mesh(
@@ -157,14 +195,31 @@ export function createCake(): Cake3D {
   );
   shadow.position.y = 0.002;
 
-  group.add(cloth, shadow, cake);
+  // The setting turns with the cake, so the rest of the cake keeps its place.
+  setting.add(cloth, shadow, rest, ...strokes, ...crumbs.map((one) => one.mesh));
+  cake.add(setting, wedge);
+  group.add(cake);
 
   const outwards = around(1, WEDGE / 2);
+  const middle = (id: LayerId): number => LAYER[id].from + LAYER[id].thick / 2;
 
   return {
     group,
     cake,
+    setting,
+    layers,
     gap: { centre: around(radius * 0.3, WEDGE / 2, height * 0.5), outward: outwards.clone() },
+    side: {
+      centre: around(radius / 2, 0, height / 2),
+      // Square to the wedge's first cut face, pointing away from the wedge.
+      normal: around(1, -Math.PI / 2),
+      alongRim: around(1, 0),
+      rim: {
+        topping: around(radius - look.topping.inset, 0, middle('topping')),
+        filling: around(radius - look.filling.inset, 0, middle('filling')),
+        crust: around(radius, 0, middle('crust')),
+      },
+    },
     setCut: (drawn) => {
       strokes.forEach((stroke, order) => {
         const length = Math.min(1, drawn * 2 - order);
