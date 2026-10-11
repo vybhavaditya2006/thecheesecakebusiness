@@ -249,16 +249,14 @@ const crumbs = [
     top: calc(var(--flavours-top) + 0.75rem);
     right: 1rem;
     z-index: 30;
-    width: 4.75rem;
-    height: 4.75rem;
-    border: 1.5px solid var(--color-wine);
+    width: 6.5rem;
+    height: 6.5rem;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--accent, var(--color-blush)) 30%, var(--color-cream));
     cursor: grab;
     opacity: 0;
     pointer-events: none;
     touch-action: pan-y;
-    transition: opacity 0.3s;
+    transition: opacity 0.5s ease;
     perspective: 20rem;
   }
 
@@ -270,12 +268,14 @@ const crumbs = [
   .flavour-switch-flat {
     display: flex;
     position: absolute;
-    inset: 10%;
+    inset: 18%;
     align-items: center;
     justify-content: center;
     border: 1.5px solid var(--color-wine);
     border-radius: 50%;
     background: var(--color-cream);
+    /* The flat stand-in wears the flavour's colour as a ring. */
+    box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--accent, var(--color-blush)) 45%, var(--color-cream));
     font-family: var(--font-display);
     font-size: 0.7rem;
     font-weight: 600;
@@ -290,7 +290,7 @@ const crumbs = [
 
   .flavour-switch-3d {
     position: absolute;
-    inset: -8%;
+    inset: 0;
     pointer-events: none;
   }
 
@@ -408,9 +408,9 @@ const crumbs = [
     .motion .flavour-switch {
       top: auto;
       right: 1.5rem;
-      bottom: 1.5rem;
-      width: 7rem;
-      height: 7rem;
+      bottom: 1rem;
+      width: 11rem;
+      height: 11rem;
     }
 
     .flavour-switch-flat {
@@ -540,7 +540,7 @@ const crumbs = [
       const y = from + (target / steps) * (to - from);
 
       const lenis = getLenis();
-      if (lenis) lenis.scrollTo(y, { duration: 0.6 });
+      if (lenis) lenis.scrollTo(y, { duration: 1 });
       else window.scrollTo(0, y);
     };
     // The colour, name and label that go with the panel now showing.
@@ -560,12 +560,12 @@ const crumbs = [
         flatFlip?.kill();
         flatFlip = gsap
           .timeline()
-          .to(flatFace, { rotationY: 90, duration: 0.22, ease: 'power2.in' })
+          .to(flatFace, { rotationY: 90, duration: 0.4, ease: 'power2.in' })
           .call(onEdge)
-          .fromTo(flatFace, { rotationY: -90 }, { rotationY: 0, duration: 0.22, ease: 'power2.out' });
+          .fromTo(flatFace, { rotationY: -90 }, { rotationY: 0, duration: 0.4, ease: 'power2.out' });
       },
       spinBy: (radians) => gsap.set(flatFace, { rotationY: `+=${(radians * 180) / Math.PI}` }),
-      release: () => gsap.to(flatFace, { rotationY: 0, duration: 0.6, ease: 'power3.out' }),
+      release: () => gsap.to(flatFace, { rotationY: 0, duration: 0.9, ease: 'power3.out' }),
       dispose: () => flatFlip?.kill(),
     };
     let switcher = flatBite;
@@ -603,7 +603,7 @@ const crumbs = [
       const dx = event.clientX - grab.x;
       if (!grab.moved && Math.abs(dx) < 6) return;
       grab = { x: event.clientX, moved: true };
-      switcher.spinBy(dx * 0.03);
+      switcher.spinBy(dx * 0.02);
     };
     const onUp = (): void => {
       if (grab?.moved) {
@@ -636,8 +636,8 @@ const crumbs = [
       arrival?.kill();
       arrival = gsap.timeline().fromTo(
         find('[data-flavour-bite]', panel),
-        { scale: 0.2, rotation: -220, opacity: 0 },
-        { scale: 1, rotation: 0, opacity: 1, duration: 0.7, ease: 'back.out(1.5)' },
+        { scale: 0.86, rotation: -12, opacity: 0 },
+        { scale: 1, rotation: 0, opacity: 1, duration: 1, ease: 'expo.out' },
         0,
       );
 
@@ -648,11 +648,11 @@ const crumbs = [
             x: centreX - (piece.offsetLeft + piece.offsetWidth / 2),
             y: centreY - (piece.offsetTop + piece.offsetHeight / 2),
             scale: 0,
-            rotation: order % 2 ? -200 : 200,
+            rotation: order % 2 ? -40 : 40,
             opacity: 1,
           },
-          { x: 0, y: 0, scale: 1, rotation: 0, duration: 0.8, ease: 'back.out(2.2)' },
-          0.25 + order * 0.03,
+          { x: 0, y: 0, scale: 1, rotation: 0, duration: 1.2, ease: 'expo.out' },
+          0.1 + order * 0.04,
         );
       });
 
@@ -671,7 +671,7 @@ const crumbs = [
 
       // The background warms to the new flavour's colour.
       washes.forEach((wash, wave) => {
-        gsap.to(wash, { opacity: wave === next ? 1 : 0, duration: 0.6, overwrite: true });
+        gsap.to(wash, { opacity: wave === next ? 1 : 0, duration: 1, ease: 'power2.out', overwrite: true });
       });
 
       active = next;

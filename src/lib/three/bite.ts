@@ -60,7 +60,7 @@ const matte = (
 // The cup: a flared tube whose wall is pushed in and out to make the folds.
 const cupGeometry = (): BufferGeometry =>
   once('cup', () => {
-    const geometry = new CylinderGeometry(BITE.radius, 0.41, 0.44, FOLDS * 4, 3, true);
+    const geometry = new CylinderGeometry(BITE.radius, 0.41, 0.44, FOLDS * 8, 4, true);
     const position = geometry.getAttribute('position');
     for (let index = 0; index < position.count; index += 1) {
       const x = position.getX(index);
@@ -86,7 +86,7 @@ const bodyGeometry = (): BufferGeometry =>
       profile.push(new Vector2(radius - 0.07 + Math.cos(angle) * 0.07, TOP - 0.07 + Math.sin(angle) * 0.07));
     }
     profile.push(new Vector2(0, TOP));
-    return new LatheGeometry(profile, 48);
+    return new LatheGeometry(profile, 80);
   });
 
 const mesh = (geometry: BufferGeometry, material: Material): Mesh => new Mesh(geometry, material);
@@ -127,14 +127,14 @@ const toppings: Record<FlavourId, () => Group> = {
   blueberry: () => {
     const group = new Group();
     const pool = mesh(
-      once('pool', () => new SphereGeometry(0.33, 28, 12).scale(1, 0.14, 1)),
+      once('pool', () => new SphereGeometry(0.33, 48, 16).scale(1, 0.14, 1)),
       matte('compote', () => ({ map: compoteTexture(), roughness: 0.22 })),
     );
     pool.position.y = TOP + 0.01;
     const berry = matte('berry', () => ({ color: '#2f2152', roughness: 0.35 }));
     const berries = scatter(6, ringPlace(0.3, 0.07), () =>
       mesh(
-        once('berry', () => new SphereGeometry(0.075, 14, 10)),
+        once('berry', () => new SphereGeometry(0.075, 24, 16)),
         berry,
       ),
     );

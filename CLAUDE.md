@@ -35,7 +35,7 @@ Micro-interactions: bite cursor on desktop, magnetic squishy buttons, letter-wav
 - Loaded lazily when a 3D object is a screen away.
 - Procedural geometry and canvas-painted textures; no model files.
 - Render only when on screen.
-- devicePixelRatio capped at 1.5 on desktop and 1.25 on phones.
+- devicePixelRatio capped at 1.5 on desktop and 1.25 on phones. A small view (the Flavours switcher bite) may go up to 2.5 to stay sharp.
 - Fall back to the existing 2D versions if WebGL2 is missing, reduced motion is on, or the first second runs under 45 fps.
 - Scroll-driven 3D is deterministic and reversible.
 

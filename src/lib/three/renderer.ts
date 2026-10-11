@@ -5,11 +5,13 @@ import {
   Mesh,
   type Object3D,
   PerspectiveCamera,
+  PMREMGenerator,
   Scene,
   SRGBColorSpace,
   type Texture,
   WebGLRenderer,
 } from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { forced3D, isPhone, markTooSlow } from './support';
 
 // 3D for a page. There is one WebGL canvas, off screen, shared by every 3D
@@ -23,6 +25,8 @@ export interface Stage {
   scene: Scene;
   camera: PerspectiveCamera;
   canvas: HTMLCanvasElement;
+  // The main light, for a scene that wants it to cast shadows.
+  key: DirectionalLight;
   // Width over height of the canvas.
   aspect: () => number;
   // Ask for one more frame.
@@ -36,10 +40,12 @@ export interface Stage {
 interface Options {
   // Called if 3D turns out too slow here; the stage has already been removed.
   onFallback: () => void;
+  // A small view can afford more pixels than the usual cap, to stay sharp.
+  sharp?: boolean;
 }
 
 const MIN_FPS = 45;
-const DPR_CAP = { desktop: 1.5, phone: 1.25 };
+const DPR_CAP = { desktop: 1.5, phone: 1.25, sharp: 2.5 };
 
 // The shared renderer, made for the first stage and dropped with the last.
 let shared: WebGLRenderer | null = null;
@@ -59,8 +65,22 @@ const renderer = (): WebGLRenderer => {
     // Sizes below are already in device pixels.
     shared.setPixelRatio(1);
     shared.setScissorTest(true);
+    // Costs nothing unless a scene has something casting a shadow.
+    shared.shadowMap.enabled = true;
   }
   return shared;
+};
+
+// Soft, even studio light to reflect in glossy surfaces: a scene opts in by
+// setting it as its environment.
+let studio: Texture | null = null;
+export const studioLight = (): Texture => {
+  if (!studio) {
+    const baker = new PMREMGenerator(renderer());
+    studio = baker.fromScene(new RoomEnvironment(), 0.04).texture;
+    baker.dispose();
+  }
+  return studio;
 };
 
 // Draws one stage into the corner of the shared canvas, growing it if need be.
@@ -82,8 +102,9 @@ const draw = (scene: Scene, camera: PerspectiveCamera, target: HTMLCanvasElement
   context.drawImage(buffer, 0, buffer.height - height, width, height, 0, 0, width, height);
 };
 
-export function createStage(container: HTMLElement, { onFallback }: Options): Stage {
-  const ratio = Math.min(window.devicePixelRatio, isPhone() ? DPR_CAP.phone : DPR_CAP.desktop);
+export function createStage(container: HTMLElement, { onFallback, sharp = false }: Options): Stage {
+  const cap = sharp ? DPR_CAP.sharp : isPhone() ? DPR_CAP.phone : DPR_CAP.desktop;
+  const ratio = Math.min(window.devicePixelRatio, cap);
 
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-hidden', 'true');
@@ -176,6 +197,7 @@ export function createStage(container: HTMLElement, { onFallback }: Options): St
     scene,
     camera,
     canvas,
+    key,
     aspect: () => camera.aspect,
     invalidate: () => {
       dirty = true;
@@ -212,6 +234,8 @@ export function createStage(container: HTMLElement, { onFallback }: Options): St
       stages.delete(stage);
       if (!stages.size) {
         disposers.forEach((callback) => callback());
+        studio?.dispose();
+        studio = null;
         shared?.dispose();
         shared = null;
       }
