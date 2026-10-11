@@ -1,5 +1,7 @@
+export type CustomOptionId = 'combo' | 'half-and-half' | 'gift-box' | 'party-platter';
+
 export interface CustomOption {
-  id: string;
+  id: CustomOptionId;
   name: string;
   description: string;
   // Available sizes in bites, where the option comes in fixed sizes.
@@ -7,6 +9,8 @@ export interface CustomOption {
 }
 
 // Custom orders are priced and confirmed on WhatsApp.
+export const customPriceNote = 'Price confirmed on WhatsApp';
+
 export const customOptions: readonly CustomOption[] = [
   {
     id: 'combo',
@@ -31,3 +35,67 @@ export const customOptions: readonly CustomOption[] = [
     sizes: [25, 50],
   },
 ];
+
+export const isCustomOptionId = (id: unknown): id is CustomOptionId =>
+  customOptions.some((option) => option.id === id);
+
+export interface LayerChoice {
+  id: string;
+  name: string;
+  // Colour of the layer in the build-up drawing; null draws nothing.
+  colour: string | null;
+}
+
+export interface ComboLayer {
+  id: 'base' | 'filling' | 'centre' | 'topping';
+  name: string;
+  choices: readonly LayerChoice[];
+}
+
+// "Your own combo", from the bottom layer up.
+// TODO: placeholder choices. Replace with what the kitchen really offers.
+export const comboLayers: readonly ComboLayer[] = [
+  {
+    id: 'base',
+    name: 'Base',
+    choices: [
+      { id: 'biscuit', name: 'Biscuit crumb', colour: '#C9A26B' },
+      { id: 'oreo', name: 'Oreo crumb', colour: '#111111' },
+      { id: 'biscoff', name: 'Biscoff crumb', colour: '#C8813C' },
+    ],
+  },
+  {
+    id: 'filling',
+    name: 'Filling',
+    choices: [
+      { id: 'classic', name: 'Classic', colour: '#FBF3E8' },
+      { id: 'blueberry', name: 'Blueberry', colour: '#5B3FA0' },
+      { id: 'coffee', name: 'Coffee', colour: '#6F4E37' },
+      { id: 'chocolate', name: 'Chocolate', colour: '#4A2C1A' },
+    ],
+  },
+  {
+    id: 'centre',
+    name: 'Centre',
+    choices: [
+      { id: 'none', name: 'None', colour: null },
+      { id: 'blueberry', name: 'Blueberry compote', colour: '#5B3FA0' },
+      { id: 'biscoff', name: 'Biscoff spread', colour: '#C8813C' },
+      { id: 'kitkat', name: 'KitKat piece', colour: '#D2232A' },
+    ],
+  },
+  {
+    id: 'topping',
+    name: 'Topping',
+    choices: [
+      { id: 'blueberries', name: 'Blueberries', colour: '#5B3FA0' },
+      { id: 'kitkat', name: 'KitKat pieces', colour: '#D2232A' },
+      { id: 'oreo', name: 'Oreo crumbs', colour: '#111111' },
+      { id: 'coffee', name: 'Coffee dust', colour: '#6F4E37' },
+      { id: 'biscoff', name: 'Biscoff crumbs', colour: '#C8813C' },
+    ],
+  },
+];
+
+// Longest gift note, in characters.
+export const giftNoteLimit = 140;

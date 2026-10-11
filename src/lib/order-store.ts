@@ -1,58 +1,123 @@
-import { computed, map } from 'nanostores';
+import { atom, computed } from 'nanostores';
+import { isCustomOptionId, type CustomOptionId } from '../content/custom';
 import { flavours, type FlavourId } from '../content/flavours';
-import { priceFor } from '../content/pricing';
+import { priceFor, pricing } from '../content/pricing';
 
-export type OrderItems = Record<FlavourId, number>;
+// A custom request; priced and confirmed on WhatsApp, never here.
+export interface CustomRequest {
+  id: string;
+  type: CustomOptionId;
+  title: string;
+  details: string[];
+}
+
+interface SavedOrder {
+  bites: FlavourId[];
+  custom: CustomRequest[];
+  singles: boolean;
+}
 
 const STORAGE_KEY = 'order';
 const inBrowser = typeof window !== 'undefined';
 
-const emptyOrder = (): OrderItems =>
-  Object.fromEntries(flavours.map((flavour) => [flavour.id, 0])) as OrderItems;
+export const isFlavourId = (id: unknown): id is FlavourId =>
+  flavours.some((flavour) => flavour.id === id);
 
-// The box is kept in local storage so it survives reloads and page changes.
-const savedOrder = (): OrderItems => {
-  const order = emptyOrder();
+const isCustomRequest = (value: unknown): value is CustomRequest => {
+  const request = value as CustomRequest | null;
+  return (
+    typeof request?.id === 'string' &&
+    isCustomOptionId(request.type) &&
+    typeof request.title === 'string' &&
+    Array.isArray(request.details) &&
+    request.details.every((detail) => typeof detail === 'string')
+  );
+};
+
+// The order is kept in local storage so it survives reloads and page changes.
+const savedOrder = (): SavedOrder => {
+  const order: SavedOrder = { bites: [], custom: [], singles: false };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
-    for (const flavour of flavours) {
-      const quantity = Number(saved?.[flavour.id]);
-      if (Number.isInteger(quantity) && quantity > 0) order[flavour.id] = quantity;
+
+    if (Array.isArray(saved?.bites)) {
+      order.bites = saved.bites.filter(isFlavourId);
+      order.custom = Array.isArray(saved.custom) ? saved.custom.filter(isCustomRequest) : [];
+      order.singles = saved.singles === true;
+    } else {
+      // Older format: a count per flavour.
+      for (const flavour of flavours) {
+        const quantity = Number(saved?.[flavour.id]);
+        if (Number.isInteger(quantity) && quantity > 0) {
+          order.bites.push(...Array<FlavourId>(quantity).fill(flavour.id));
+        }
+      }
     }
   } catch {
-    // Storage blocked or corrupt: start with an empty box.
+    // Storage blocked or corrupt: start with an empty order.
   }
   return order;
 };
 
-// Number of bites chosen per flavour.
-export const $order = map<OrderItems>(inBrowser ? savedOrder() : emptyOrder());
+const initial: SavedOrder = inBrowser ? savedOrder() : { bites: [], custom: [], singles: false };
+
+// Every bite in the order, in the order it was added. Each run of five is a box.
+export const $bites = atom<FlavourId[]>(initial.bites);
+export const $custom = atom<CustomRequest[]>(initial.custom);
+// "Just singles": show counters instead of the box. It does not change the price.
+export const $singlesMode = atom<boolean>(initial.singles);
 
 if (inBrowser) {
-  $order.listen((items) => {
+  const save = (): void => {
+    const order: SavedOrder = {
+      bites: $bites.get(),
+      custom: $custom.get(),
+      singles: $singlesMode.get(),
+    };
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
     } catch {
-      // Storage blocked: the box just won't survive a reload.
+      // Storage blocked: the order just won't survive a reload.
     }
-  });
+  };
+  $bites.listen(save);
+  $custom.listen(save);
+  $singlesMode.listen(save);
 }
 
-export const $totalBites = computed($order, (items) =>
-  Object.values(items).reduce((sum, quantity) => sum + quantity, 0),
-);
-
+export const $totalBites = computed($bites, (bites) => bites.length);
 export const $totalPrice = computed($totalBites, (bites) => priceFor(bites));
 
-export const isFlavourId = (id: unknown): id is FlavourId =>
-  flavours.some((flavour) => flavour.id === id);
+export const addBite = (id: FlavourId): void => $bites.set([...$bites.get(), id]);
 
-export const setQuantity = (id: FlavourId, quantity: number): void => {
-  $order.setKey(id, Math.max(0, Math.floor(quantity)));
+export const removeBiteAt = (index: number): void =>
+  $bites.set($bites.get().filter((_, position) => position !== index));
+
+// Removes the most recently added bite of a flavour.
+export const removeBite = (id: FlavourId): void => {
+  const index = $bites.get().lastIndexOf(id);
+  if (index >= 0) removeBiteAt(index);
 };
 
-export const addBite = (id: FlavourId): void => setQuantity(id, $order.get()[id] + 1);
+// Removes a whole packed box (the nth run of five).
+export const removeBox = (box: number): void => {
+  const size = pricing.box.bites;
+  $bites.set($bites.get().filter((_, position) => Math.floor(position / size) !== box));
+};
 
-export const removeBite = (id: FlavourId): void => setQuantity(id, $order.get()[id] - 1);
+export const addCustom = (request: Omit<CustomRequest, 'id'>): void =>
+  $custom.set([...$custom.get(), { ...request, id: `${Date.now()}-${$custom.get().length}` }]);
 
-export const clearOrder = (): void => $order.set(emptyOrder());
+export const removeCustom = (id: string): void =>
+  $custom.set($custom.get().filter((request) => request.id !== id));
+
+export const clearOrder = (): void => {
+  $bites.set([]);
+  $custom.set([]);
+};
+
+// How many of each flavour, in menu order, leaving out the ones not chosen.
+export const countByFlavour = (bites: readonly FlavourId[]) =>
+  flavours
+    .map((flavour) => ({ flavour, count: bites.filter((id) => id === flavour.id).length }))
+    .filter((line) => line.count > 0);

@@ -1,50 +1,33 @@
 ---
-import Base from '../layouts/Base.astro';
+import OrderApp from '../components/order/OrderApp.tsx';
 import SectionTitle from '../components/ui/SectionTitle.astro';
-import { customOptions } from '../content/custom';
-import { flavours } from '../content/flavours';
-import { formatPrice, pricing } from '../content/pricing';
-import { delivery, paymentMethods } from '../content/site';
+import { saleActive, formatPrice, pricing } from '../content/pricing';
+import Base from '../layouts/Base.astro';
+
+const key = saleActive ? 'offer' : 'regular';
 ---
 
 <Base title="Order">
-  <section class="px-5 py-16 text-center">
-    <SectionTitle as="h1" label="Pack your box" title="Order" />
-    <p class="mt-4">
-      {pricing.box.label}: <s class="opacity-60">{formatPrice(pricing.box.regular)}</s>{' '}
-      <strong>{formatPrice(pricing.box.offer)}</strong>
+  <!-- Kept short on phones so the box and the flavours share one screen. -->
+  <section class="px-5 pt-6 pb-4 text-center sm:pt-12 sm:pb-8">
+    <SectionTitle as="h1" label="Order" title="Pack your box" />
+    <p class="mt-4 hidden text-sm sm:block">
+      {pricing.box.label}: <strong>{formatPrice(pricing.box[key])}</strong> · {pricing.single.label}:{' '}
+      <strong>{formatPrice(pricing.single[key])}</strong>
     </p>
-
-    <!-- The pack-your-box React island goes here. -->
-    <ul class="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-5">
-      {
-        flavours.map((flavour) => (
-          <li class="flex size-28 items-center justify-center rounded-full border border-wine/20 bg-cream p-3 text-center font-display text-lg">
-            {flavour.name}
-          </li>
-        ))
-      }
-    </ul>
   </section>
 
-  <section class="px-5 py-12">
-    <SectionTitle label="Something special" title="Custom orders" />
-    <ul class="mx-auto mt-6 max-w-md space-y-3">
-      {
-        customOptions.map((option) => (
-          <li>
-            <strong>{option.name}</strong>
-            {option.sizes && <span> ({option.sizes.join(' or ')})</span>}
-            <span class="block text-sm opacity-80">{option.description}</span>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
-
-  <section class="px-5 py-12 text-center text-sm">
-    <p>{delivery.freeNote}</p>
-    <p>{delivery.paidNote}</p>
-    <p class="mt-2">Payment: {paymentMethods.join(' or ')}. {delivery.minimumOrderNote}</p>
-  </section>
+  <!-- The order lives in the browser, so the builder only renders there. -->
+  <OrderApp client:only="react">
+    <p slot="fallback" class="px-5 py-24 text-center text-sm">Setting out the box…</p>
+  </OrderApp>
 </Base>
+
+<style is:global>
+  /* Keep the footer clear of the order bar pinned to the bottom on phones. */
+  @media (max-width: 63.99rem) {
+    body:has([data-order-bar]) footer {
+      padding-bottom: 7rem;
+    }
+  }
+</style>
