@@ -8,6 +8,23 @@ export const brand = {
   campaign: 'Diwali & Dussehra launch special',
   pitch:
     'Whole cheesecakes are expensive, too much to finish, and too heavy. Bite-sized portions satisfy the craving without overeating, and cost less.',
+  // The pitch, broken up for the "Why bites" scene.
+  whyBites: {
+    heading: 'Why bites',
+    before: 'Whole cake: too much',
+    after: '1 bite: just right',
+    reasons: [
+      { title: 'Craving satisfied.', line: 'One bite is enough to answer the craving.' },
+      {
+        title: 'Not overeating.',
+        line: 'A whole cheesecake is too much to finish, and too heavy.',
+      },
+      {
+        title: 'Kinder on your wallet.',
+        line: 'Whole cheesecakes are expensive; a bite costs less.',
+      },
+    ],
+  },
   // Script logo SVG, imported from src/assets once it exists.
   logoPath: 'src/assets/logo.svg',
   // Placeholder until the real domain is bought.

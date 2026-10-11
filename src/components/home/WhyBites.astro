@@ -1,0 +1,341 @@
+---
+// Scene 2: the slice. A whole cheesecake is cut into five wedges that turn
+// into five bites, scrubbed by scroll while the section is pinned.
+// Without motion the markup reads as a plain before/after, side by side.
+import { brand } from '../../content/brand';
+import { flavours } from '../../content/flavours';
+
+const { heading, before, after, reasons } = brand.whyBites;
+
+// Cake artwork units: a 300 × 300 stage, cake centred. The script below
+// uses the same numbers.
+const CENTRE = 150;
+const RADIUS = 110;
+const SLICE = 360 / flavours.length;
+// Distance from the centre to a wedge's centre of mass.
+const CENTROID = 68.6;
+
+const point = (radius: number, degrees: number): string => {
+  const angle = (degrees * Math.PI) / 180;
+  const x = CENTRE + radius * Math.cos(angle);
+  const y = CENTRE + radius * Math.sin(angle);
+  return `${x.toFixed(1)} ${y.toFixed(1)}`;
+};
+const arc = (radius: number, from: number, to: number): string =>
+  `M${point(radius, from)}A${radius} ${radius} 0 0 1 ${point(radius, to)}`;
+
+const wedges = flavours.map((_, index) => {
+  const from = -90 + index * SLICE;
+  const to = from + SLICE;
+  const middle = from + SLICE / 2;
+  const angle = (middle * Math.PI) / 180;
+  return {
+    middle,
+    fill: `M${CENTRE} ${CENTRE}L${point(RADIUS, from)}A${RADIUS} ${RADIUS} 0 0 1 ${point(RADIUS, to)}Z`,
+    rim: arc(RADIUS, from, to),
+    crust: arc(RADIUS - 12, from, to),
+    edges: `M${point(RADIUS, from)}L${CENTRE} ${CENTRE}L${point(RADIUS, to)}`,
+    // Etched hatching.
+    hatching: [arc(44, from + 10, from + 34), arc(62, from + 8, from + 30), arc(80, from + 9, from + 24)].join(''),
+    origin: `${((CENTRE + CENTROID * Math.cos(angle)) / 300) * 100}% ${((CENTRE + CENTROID * Math.sin(angle)) / 300) * 100}%`,
+  };
+});
+
+const cuts = flavours.map((_, index) => `M${CENTRE} ${CENTRE}L${point(RADIUS, -90 + index * SLICE)}`);
+
+// Which wedge each flavour's bite grows out of, chosen so the bites reach
+// their place in the row (left to right) without crossing paths.
+const wedgeForRow = [3, 4, 2, 0, 1];
+const bites = flavours.map((flavour, row) => ({
+  ...flavour,
+  row,
+  angle: wedges[wedgeForRow[row] ?? row]?.middle ?? 0,
+}));
+
+const svgProps = {
+  viewBox: '0 0 300 300',
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': 2,
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+  'aria-hidden': 'true',
+} as const;
+---
+
+<section class="why" aria-labelledby="why-heading" data-why>
+  <div class="why-pin px-5 py-4 md:py-12" data-why-pin>
+    <div
+      class="mx-auto grid h-full max-w-5xl content-center items-center gap-4 md:grid-cols-2 md:gap-12"
+    >
+      <div class="flex items-center justify-center gap-3">
+        <figure class="flex flex-col items-center gap-3">
+          <div class="why-stage relative aspect-square text-wine">
+            {
+              wedges.map((wedge) => (
+                <svg
+                  class="absolute inset-0 size-full overflow-visible"
+                  style={`transform-origin:${wedge.origin}`}
+                  data-why-wedge
+                  data-angle={wedge.middle}
+                  {...svgProps}
+                >
+                  <path d={wedge.fill} fill="currentColor" fill-opacity="0.07" stroke="none" />
+                  <path d={wedge.rim} />
+                  <path d={wedge.crust} stroke-width="1" opacity="0.6" />
+                  <path d={wedge.hatching} stroke-width="1" opacity="0.45" />
+                  <path d={wedge.edges} opacity="0" data-why-edge />
+                </svg>
+              ))
+            }
+
+            <svg class="absolute inset-0 size-full overflow-visible" data-why-cut {...svgProps}>
+              {cuts.map((cut) => <path d={cut} />)}
+            </svg>
+
+            {
+              bites.map((bite) => (
+                <div
+                  class="why-bite absolute top-[41.5%] left-[41.5%] aspect-square w-[17%]"
+                  data-why-motion
+                  data-why-bite
+                  data-angle={bite.angle}
+                  data-row={bite.row}
+                >
+                  {/* Placeholder until real photos exist: cream circle + name. */}
+                  <span class="flex size-full items-center justify-center rounded-full border-[1.5px] border-wine bg-cream p-[6%] text-center font-display text-[min(1.9vw,0.6rem)] leading-none font-semibold">
+                    <span data-why-name>{bite.name}</span>
+                  </span>
+                </div>
+              ))
+            }
+          </div>
+          <figcaption class="label-caps text-center" data-why-calm>{before}</figcaption>
+        </figure>
+
+        <span class="font-display text-3xl" aria-hidden="true" data-why-calm>→</span>
+
+        <figure class="flex flex-col items-center gap-3" data-why-calm>
+          <div class="why-stage flex aspect-square items-center justify-center gap-[3%]">
+            {flavours.map(() => <span class="aspect-square w-[17%] rounded-full border-[1.5px] border-wine bg-cream" />)}
+          </div>
+          <figcaption class="label-caps text-center">{after}</figcaption>
+        </figure>
+      </div>
+
+      <div class="text-center md:text-left">
+        <h2 id="why-heading" class="label-caps font-sans opacity-80">{heading}</h2>
+
+        <!-- The counter: rolls from "before" to "after" as the cake turns into bites. -->
+        <p class="mt-3 h-[1.25em] overflow-hidden font-display text-2xl leading-[1.25] italic sm:text-3xl" data-why-motion>
+          <span class="block" data-why-counter>
+            <span class="block">{before}</span>
+            <span class="block">{after}</span>
+          </span>
+        </p>
+
+        <ol class="mt-4 space-y-3 md:mt-8 md:space-y-6">
+          {
+            reasons.map((reason) => (
+              <li data-why-reason>
+                <h3 class="text-2xl leading-none sm:text-4xl">{reason.title}</h3>
+                <p class="mt-1 text-sm">{reason.line}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  /* Calm version (no "motion" class on <html>): a plain before/after. */
+  [data-why-motion] {
+    display: none;
+  }
+
+  .why-stage {
+    width: min(38vw, 14rem);
+  }
+
+  /* Animated version: the section is 200vh taller than the screen and its
+     content sticks below the header while the timeline is scrubbed. */
+  .motion [data-why-motion] {
+    display: block;
+  }
+
+  .motion [data-why-calm] {
+    display: none;
+  }
+
+  .motion [data-why] {
+    --why-top: 6.25rem;
+    height: calc(100svh - var(--why-top) + 200vh);
+  }
+
+  .motion [data-why-pin] {
+    position: sticky;
+    top: var(--why-top);
+    height: calc(100svh - var(--why-top));
+    overflow: clip;
+  }
+
+  .motion .why-stage {
+    width: min(64vw, 30svh, 22rem);
+  }
+
+  .motion [data-why-bite] {
+    opacity: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .motion .why-stage {
+      width: min(40vw, 58svh, 26rem);
+    }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { reducedMotion } from '../../lib/motion';
+
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
+
+  // Artwork units, matching the 300 × 300 stage in the markup.
+  const STAGE = 300;
+  const CENTROID = 68.6;
+  const DRIFT = 34;
+  const BITE = 51; // 17% of the stage
+  const ROW_PITCH = 58;
+  // Bites grow as they line up; the row may spill past the stage's sides.
+  const ROW_SCALE = 1.4;
+
+  // When each beat happens, as a fraction of the pinned scroll.
+  const AT = {
+    cut: 0,
+    split: 0.13,
+    drift: 0.15,
+    shrink: 0.42,
+    bites: 0.48,
+    row: 0.7,
+    names: 0.86,
+    reasons: [0.2, 0.47, 0.74],
+    counter: 0.76,
+  };
+
+  const build = (scene: HTMLElement): gsap.core.Timeline => {
+    const find = (selector: string) => gsap.utils.toArray<HTMLElement>(selector, scene);
+    const pin = scene.querySelector<HTMLElement>('[data-why-pin]')!;
+
+    const timeline = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: scene,
+        start: () => `top ${parseFloat(getComputedStyle(pin).top) || 0}px`,
+        end: 'bottom bottom',
+        scrub: true,
+      },
+    });
+
+    // The cake cracks along the cut lines, which then become wedge edges.
+    timeline
+      .from(find('[data-why-cut] path'), { drawSVG: 0, duration: 0.09, stagger: 0.01 }, AT.cut)
+      .to(find('[data-why-cut]'), { opacity: 0, duration: 0.03 }, AT.split)
+      .to(find('[data-why-edge]'), { opacity: 1, duration: 0.03 }, AT.split);
+
+    // Wedges drift apart, then shrink away.
+    find('[data-why-wedge]').forEach((wedge, index) => {
+      const angle = (Number(wedge.dataset.angle) * Math.PI) / 180;
+      const drift = (DRIFT / STAGE) * 100;
+
+      timeline
+        .to(
+          wedge,
+          {
+            xPercent: drift * Math.cos(angle),
+            yPercent: drift * Math.sin(angle),
+            rotation: index % 2 ? 5 : -5,
+            duration: 0.25,
+            ease: 'power1.out',
+          },
+          AT.drift,
+        )
+        .to(wedge, { scale: 0.3, duration: 0.2, ease: 'power1.in' }, AT.shrink)
+        .to(wedge, { opacity: 0, duration: 0.12 }, AT.shrink + 0.08);
+    });
+
+    // A round bite grows where each wedge was, then they line up in a row.
+    find('[data-why-bite]').forEach((bite) => {
+      const angle = (Number(bite.dataset.angle) * Math.PI) / 180;
+      const row = Number(bite.dataset.row);
+      const reach = ((CENTROID + DRIFT) / BITE) * 100;
+
+      timeline
+        .fromTo(
+          bite,
+          { xPercent: reach * Math.cos(angle), yPercent: reach * Math.sin(angle), scale: 0.3, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.18, ease: 'back.out(1.8)' },
+          AT.bites,
+        )
+        .to(
+          bite,
+          {
+            xPercent: ((row - 2) * ROW_PITCH * ROW_SCALE * 100) / BITE,
+            yPercent: 0,
+            scale: ROW_SCALE,
+            duration: 0.18,
+            ease: 'power2.inOut',
+          },
+          AT.row + row * 0.01,
+        );
+    });
+
+    timeline.from(find('[data-why-name]'), { opacity: 0, duration: 0.06 }, AT.names);
+
+    // The three lines stamp in with a small bounce.
+    find('[data-why-reason]').forEach((reason, index) => {
+      timeline.from(
+        reason,
+        { scale: 1.5, rotation: index % 2 ? 3 : -3, opacity: 0, duration: 0.07, ease: 'back.out(3)' },
+        AT.reasons[index] ?? 0.74,
+      );
+    });
+
+    timeline
+      .to(find('[data-why-counter]'), { yPercent: -50, duration: 0.1, ease: 'power2.inOut' }, AT.counter)
+      // A short hold at the end before the page releases.
+      .to({}, { duration: 0.08 }, 0.92);
+
+    return timeline;
+  };
+
+  document.addEventListener('astro:page-load', () => {
+    const scene = document.querySelector<HTMLElement>('[data-why]');
+    if (!scene || reducedMotion()) return;
+
+    let timeline: gsap.core.Timeline | undefined;
+
+    // Build the scene only when it is about a screen away.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        timeline = build(scene);
+      },
+      { rootMargin: '100% 0px' },
+    );
+    observer.observe(scene);
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        observer.disconnect();
+        timeline?.kill();
+      },
+      { once: true },
+    );
+  });
+</script>
