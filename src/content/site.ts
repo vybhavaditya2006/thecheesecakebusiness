@@ -21,7 +21,17 @@ export const contact = {
   // TODO: not provided yet.
   whatsapp: '',
   // Web3Forms access key for order emails, set as PUBLIC_WEB3FORMS_KEY in .env.
+  // Orders are emailed to the address that key was created for.
   web3formsKey: import.meta.env?.PUBLIC_WEB3FORMS_KEY ?? '',
+  // Optional Google Apps Script web app that gets a copy of every order,
+  // set as PUBLIC_ORDER_SCRIPT_URL in .env.
+  orderScriptUrl: import.meta.env?.PUBLIC_ORDER_SCRIPT_URL ?? '',
+} as const;
+
+// What "Check my address" says, by straight-line distance from the kitchen.
+export const deliveryVerdict = {
+  free: 'Free delivery',
+  outside: `Outside ${delivery.freeRadiusKm} km: a delivery charge applies, confirmed on WhatsApp`,
 } as const;
 
 export const orderPath = '/order';

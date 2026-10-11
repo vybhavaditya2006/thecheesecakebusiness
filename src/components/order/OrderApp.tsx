@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { customOptions, isCustomOptionId, type CustomOptionId } from '../../content/custom';
 import BoxBuilder from './BoxBuilder';
 import CustomBuilder from './CustomBuilder';
+import DetailsForm from './DetailsForm';
 import OrderSummary from './OrderSummary';
 
 type Tab = 'box' | 'custom';
@@ -76,6 +77,9 @@ export default function OrderApp() {
               {tab === 'box' ? <BoxBuilder /> : <CustomBuilder type={type} onType={setType} />}
             </motion.div>
           </AnimatePresence>
+
+          {/* Shared by both tabs, so switching never loses what was typed. */}
+          <DetailsForm />
         </div>
 
         <OrderSummary />

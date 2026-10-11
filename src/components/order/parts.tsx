@@ -43,6 +43,29 @@ export function Chip({ selected, disabled, onClick, children }: ChipProps) {
   );
 }
 
+// The box of five, closed and tied, for the send-off.
+export function ClosedBox({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 60 360 180"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path className="fill-cream" d="M34 82H326L346 140H14Z" />
+      <path className="fill-cream" d="M14 140H346L338 228H22Z" />
+      <path d="M22 183H338" strokeWidth="24" strokeLinecap="butt" />
+      <svg x="125" y="158" width="110" height="57" viewBox="0 0 120 62">
+        <BowPaths />
+      </svg>
+    </svg>
+  );
+}
+
 // The bow from Bow.astro, for use inside React-rendered SVGs (120 × 62 units).
 export function BowPaths() {
   return (
