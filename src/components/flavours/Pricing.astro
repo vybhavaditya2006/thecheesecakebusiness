@@ -12,13 +12,13 @@ const boxPrice = saleActive ? pricing.box.offer : pricing.box.regular;
 const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
 ---
 
-<section class="px-5 py-20" data-pricing>
+<section class="bg-blush/45 px-5 py-20" data-pricing>
   <SectionTitle label={saleActive ? 'Launch prices' : 'Prices'} title="Same price, every flavour" />
 
   <ul class="mx-auto mt-14 grid max-w-3xl gap-10 sm:grid-cols-2 sm:gap-8">
     {
       cards.map((card) => (
-        <li class="relative rounded-3xl border border-wine/25 p-8 text-center" data-price-card>
+        <li class="relative rounded-3xl border border-wine/25 bg-cream p-8 text-center" data-price-card>
           <h3 class="label-caps font-sans">{card.label}</h3>
 
           <p class="mt-6 flex items-baseline justify-center gap-4">
@@ -49,7 +49,7 @@ const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
 
           {card.sticker && (
             <p
-              class="absolute -bottom-9 -left-2 flex size-24 -rotate-12 flex-col items-center justify-center rounded-full bg-wine p-2 text-cream sm:-left-8"
+              class="absolute -bottom-9 -left-2 flex size-24 -rotate-12 flex-col items-center justify-center rounded-full bg-gold p-2 text-wine-deep sm:-left-8"
               data-price-sticker
             >
               <strong class="font-display text-3xl leading-none">{perPiece}</strong>

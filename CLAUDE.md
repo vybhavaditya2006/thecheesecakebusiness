@@ -19,14 +19,14 @@ Each page has one job and its own entrance transition.
 Say it once: every fact has one home page where it is explained in full. Elsewhere it appears only in a different, shorter form (sticker, icon, number, link), never the same sentence twice.
 
 ## Ordering
-No forms and no email. Build your box -> Book -> Crumb Monster bite animation -> wa.me link to Shlok's number with the order prefilled.
+No forms and no email. Build your box -> Book -> wa.me link to Shlok's number with the order prefilled.
 Removed in Round 2, do not bring back: Web3Forms, the details form, the address check and send-order.
 
 ## Look and feel
-Look: the launch poster. Cream #F3E7DA background, wine #7A1F2B type and accents, deep wine #4A0F18 footer. Flavour accents only inside flavour scenes: blueberry #5B3FA0, kitkat #D2232A, oreo #111111, coffee #6F4E37, biscoff #C8813C. Script logo SVG, Cormorant Garamond headings, letter-spaced DM Sans caps labels, DM Sans body. Etched sketch illustrations.
+Look: the launch poster. Cream #F3E7DA background, wine #7A1F2B type and accents, deep wine #4A0F18 footer. Supporting colours, used sparingly: gold #C89B3C for small decorative accents (rules, stickers, ornaments; never body text on cream) and blush #EDD3C8 for panels and section bands. No further colours. Flavour accents only inside flavour scenes: blueberry #5B3FA0, kitkat #D2232A, oreo #111111, coffee #6F4E37, biscoff #C8813C. Script logo SVG, Cormorant Garamond headings, letter-spaced DM Sans caps labels, DM Sans body. Etched sketch illustrations.
 Graphics: illustrations get two-tone fills and soft shadows; light paper texture on cream; warm glow and contact shadows under products; tilted stickers; icons for practical info.
 Feel: premium first, then fun and catchy. Clean and professional; nothing that reads as made for children (no googly eyes, rubbery bounces or toy-like shapes). Award-site level animation (reference: https://tubikstudio.com/works/planetono), but every animation features the cheesecake or makes ordering more fun.
-Mascot: the Crumb Monster, an original round cheesecake-bite character drawn as a quiet etched line figure: a scalloped crust edge, two dot eyes, a small mouth and thin arms. Clean and grown-up, never cartoonish; small, unhurried movement. An SVG rig animated with GSAP.
+No mascot for now: the Crumb Monster was tried and dropped. Do not bring it back unless asked.
 Micro-interactions: bite cursor on desktop, magnetic squishy buttons, letter-wave headings, hand-drawn price strikes, scroll-reactive sale ribbon, wine curtain transition between pages, drifting crumbs.
 
 ## 3D

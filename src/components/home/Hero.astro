@@ -32,7 +32,11 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
   data-hero
 >
   <!-- Shown from the very first paint (no intro), so the page has content before any script runs. -->
-  <p class="label-caps opacity-80">{brand.campaign}</p>
+  <p class="label-caps flex items-center gap-3">
+    <span class="h-0.5 w-6 bg-gold" aria-hidden="true"></span>
+    <span class="opacity-80">{brand.campaign}</span>
+    <span class="h-0.5 w-6 bg-gold" aria-hidden="true"></span>
+  </p>
 
   <svg
     class="w-[min(62vw,21rem)] overflow-visible text-wine"

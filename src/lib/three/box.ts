@@ -113,7 +113,13 @@ export function createBox(): Box3D {
     loop.bezierCurveTo(side * 0.5, -0.16, side * 0.14, -0.1, 0, 0);
     // The opening of the loop: the same outline, smaller, about its middle.
     const opening = new Path().setFromPoints(
-      loop.getPoints(16).map((point) => point.clone().sub({ x: side * 0.3, y: 0.03 }).multiplyScalar(0.55).add({ x: side * 0.3, y: 0.03 })),
+      loop.getPoints(16).map((point) =>
+        point
+          .clone()
+          .sub({ x: side * 0.3, y: 0.03 })
+          .multiplyScalar(0.55)
+          .add({ x: side * 0.3, y: 0.03 }),
+      ),
     );
     loop.holes.push(opening);
 
@@ -127,7 +133,11 @@ export function createBox(): Box3D {
 
     bow.add(new Mesh(new ExtrudeGeometry(loop, flat), satin), new Mesh(new ExtrudeGeometry(tail, flat), satin));
   }
-  const knot = new Mesh(new ExtrudeGeometry(new Shape().absellipse(0, 0, 0.055, 0.075, 0, Math.PI * 2), { ...flat, depth: 0.04 }), satin);
+  const knot = new Mesh(
+    new ExtrudeGeometry(new Shape().absellipse(0, 0, 0.055, 0.075, 0, Math.PI * 2), { ...flat, depth: 0.04 }),
+    // The knot is gold, as on the drawn bow.
+    new MeshStandardMaterial({ color: '#c89b3c', roughness: 0.35, metalness: 0.3 }),
+  );
   bow.add(knot);
 
   // The contact shadow: a soft blob on the table under the box.

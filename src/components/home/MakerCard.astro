@@ -12,10 +12,10 @@ const photos = import.meta.glob<{ default: ImageMetadata }>('../../assets/photos
 const photo = Object.values(photos)[0]?.default;
 ---
 
-<section class="px-5 pt-8 pb-24">
+<section class="px-5 pt-16 pb-24">
   <a
     href={paths.story}
-    class="maker-card mx-auto flex max-w-md items-center gap-5 rounded-3xl border border-wine/25 p-5"
+    class="maker-card mx-auto flex max-w-md items-center gap-5 rounded-3xl border border-wine/25 bg-blush/40 p-5"
   >
     <span class="block size-24 shrink-0 overflow-hidden rounded-full border-[1.5px] border-wine bg-wine/10">
       {

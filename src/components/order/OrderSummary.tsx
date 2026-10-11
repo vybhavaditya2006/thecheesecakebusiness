@@ -1,13 +1,13 @@
 import { useStore } from '@nanostores/react';
 import { animate, AnimatePresence, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { customPriceNote } from '../../content/custom';
 import { countedOrder, formatPrice, priceBreakdown, pricing, saleActive } from '../../content/pricing';
 import { delivery } from '../../content/info';
 import { booking } from '../../content/site';
 import { $bites, $custom, clearOrder, countByFlavour, removeCustom } from '../../lib/order-store';
 import { orderMessage, whatsappLink } from '../../lib/whatsapp';
-import BookingStage, { type BiteMark } from './BookingStage';
+import BookingNotice from './BookingNotice';
 
 // The total, counting up or down to its new value whenever it changes.
 function Total({ value }: { value: number }) {
@@ -120,39 +120,13 @@ export default function OrderSummary() {
   const bites = useStore($bites);
   const custom = useStore($custom);
   const [open, setOpen] = useState(false);
-  // The order as it stood when "Book" was pressed, and the card to bite.
-  const [booked, setBooked] = useState<{ message: string; card: HTMLElement; edge: 'top' | 'bottom' } | null>(null);
-  // The bite the Crumb Monster took out of the card; it stays until the order changes.
-  const [mark, setMark] = useState<BiteMark | null>(null);
-  const panel = useRef<HTMLElement>(null);
-  const bar = useRef<HTMLDivElement>(null);
+  // The order as it stood when "Book" was pressed.
+  const [booked, setBooked] = useState<string | null>(null);
   const empty = !bites.length && !custom.length;
-
-  useEffect(() => setMark(null), [bites, custom]);
-
   const book = (): void => {
-    // The desktop panel is hidden on phones, where the bar stands in for it.
-    const onPanel = Boolean(panel.current?.offsetParent);
-    const card = onPanel ? panel.current : bar.current;
-    if (!card) return;
     setOpen(false);
-    setMark(null);
-    setBooked({ message: orderMessage(bites, custom), card, edge: onPanel ? 'bottom' : 'top' });
+    setBooked(orderMessage(bites, custom));
   };
-  const bitten = (shown: boolean) =>
-    mark && shown
-      ? {
-          className: ' bitten',
-          style: {
-            '--bite-x': `${mark.x}px`,
-            '--bite-y': `${mark.y}px`,
-            '--bite-r': `${mark.radius}px`,
-            '--bite-in': mark.inward,
-          } as CSSProperties,
-        }
-      : { className: '', style: undefined };
-  const panelBite = bitten(Boolean(panel.current?.offsetParent));
-  const barBite = bitten(!panel.current?.offsetParent);
   const { total } = priceBreakdown(bites.length);
   const count = [bites.length && countedOrder(bites.length), custom.length && `${custom.length} custom`]
     .filter(Boolean)
@@ -161,12 +135,7 @@ export default function OrderSummary() {
   return (
     <>
       {/* Desktop: a panel that stays in view beside the builder. */}
-      <aside
-        ref={panel}
-        className={`sticky top-32 hidden rounded-3xl border border-wine/25 bg-white/60 p-6 lg:block${panelBite.className}`}
-        style={panelBite.style}
-        aria-label="Your order"
-      >
+      <aside className="sticky top-32 hidden rounded-3xl border border-wine/25 bg-blush/40 p-6 lg:block" aria-label="Your order">
         <h2 className="text-3xl">Your order</h2>
         <div className="mt-4">
           <Lines onBook={book} />
@@ -194,11 +163,7 @@ export default function OrderSummary() {
           )}
         </AnimatePresence>
 
-        <div
-          ref={bar}
-          className={`relative flex items-center justify-between gap-3 bg-wine-deep px-5 py-3 text-cream${barBite.className}`}
-          style={barBite.style}
-        >
+        <div className="relative flex items-center justify-between gap-3 bg-wine-deep px-5 py-3 text-cream">
           <p aria-live="polite">
             <span className="block text-xs leading-tight opacity-80">{count || 'Your order is empty'}</span>
             <span className="font-display text-2xl leading-none font-semibold">
@@ -231,13 +196,10 @@ export default function OrderSummary() {
 
       <AnimatePresence>
         {booked && (
-          <BookingStage
+          <BookingNotice
             key="booking"
-            card={booked.card}
-            edge={booked.edge}
-            message={booked.message}
-            link={whatsappLink(booked.message)}
-            onBite={setMark}
+            message={booked}
+            link={whatsappLink(booked)}
             onClose={() => setBooked(null)}
           />
         )}

@@ -26,5 +26,6 @@ const { class: className, ...rest } = Astro.props;
   <path d="M68 26C78 20 90 16 100 19" stroke-width="1.2"></path>
   <path d="M56 33C51 43 43 51 33 58L40 44"></path>
   <path d="M64 33C69 43 77 51 87 58L80 44"></path>
-  <ellipse cx="60" cy="27" rx="6.5" ry="7.5"></ellipse>
+  <!-- The knot is gold unless the caller fills it otherwise. -->
+  <ellipse cx="60" cy="27" rx="6.5" ry="7.5" fill="var(--color-gold)"></ellipse>
 </svg>

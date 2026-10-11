@@ -3,7 +3,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { flavourById, flavours, type FlavourId } from '../../content/flavours';
 import { formatPrice, priceBreakdown, pricing } from '../../content/pricing';
-import { booking } from '../../content/site';
 import {
   $bites,
   $singlesMode,
@@ -13,7 +12,6 @@ import {
   removeBiteAt,
   removeBox,
 } from '../../lib/order-store';
-import CrumbMonster from '../monster/CrumbMonster';
 import { Bite, BowPaths } from './parts';
 import { useBox3D } from './useBox3D';
 
@@ -86,8 +84,6 @@ export default function BoxBuilder() {
   // The 3D box, when this device can run it; the drawn box otherwise.
   const three = useBox3D(stage, mount3D, shown, lidShut, !singles);
   const flat = three ? 'opacity-0' : '';
-  // The top of the box's front wall, in percent of the stage's height.
-  const rim = three?.rim ?? 56;
 
   // A bite has landed: add it, and close the box if that was the fifth.
   const land = (id: FlavourId): void => {
@@ -232,25 +228,6 @@ export default function BoxBuilder() {
               );
             })}
 
-            {/* An empty box has the Crumb Monster waiting in it, cut off at the
-                front wall so it looks out from inside. */}
-            <div className="pointer-events-none absolute inset-x-0 -top-1/2 overflow-hidden" style={{ bottom: `${100 - rim}%` }}>
-              <AnimatePresence initial={false}>
-                {shown.length === 0 && flyers.length === 0 && !lidShut && (
-                  <motion.div
-                    key="monster"
-                    className="absolute -bottom-[7%] left-[33%] w-[34%]"
-                    initial={{ y: '60%', opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: '60%', opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-                  >
-                    <CrumbMonster mood="hungry" className="block w-full" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
             <svg className={`pointer-events-none absolute inset-0 size-full overflow-visible ${flat}`} {...svgProps}>
               <clipPath id="order-box-front">
                 <path d="M14 140H346L338 228H22Z" />
@@ -323,7 +300,7 @@ export default function BoxBuilder() {
             {lidShut
               ? 'Box packed!'
               : shown.length === 0
-                ? `${booking.hungry}. Tap one to drop it in the box.`
+                ? 'Tap a flavour to drop it in the box.'
                 : `${shown.length} of ${BOX} in the box. Tap a bite to take it out.`}
           </p>
 

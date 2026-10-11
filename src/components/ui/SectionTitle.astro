@@ -23,6 +23,7 @@ const {
 
 <div class:list={[align === 'center' ? 'text-center' : 'text-left', className]}>
   {label && <p class="label-caps opacity-80">{label}</p>}
+  {label && <span class:list={['mt-3 block h-0.5 w-10 bg-gold', align === 'center' && 'mx-auto']} aria-hidden="true" />}
   <Heading class="wave-heading mt-3 text-4xl leading-tight sm:text-5xl" data-wave={immediate ? undefined : ''}>
     {title}
   </Heading>
