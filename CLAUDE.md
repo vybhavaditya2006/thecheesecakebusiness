@@ -1,7 +1,7 @@
 # Cheesecake bites site — project rules
 Brand: working name "Miette", NOT final (it may change for trademark and domain reasons). Never hard-code the name anywhere: read name, tagline, logo path and domain from src/content/brand.ts so a rename is a one-file change. Cheesecake bites by Shlok. Tagline: "A little, well made." Current campaign: Diwali & Dussehra launch special.
 Pitch: whole cheesecakes are expensive, too much to finish, and too heavy for health-conscious people. The brand sells bite-sized portions: the craving is satisfied without overeating, and it costs less.
-Flavours: Blueberry, KitKat, Oreo, Coffee, Lotus Biscoff. Custom orders: your own combo, Half & Half cake, gift box (5 or 10), party platter (25 or 50).
+Flavours: Blueberry, KitKat, Oreo, Coffee, Lotus Biscoff. Custom orders: build your own bite, Half & Half cake, gift box (5 or 10), party platter (25 or 50).
 Pricing: box of 5 (pick any mix) ₹150, launch offer ₹125. Single bite ₹65, launch offer ₹50. Same price for every flavour.
 Delivery: free within 5 km of Nagarabhavi, Bengaluru 560072; paid beyond 5 km (charge confirmed on WhatsApp). Payment: UPI or cash on delivery. No minimum order. Kitchen coordinates: [12.96331, 77.51994] (Plus Code 7J4VXG79+8X).
 Site: two pages only. Home (/) and Order (/order). Do not add pages.

@@ -1,4 +1,6 @@
 export interface Price {
+  // What it is called in an order.
+  name: string;
   label: string;
   // Number of bites this price buys.
   bites: number;
@@ -12,8 +14,8 @@ export const currency = { code: 'INR', symbol: '₹' } as const;
 
 // Same price for every flavour.
 export const pricing = {
-  box: { label: 'Box of 5 (pick any mix)', bites: 5, regular: 150, offer: 125 },
-  single: { label: 'Single bite', bites: 1, regular: 65, offer: 50 },
+  box: { name: 'Box of five', label: 'Box of five (pick any mix)', bites: 5, regular: 150, offer: 125 },
+  single: { name: 'Single bite', label: 'Single bite', bites: 1, regular: 65, offer: 50 },
 } as const satisfies Record<string, Price>;
 
 // Flip to false when the launch offer ends.

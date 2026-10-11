@@ -1,7 +1,7 @@
 import { brand } from '../content/brand';
 import { customPriceNote } from '../content/custom';
 import type { FlavourId } from '../content/flavours';
-import { formatPrice, priceBreakdown } from '../content/pricing';
+import { formatPrice, priceBreakdown, pricing } from '../content/pricing';
 import { contact } from '../content/site';
 import type { OrderDetails } from './order-details';
 import { countByFlavour, type CustomRequest } from './order-store';
@@ -18,11 +18,18 @@ export const orderLines = (bites: readonly FlavourId[], custom: readonly CustomR
     const charged = [boxes && plural(boxes, 'box', 'boxes'), singles && plural(singles, 'single')]
       .filter(Boolean)
       .join(' + ');
+    const picked = (run: readonly FlavourId[]): string =>
+      countByFlavour(run)
+        .map(({ flavour, count }) => `${flavour.name} × ${count}`)
+        .join(', ');
+    const packed = boxes * pricing.box.bites;
 
-    lines.push(
-      ...countByFlavour(bites).map(({ flavour, count }) => `• ${flavour.name} × ${count}`),
-      `${plural(bites.length, 'bite')} (${charged}): ${formatPrice(total)}`,
-    );
+    // Each run of five is a box, listed with the flavours picked for it.
+    for (let start = 0; start < packed; start += pricing.box.bites) {
+      lines.push(`• ${pricing.box.name}: ${picked(bites.slice(start, start + pricing.box.bites))}`);
+    }
+    if (singles) lines.push(`• Singles: ${picked(bites.slice(packed))}`);
+    lines.push(`${plural(bites.length, 'bite')} (${charged}): ${formatPrice(total)}`);
   }
 
   for (const request of custom) {

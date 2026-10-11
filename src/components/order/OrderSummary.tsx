@@ -50,7 +50,7 @@ function Lines() {
           <ul className="mt-3 space-y-1 border-t border-wine/25 pt-3">
             {boxes > 0 && (
               <li className="flex justify-between gap-4">
-                <span>{plural(boxes, 'box', 'boxes')} of {pricing.box.bites}</span>
+                <span>{pricing.box.name} × {boxes}</span>
                 <span>{formatPrice(boxes * pricing.box[key])}</span>
               </li>
             )}

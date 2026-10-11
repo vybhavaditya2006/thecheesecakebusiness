@@ -51,6 +51,16 @@ const links = [...jumpLinks, { href: orderPath, label: 'Order' }];
             </li>
           )
         }
+        {
+          contact.email && (
+            <li>
+              Questions?{' '}
+              <a href={`mailto:${contact.email}`} class="underline-offset-4 hover:underline">
+                {contact.email}
+              </a>
+            </li>
+          )
+        }
       </ul>
     </div>
   </div>

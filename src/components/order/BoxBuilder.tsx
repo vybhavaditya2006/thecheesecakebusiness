@@ -350,7 +350,7 @@ export default function BoxBuilder() {
                   <BowPaths />
                 </svg>
                 <span className="flex-1 text-sm">
-                  <strong className="label-caps block">Box {index + 1}</strong>
+                  <strong className="label-caps block">{pricing.box.name}</strong>
                   {countByFlavour(box)
                     .map(({ flavour, count }) => `${flavour.name} × ${count}`)
                     .join(', ')}

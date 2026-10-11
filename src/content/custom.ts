@@ -1,4 +1,4 @@
-export type CustomOptionId = 'combo' | 'half-and-half' | 'gift-box' | 'party-platter';
+export type CustomOptionId = 'build-your-own' | 'half-and-half' | 'gift-box' | 'party-platter';
 
 export interface CustomOption {
   id: CustomOptionId;
@@ -13,9 +13,9 @@ export const customPriceNote = 'Price confirmed on WhatsApp';
 
 export const customOptions: readonly CustomOption[] = [
   {
-    id: 'combo',
-    name: 'Your own combo',
-    description: 'Tell us the flavour combination you have in mind.',
+    id: 'build-your-own',
+    name: 'Build your own bite',
+    description: 'Pick the base, filling, centre and topping yourself.',
   },
   {
     id: 'half-and-half',
@@ -46,15 +46,15 @@ export interface LayerChoice {
   colour: string | null;
 }
 
-export interface ComboLayer {
+export interface BiteLayer {
   id: 'base' | 'filling' | 'centre' | 'topping';
   name: string;
   choices: readonly LayerChoice[];
 }
 
-// "Your own combo", from the bottom layer up.
+// "Build your own bite", from the bottom layer up.
 // TODO: placeholder choices. Replace with what the kitchen really offers.
-export const comboLayers: readonly ComboLayer[] = [
+export const biteLayers: readonly BiteLayer[] = [
   {
     id: 'base',
     name: 'Base',

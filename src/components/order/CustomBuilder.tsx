@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
-  comboLayers,
+  biteLayers,
   customOptions,
   customPriceNote,
   giftNoteLimit,
-  type ComboLayer,
+  type BiteLayer,
   type CustomOptionId,
 } from '../../content/custom';
 import { flavourById, flavours, type FlavourId } from '../../content/flavours';
@@ -55,12 +55,12 @@ function FlavourMix({ value, onChange }: { value: FlavourId[]; onChange: (next: 
   );
 }
 
-type Layers = Partial<Record<ComboLayer['id'], string>>;
+type Layers = Partial<Record<BiteLayer['id'], string>>;
 
 // The bite, built up one layer at a time as choices are made.
-function ComboBite({ layers }: { layers: Layers }) {
-  const colour = (layer: ComboLayer['id']): string | null | undefined =>
-    comboLayers.find((group) => group.id === layer)?.choices.find((choice) => choice.id === layers[layer])?.colour;
+function LayeredBite({ layers }: { layers: Layers }) {
+  const colour = (layer: BiteLayer['id']): string | null | undefined =>
+    biteLayers.find((group) => group.id === layer)?.choices.find((choice) => choice.id === layers[layer])?.colour;
   const drop = {
     initial: { y: -60, opacity: 0, scaleY: 1.3 },
     animate: { y: 0, opacity: 1, scaleY: 1 },
@@ -161,15 +161,15 @@ export default function CustomBuilder({ type, onType }: Props) {
     return () => window.clearTimeout(timer);
   }, [added]);
 
-  const layerName = (layer: ComboLayer): string | undefined =>
+  const layerName = (layer: BiteLayer): string | undefined =>
     layer.choices.find((choice) => choice.id === layers[layer.id])?.name;
 
   // What will be added, or null while the form is incomplete.
   const details = ((): string[] | null => {
     switch (type) {
-      case 'combo':
-        return comboLayers.every(layerName)
-          ? comboLayers.map((layer) => `${layer.name}: ${layerName(layer)}`)
+      case 'build-your-own':
+        return biteLayers.every(layerName)
+          ? biteLayers.map((layer) => `${layer.name}: ${layerName(layer)}`)
           : null;
       case 'half-and-half': {
         const [left, right] = halves;
@@ -215,12 +215,12 @@ export default function CustomBuilder({ type, onType }: Props) {
           <h2 className="text-center text-3xl">{option.name}</h2>
           <p className="mt-1 text-center text-sm">{option.description}</p>
 
-          {type === 'combo' && (
+          {type === 'build-your-own' && (
             <>
               <div className="mt-6">
-                <ComboBite layers={layers} />
+                <LayeredBite layers={layers} />
               </div>
-              {comboLayers.map((layer) => (
+              {biteLayers.map((layer) => (
                 <Field key={layer.id} label={layer.name}>
                   {layer.choices.map((choice) => (
                     <Chip
