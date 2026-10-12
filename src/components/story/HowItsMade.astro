@@ -1,12 +1,24 @@
 ---
 // How a bite is made, in four steps. The steps are placeholders until Shlok
 // confirms them; see src/content/story.ts.
+import { kitchen } from '../../content/photos';
 import { howItsMade } from '../../content/story';
+import Snapshot from '../ui/Snapshot.astro';
 import SectionTitle from '../ui/SectionTitle.astro';
 ---
 
 <section class="bg-blush/45 px-5 py-20" data-made>
   <SectionTitle label="In the kitchen" title={howItsMade.heading} />
+
+  <ul class="mx-auto mt-12 grid max-w-4xl grid-cols-3 items-end gap-3 sm:gap-8">
+    {
+      kitchen.map((shot, index) => (
+        <li>
+          <Snapshot shot={shot} tilt={[-3, 2, -2][index % 3]} sizes="(min-width: 56rem) 17rem, 30vw" />
+        </li>
+      ))
+    }
+  </ul>
 
   <ol class="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-5 md:grid-cols-4">
     {

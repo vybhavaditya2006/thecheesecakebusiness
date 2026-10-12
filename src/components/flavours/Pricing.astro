@@ -1,7 +1,9 @@
 ---
 // Pricing: two cards. On entering view a hand-drawn line strikes the old
 // price and the offer price pops in.
+import { packsOfFive } from '../../content/photos';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
+import Snapshot from '../ui/Snapshot.astro';
 import SectionTitle from '../ui/SectionTitle.astro';
 import Sticker from '../ui/Sticker.astro';
 
@@ -60,6 +62,8 @@ const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
       ))
     }
   </ul>
+
+  <Snapshot shot={packsOfFive} tilt={3} sizes="(min-width: 40rem) 18rem, 62vw" class="mx-auto mt-20 w-[62vw] max-w-[18rem]" />
 </section>
 
 <script>

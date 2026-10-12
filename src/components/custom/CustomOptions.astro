@@ -3,7 +3,9 @@
 // out on entering view and wobble on hover; each opens the custom tab of the
 // box builder.
 import { customOptions, customPricing } from '../../content/custom';
+import { halfAndHalfCake } from '../../content/photos';
 import { customOrderLink } from '../../content/site';
+import Snapshot from '../ui/Snapshot.astro';
 import Bow from '../ui/Bow.astro';
 import SectionTitle from '../ui/SectionTitle.astro';
 
@@ -43,7 +45,9 @@ const spread = (index: number, total: number) => {
     }
   </ul>
 
-  <p class="mx-auto mt-20 max-w-sm text-center text-sm">{customPricing}</p>
+  <Snapshot shot={halfAndHalfCake} tilt={-3} sizes="(min-width: 40rem) 20rem, 66vw" class="mx-auto mt-24 w-[66vw] max-w-[20rem]" />
+
+  <p class="mx-auto mt-12 max-w-sm text-center text-sm">{customPricing}</p>
 </section>
 
 <style>
