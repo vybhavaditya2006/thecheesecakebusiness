@@ -1,5 +1,5 @@
 import { flavours } from '../../content/flavours';
-import { createBite } from './bite';
+import { createBite } from './photo-bite';
 import { createBox, frameBox } from './box';
 import { closeLid, dropBite } from './moves';
 import { createStage } from './renderer';

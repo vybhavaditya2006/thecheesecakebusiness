@@ -4,19 +4,17 @@ import {
   Group,
   Mesh,
   MeshBasicMaterial,
-  type Object3D,
   PlaneGeometry,
   Raycaster,
-  ShadowMaterial,
   Vector2,
 } from 'three';
 import { flavours } from '../../content/flavours';
-import { createBite } from './bite';
-import { createStage, studioLight } from './renderer';
+import { createBite } from './photo-bite';
+import { createStage } from './renderer';
 import { shadowTexture } from './textures';
 
-// The flavour turntable on Home: the five bites in a ring, turning slowly,
-// lit like a product shot. One bite at a time can be lifted out of the ring.
+// The flavour turntable on Home: the five bites, as their real photos, in a
+// ring that turns slowly. One bite at a time can be lifted out of the ring.
 
 export interface Turntable {
   // Which bite is under this point of the screen, if any.
@@ -33,19 +31,13 @@ const TURN = { idle: 0.22, held: 0 };
 
 export function mountTurntable(container: HTMLElement, { onFallback }: { onFallback: () => void }): Turntable {
   const stage = createStage(container, { onFallback });
-  const { scene, camera, key, canvas } = stage;
-  scene.environment = studioLight();
-  scene.environmentIntensity = 0.22;
+  const { scene, camera, canvas } = stage;
 
   const table = new Group();
   const bites = flavours.map((flavour, index) => {
     const bite = createBite(flavour.id);
     const angle = (index / flavours.length) * Math.PI * 2;
     bite.group.position.set(Math.sin(angle) * RING, 0, Math.cos(angle) * RING);
-    bite.group.rotation.y = angle;
-    bite.group.traverse((part: Object3D) => {
-      part.castShadow = part.receiveShadow = true;
-    });
 
     // The soft patch each bite stands on stays on the table when it lifts.
     const patch = new Mesh(
@@ -66,24 +58,13 @@ export function mountTurntable(container: HTMLElement, { onFallback }: { onFallb
     return { group: bite.group, patch, reach };
   });
 
-  key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
-  key.shadow.radius = 6;
-  key.shadow.bias = -0.0008;
-  key.shadow.normalBias = 0.02;
-  Object.assign(key.shadow.camera, { left: -3.2, right: 3.2, top: 3.2, bottom: -3.2, near: 1, far: 24 });
-  const ground = new Mesh(
-    new PlaneGeometry(14, 14).rotateX(-Math.PI / 2),
-    new ShadowMaterial({ color: '#4a0f18', opacity: 0.2 }),
-  );
-  ground.receiveShadow = true;
-  scene.add(table, ground);
+  scene.add(table);
 
   // Looking down on the ring from the front, close enough to fill the width.
   const frame = (): void => {
     const half = Math.tan((camera.fov * Math.PI) / 360);
     const back = Math.max((RING + 1.25) / (half * stage.aspect()), 6.4);
-    camera.position.set(0, 0.35 + Math.sin(0.42) * back, Math.cos(0.42) * back);
+    camera.position.set(0, 0.35 + Math.sin(0.3) * back, Math.cos(0.3) * back);
     camera.lookAt(0, 0.3, 0);
     camera.updateMatrixWorld();
   };

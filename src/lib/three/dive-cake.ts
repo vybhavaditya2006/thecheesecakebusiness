@@ -10,7 +10,7 @@ import {
   Vector3,
 } from 'three';
 import { flavours } from '../../content/flavours';
-import { createBite } from './bite';
+import { createBite } from './photo-bite';
 import { BOX, createBox } from './box';
 import { around, CAKE, createCake, LAYER, type LayerId, scatter, WEDGE } from './cake';
 import { DIVE } from './dive-beats';

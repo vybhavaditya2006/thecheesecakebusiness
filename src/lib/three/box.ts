@@ -12,7 +12,7 @@ import {
   PlaneGeometry,
   Vector3,
 } from 'three';
-import { BITE } from './bite';
+import { BITE } from './photo-bite';
 import type { Stage } from './renderer';
 import { shadowTexture } from './textures';
 

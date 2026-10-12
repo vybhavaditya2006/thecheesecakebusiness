@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { Vector3 } from 'three';
 import type { FlavourId } from '../../content/flavours';
-import { BITE, createBite, type Bite3D } from './bite';
+import { BITE, createBite, type Bite3D } from './photo-bite';
 import { BOX, createBox, frameBox } from './box';
 import { dropBite } from './moves';
 import { createStage } from './renderer';
@@ -53,9 +53,10 @@ export function mountBuilderBox(container: HTMLElement, { onLayout, onFallback }
     };
     onLayout({
       slots: box.slots.map((slot) => {
-        const top = slot.y + BITE.height;
-        const centre = project(slot.x, top, slot.z);
-        const edge = project(slot.x + BITE.radius, top, slot.z);
+        // The tap target sits over the middle of the bite's photo.
+        const middle = slot.y + BITE.height / 2;
+        const centre = project(slot.x, middle, slot.z);
+        const edge = project(slot.x + BITE.radius, middle, slot.z);
         return { ...centre, size: (edge.x - centre.x) * 2 };
       }),
       rim: project(0, BOX.height, BOX.depth / 2).y,

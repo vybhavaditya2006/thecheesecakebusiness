@@ -74,7 +74,8 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
         <rect x="14" y="70" width="332" height="84" rx="9" fill="#fff" fill-opacity="0.4" stroke="none"></rect>
       </svg>
 
-      <ul aria-label="A pack of five bites">
+      <p class="sr-only">A pack of five bites, one of each flavour.</p>
+      <ul aria-hidden="true">
         {
           bites.map((bite) => (
             <li
@@ -223,7 +224,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
         // Too slow here: back to the drawn box.
         onFallback: () => {
           box.dispose();
-          gsap.set(flat, { opacity: 1 });
+          gsap.set(flat, { autoAlpha: 1 });
           gsap.set(deep, { opacity: 0 });
         },
       });
@@ -255,7 +256,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
     await Promise.all([curtainClear(), fontsReady()]);
     if (!hero.isConnected) return;
 
-    if (loading) gsap.set(flat, { opacity: 0 });
+    if (loading) gsap.set(flat, { autoAlpha: 0 });
     hero.dataset.ready = '';
     const playing = [playIntro(hero)];
     document.addEventListener('astro:before-swap', () => playing.forEach((intro) => intro.kill()), { once: true });
@@ -272,7 +273,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
 
     // Not ready in time (or not used): the drawn box plays, and the 3D one
     // takes over quietly once both it and the intro are done.
-    gsap.set(flat, { opacity: 1 });
+    gsap.set(flat, { autoAlpha: 1 });
     const flatIntro = playFlatBox(hero);
     playing.push(flatIntro);
     const late = await loading;
@@ -281,7 +282,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
     if (flatIntro.progress() < 1) await flatIntro;
     if (!hero.isConnected) return;
     late.showFinished();
-    gsap.to(flat, { opacity: 0, duration: 0.4 });
+    gsap.to(flat, { autoAlpha: 0, duration: 0.4 });
     gsap.to(deep, { opacity: 1, duration: 0.4 });
   });
 </script>

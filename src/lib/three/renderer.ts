@@ -58,6 +58,10 @@ export const onStageDispose = (callback: () => void): void => {
   disposers.add(callback);
 };
 
+// Asks every stage for another frame: for when something they all show (a
+// photo texture) has just finished loading.
+export const refreshStages = (): void => stages.forEach((stage) => stage.invalidate());
+
 const renderer = (): WebGLRenderer => {
   if (!shared) {
     shared = new WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
