@@ -1,0 +1,108 @@
+---
+// A strip of close-ups, edge to edge, between two sections. On wide screens
+// the tiles drift past each other a little as the page scrolls; on phones it
+// is a row to swipe along. Without motion it is simply the row.
+import type { ImageMetadata } from 'astro';
+import { Picture } from 'astro:assets';
+
+const files = import.meta.glob<{ default: ImageMetadata }>('../../assets/macro/*.webp', { eager: true });
+// What each close-up shows, in the order they run.
+const shots = [
+  ['biscoff-crumb', 'Biscuit crumb on a Lotus Biscoff bite, close up'],
+  ['blueberry-compote', 'Blueberry compote on a bite, close up'],
+  ['layers', 'The layers of a bite seen through its paper cup'],
+  ['kitkat-pieces', 'KitKat pieces on a bite, close up'],
+  ['paper-cup', 'The fluted edge of a paper cup'],
+].flatMap(([name, alt]) => {
+  const photo = files[`../../assets/macro/${name}.webp`]?.default;
+  return photo ? [{ photo, alt: alt! }] : [];
+});
+---
+
+{
+  shots.length > 0 && (
+    <section class="macro-strip overflow-x-clip py-10" aria-label="Close-ups" data-macro>
+      <ul class="macro-row">
+        {shots.map(({ photo, alt }) => (
+          <li class="macro-tile" data-macro-tile>
+            <Picture
+              src={photo}
+              formats={['avif']}
+              fallbackFormat="webp"
+              quality={72}
+              widths={[240, 400, 640]}
+              sizes="(min-width: 48rem) 20vw, 44vw"
+              alt={alt}
+              class="aspect-square w-full rounded-2xl object-cover"
+            />
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style is:global>
+  /* Phones: a row to swipe along. */
+  .macro-row {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-inline: 1.25rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .macro-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .macro-tile {
+    flex: 0 0 44vw;
+    scroll-snap-align: center;
+    border-radius: 1rem;
+    box-shadow: 0 10px 18px -10px rgb(74 15 24 / 0.35);
+  }
+
+  /* Wide screens: all five across, a little wider than the page. */
+  @media (min-width: 48rem) {
+    .macro-row {
+      gap: 1rem;
+      overflow: visible;
+      margin-inline: -3vw;
+      padding: 1.5rem 0;
+    }
+
+    .macro-tile {
+      flex: 1 1 0;
+    }
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { lazyScene } from '../../lib/scene';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Alternate tiles drift up and down as the strip crosses the screen.
+  lazyScene('[data-macro]', (scene) => {
+    const media = gsap.matchMedia();
+    media.add('(min-width: 48rem)', () => {
+      gsap.utils.toArray<HTMLElement>('[data-macro-tile]', scene).forEach((tile, index) => {
+        gsap.fromTo(
+          tile,
+          { y: index % 2 ? 28 : -28, rotation: index % 2 ? 1.5 : -1.5 },
+          {
+            y: index % 2 ? -28 : 28,
+            rotation: index % 2 ? -1.5 : 1.5,
+            ease: 'none',
+            scrollTrigger: { trigger: scene, start: 'top bottom', end: 'bottom top', scrub: true },
+          },
+        );
+      });
+    });
+    return () => media.revert();
+  });
+</script>

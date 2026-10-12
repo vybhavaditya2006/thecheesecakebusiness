@@ -3,6 +3,7 @@
 // price and the offer price pops in.
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
 import SectionTitle from '../ui/SectionTitle.astro';
+import Sticker from '../ui/Sticker.astro';
 
 const cards = [
   { ...pricing.box, blurb: 'Any mix of flavours, packed and tied with a bow.', sticker: true },
@@ -40,7 +41,7 @@ const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
                 </svg>
               </span>
             )}
-            <span class="inline-block font-display text-7xl leading-none font-semibold" data-price-offer>
+            <span class="inline-block font-display text-7xl leading-none font-semibold" data-price-offer data-count>
               {formatPrice(saleActive ? card.offer : card.regular)}
             </span>
           </p>
@@ -48,12 +49,11 @@ const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
           <p class="mt-5 text-sm">{card.blurb}</p>
 
           {card.sticker && (
-            <p
-              class="absolute -bottom-9 -left-2 flex size-24 -rotate-12 flex-col items-center justify-center rounded-full bg-gold p-2 text-wine-deep sm:-left-8"
-              data-price-sticker
-            >
-              <strong class="font-display text-3xl leading-none">{perPiece}</strong>
-              <span class="label-caps mt-1 text-[0.55rem] leading-tight tracking-[0.15em]">a piece in a box of five</span>
+            <p class="absolute -bottom-9 -left-2 sm:-left-8" data-price-sticker>
+              <Sticker round tilt={-12}>
+                <strong class="font-display text-3xl leading-none" data-count>{perPiece}</strong>
+                <span class="label-caps mt-1 text-[0.55rem] leading-tight tracking-[0.15em]">a piece in a box of five</span>
+              </Sticker>
             </p>
           )}
         </li>

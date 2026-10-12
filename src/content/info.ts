@@ -16,6 +16,8 @@ export const delivery = {
   paidNote: 'Beyond 5 km delivery is paid; the charge is confirmed on WhatsApp.',
   // The short form, for the footer and the order summary.
   short: 'Free within 5 km',
+  // Where the bites are made, for a sticker.
+  madeIn: 'Made in Nagarabhavi',
   minimumOrder: 0,
 } as const;
 
@@ -26,6 +28,8 @@ export const arrival = {
     'Otherwise it is made to order, and the day is confirmed on WhatsApp.',
   ],
   short: 'Same day if in stock',
+  // Both ways it can go, for the icon row.
+  shortChoice: 'Same day or made to order',
 } as const;
 
 export const paymentMethods = ['UPI', 'cash'] as const;

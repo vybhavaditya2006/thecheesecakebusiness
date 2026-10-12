@@ -43,4 +43,6 @@ export const howItsMade = {
 export const upClose = {
   label: 'Real photos',
   heading: 'The bites, up close',
+  // A hand-written note beside the photos.
+  note: 'the real thing',
 } as const;

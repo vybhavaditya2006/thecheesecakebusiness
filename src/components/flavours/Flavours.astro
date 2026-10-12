@@ -8,6 +8,7 @@ import { flavours } from '../../content/flavours';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
 import { biteImage } from '../../lib/bite-images';
 import BitePhoto from '../ui/BitePhoto.astro';
+import HandNote from '../ui/HandNote.astro';
 import Button from '../ui/Button.astro';
 import { paths } from '../../content/site';
 import Ingredient from './Ingredient.astro';
@@ -89,6 +90,7 @@ const crumbs = [
       {
         flavours.map((flavour, index) => (
           <li
+            id={flavour.id}
             class="flavour-panel flavour-tint"
             style={`--accent:${flavour.accent}`}
             data-flavour-panel
@@ -105,13 +107,21 @@ const crumbs = [
                 />
               ))}
               {/* A cut-out photo stands larger than the placeholder circle. */}
-              <div class:list={['absolute', biteImage(flavour.id) ? 'inset-[14%]' : 'inset-[27%]']} data-flavour-bite>
+              <div
+                class:list={['absolute', biteImage(flavour.id) ? 'inset-[14%]' : 'inset-[27%]']}
+                data-flavour-bite
+              >
                 <BitePhoto
                   flavour={flavour}
                   sizes="(min-width: 48rem) min(28vw, 42svh), min(40vw, 16svh)"
                   class="text-[clamp(0.8rem,2.2vw,1.6rem)]"
                 />
-              </div>
+                {flavour.photographed && biteImage(flavour.id) && (
+                <span class="flavour-note absolute top-[2%] left-[4%]" data-flavour-note>
+                  <HandNote tilt={-6}>{flavour.ingredient.toLowerCase()}</HandNote>
+                </span>
+              )}
+            </div>
             </div>
 
             <div class="flavour-text flex flex-col gap-3">
@@ -368,6 +378,7 @@ const crumbs = [
 
   /* Hidden until the flavour arrives. */
   .motion [data-flavour-bite],
+  .motion [data-flavour-note],
   .motion [data-ingredient] {
     opacity: 0;
   }
@@ -659,6 +670,8 @@ const crumbs = [
         );
       });
 
+      arrival.fromTo(find('[data-flavour-note]', panel), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.6);
+
       arrival.fromTo(
         find('[data-flavour-strike]', panel),
         { drawSVG: 0 },
@@ -670,7 +683,9 @@ const crumbs = [
     const show = (next: number): void => {
       if (next === active) return;
       const previous = panels[active];
-      if (previous) gsap.set(find('[data-flavour-bite], [data-ingredient]', previous), { opacity: 0 });
+      if (previous) {
+        gsap.set(find('[data-flavour-bite], [data-flavour-note], [data-ingredient]', previous), { opacity: 0 });
+      }
 
       // The background warms to the new flavour's colour.
       washes.forEach((wash, wave) => {
@@ -725,6 +740,14 @@ const crumbs = [
           : { snapTo: 1 / steps, duration: { min: 0.2, max: 0.5 }, delay: 0.1, ease: 'power1.inOut' },
       });
     });
+
+    const asked = panels.findIndex((panel) => panel.id && panel.id === window.location.hash.slice(1));
+    if (asked > 0) {
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+        goTo(asked);
+      });
+    }
 
     const presence = ScrollTrigger.create({
       trigger: scene,

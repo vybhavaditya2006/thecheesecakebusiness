@@ -2,12 +2,18 @@
 // How ordering works: three steps, each with a sketch that draws itself.
 import { boxLabel, orderPath, ordering } from '../../content/site';
 import StorySketch from '../story/StorySketch.astro';
+import { delivery } from '../../content/info';
 import Button from '../ui/Button.astro';
+import FactIcons from '../ui/FactIcons.astro';
+import Sticker from '../ui/Sticker.astro';
 import SectionTitle from '../ui/SectionTitle.astro';
 ---
 
-<section class="bg-blush/45 px-5 py-20" data-ordering>
+<section class="relative bg-blush/45 px-5 py-20" data-ordering>
   <SectionTitle label="Three steps" title={ordering.heading} />
+  <p class="absolute top-8 right-4 sm:top-12 sm:right-[8%]">
+    <Sticker tilt={9}><span class="label-caps text-[0.65rem]">{delivery.short}</span></Sticker>
+  </p>
 
   <ol class="mx-auto mt-12 grid max-w-4xl gap-10 sm:grid-cols-3 sm:gap-6">
     {
@@ -23,6 +29,8 @@ import SectionTitle from '../ui/SectionTitle.astro';
       ))
     }
   </ol>
+
+  <FactIcons class="mx-auto mt-14 block w-fit" />
 
   <p class="mt-12 text-center">
     <Button href={orderPath}>{boxLabel}</Button>

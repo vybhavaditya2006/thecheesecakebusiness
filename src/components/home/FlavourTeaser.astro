@@ -1,20 +1,34 @@
 ---
-// A taste of the Flavours page: the names only, each with a dot in its own
-// colour. Everything else about a flavour lives on /flavours.
+// A taste of the Flavours page. With 3D it is a turntable of the five bites:
+// hover or tap lifts one and shows its name, and a second tap opens that
+// flavour. Without 3D it is the names only, each a link to its flavour.
+// Everything else about a flavour lives on /flavours.
 import { flavours } from '../../content/flavours';
 import { paths } from '../../content/site';
 import Button from '../ui/Button.astro';
 ---
 
-<section class="overflow-x-clip px-5 py-20 text-center" data-teaser>
-  <p class="label-caps opacity-80">{flavours.length} flavours</p>
+<section class="teaser overflow-x-clip px-5 py-20 text-center" data-teaser>
+  <p class="label-caps opacity-80"><span data-count>{flavours.length}</span> flavours</p>
 
-  <ul class="mx-auto mt-6 max-w-3xl">
+  <!-- The 3D turntable mounts here; empty and collapsed until it does. -->
+  <div class="teaser-stage" data-teaser-stage>
+    <div class="absolute inset-0" data-teaser-3d></div>
+  </div>
+  <p class="teaser-name" aria-live="polite" data-teaser-shown></p>
+
+  <ul class="teaser-names mx-auto mt-6 max-w-3xl">
     {
       flavours.map((flavour) => (
-        <li class="flex items-center justify-center gap-4" data-teaser-name>
-          <span class="size-3 shrink-0 rounded-full" style={`background:${flavour.accent}`} aria-hidden="true" />
-          <span class="font-display text-5xl leading-[1.1] font-semibold italic sm:text-7xl">{flavour.name}</span>
+        <li data-teaser-name>
+          <a
+            href={`${paths.flavours}#${flavour.id}`}
+            class="teaser-link flex items-center justify-center gap-4"
+            data-teaser-link
+          >
+            <span class="teaser-dot size-3 shrink-0 rounded-full" style={`background:${flavour.accent}`} aria-hidden="true" />
+            <span class="teaser-word font-display leading-[1.1] font-semibold italic">{flavour.name}</span>
+          </a>
         </li>
       ))
     }
@@ -23,22 +37,206 @@ import Button from '../ui/Button.astro';
   <Button class="mt-10" href={paths.flavours}>Meet the flavours</Button>
 </section>
 
+<style is:global>
+  .teaser-stage,
+  .teaser-name {
+    display: none;
+  }
+
+  .teaser-word {
+    font-size: 3rem;
+  }
+
+  @media (min-width: 40rem) {
+    .teaser-word {
+      font-size: 4.5rem;
+    }
+  }
+
+  /* ---- With the turntable: the stage shows, and the names shrink to a row. */
+  .teaser[data-three] .teaser-stage {
+    display: block;
+    position: relative;
+    width: 100%;
+    max-width: 56rem;
+    height: min(62vw, 26rem);
+    margin: 1rem auto 0;
+    cursor: pointer;
+    touch-action: pan-y;
+    /* Fades the edges, so no shadow is cut off square by the canvas. */
+    mask-image: radial-gradient(ellipse 62% 64% at 50% 50%, #000 72%, transparent 100%);
+  }
+
+  .teaser[data-three] .teaser-name {
+    display: block;
+    min-height: 3.5rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 6vw, 3.5rem);
+    font-style: italic;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .teaser-hint {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+
+  .teaser[data-three] .teaser-names {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 1.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .teaser[data-three] .teaser-link {
+    gap: 0.5rem;
+    padding-block: 0.4rem;
+  }
+
+  .teaser[data-three] .teaser-word {
+    font-size: 1.25rem;
+  }
+
+  .teaser[data-three] .teaser-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+</style>
+
 <script>
   import gsap from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { navigate } from 'astro:transitions/client';
+  import { flavours } from '../../content/flavours';
   import { lazyScene } from '../../lib/scene';
+  import { canUse3D, whenNear } from '../../lib/three/support';
+  import type { Turntable } from '../../lib/three/turntable';
 
   gsap.registerPlugin(ScrollTrigger);
 
-  // The names slide in from alternate sides as the section scrolls up.
+  // Without the turntable: the names slide in from alternate sides.
+  let slides: gsap.core.Tween[] = [];
   lazyScene('[data-teaser]', (scene) => {
-    gsap.utils.toArray<HTMLElement>('[data-teaser-name]', scene).forEach((name, index) => {
+    if (scene.hasAttribute('data-three')) return;
+    slides = gsap.utils.toArray<HTMLElement>('[data-teaser-name]', scene).map((name, index) =>
       gsap.from(name, {
         xPercent: index % 2 ? 30 : -30,
         opacity: 0,
         ease: 'none',
         scrollTrigger: { trigger: name, start: 'top 95%', end: 'top 60%', scrub: true },
-      });
+      }),
+    );
+  });
+  // With it, the names are a plain row: any slide in progress is undone.
+  const settleNames = (scene: HTMLElement): void => {
+    slides.forEach((slide) => {
+      slide.scrollTrigger?.kill();
+      slide.kill();
     });
+    slides = [];
+    gsap.set(scene.querySelectorAll('[data-teaser-name]'), { clearProps: 'all' });
+  };
+
+  document.addEventListener('astro:page-load', () => {
+    const section = document.querySelector<HTMLElement>('[data-teaser]');
+    const stage = section?.querySelector<HTMLElement>('[data-teaser-stage]');
+    const mount = section?.querySelector<HTMLElement>('[data-teaser-3d]');
+    const shown = section?.querySelector<HTMLElement>('[data-teaser-shown]');
+    if (!section || !stage || !mount || !shown || !canUse3D()) return;
+
+    const links = Array.from(section.querySelectorAll<HTMLAnchorElement>('[data-teaser-link]'));
+    let table: Turntable | undefined;
+    let held: number | null = null;
+    let gone = false;
+
+    // Shows one flavour as lifted, with its name, or none.
+    const hold = (index: number | null): void => {
+      if (index === held) return;
+      held = index;
+      table?.lift(index);
+      const name = index === null ? undefined : flavours[index]?.name;
+      shown.replaceChildren();
+      if (!name) return;
+      const hint = document.createElement('span');
+      hint.className = 'teaser-hint';
+      hint.textContent = 'Tap again to open';
+      shown.append(name, hint);
+    };
+    const open = (index: number): void => {
+      const link = links[index];
+      if (link) void navigate(link.href);
+    };
+
+    // A mouse lifts whatever it is over. A tap lifts first, and opens the
+    // flavour only if that bite was already up when the tap began.
+    let upAtPress: number | null = null;
+    const onMove = (event: PointerEvent): void => {
+      if (event.pointerType === 'mouse') hold(table?.pick(event.clientX, event.clientY) ?? null);
+    };
+    const onLeave = (event: PointerEvent): void => {
+      if (event.pointerType === 'mouse') hold(null);
+    };
+    const onPress = (): void => {
+      upAtPress = held;
+    };
+    const onTap = (event: MouseEvent): void => {
+      const picked = table?.pick(event.clientX, event.clientY) ?? null;
+      if (picked !== null && picked === upAtPress) open(picked);
+      else hold(picked);
+    };
+    // Keyboard and the row of names: focusing or hovering a name lifts its bite.
+    const onName = (event: Event): void => {
+      const index = links.indexOf((event.target as Element).closest('a') as HTMLAnchorElement);
+      if (index >= 0) hold(index);
+    };
+
+    const swap = (use3D: boolean): void => {
+      section.toggleAttribute('data-three', use3D);
+      if (use3D) settleNames(section);
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+    };
+    const fallBack = (): void => {
+      table?.dispose();
+      table = undefined;
+      swap(false);
+    };
+
+    const stopWaiting = whenNear(section, async () => {
+      try {
+        const { mountTurntable } = await import('../../lib/three/turntable');
+        if (gone) return;
+        swap(true);
+        // Too slow here: back to the names.
+        table = mountTurntable(mount, { onFallback: fallBack });
+        stage.addEventListener('pointermove', onMove);
+        stage.addEventListener('pointerleave', onLeave);
+        stage.addEventListener('pointerdown', onPress);
+        stage.addEventListener('click', onTap);
+        for (const link of links) {
+          link.addEventListener('focus', onName);
+          link.addEventListener('pointerenter', onName);
+        }
+      } catch {
+        fallBack();
+      }
+    });
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        gone = true;
+        stopWaiting();
+        table?.dispose();
+      },
+      { once: true },
+    );
   });
 </script>

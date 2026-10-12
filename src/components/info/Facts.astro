@@ -14,7 +14,7 @@ const cards = [
       cards.map((card) => (
         <li class="rounded-3xl border border-wine/25 bg-blush/40 p-7">
           <svg
-            class="w-10"
+            class="icon-sketch w-10"
             viewBox="0 0 40 40"
             fill="none"
             stroke="currentColor"
@@ -25,11 +25,13 @@ const cards = [
           >
             {card.icon === 'clock' ? (
               <>
+                <circle data-tone cx="20" cy="21" r="14" />
                 <circle cx="20" cy="21" r="14" />
                 <path d="M20 12v9l6 4M14 4h12" />
               </>
             ) : (
               <>
+                <path data-tone d="M5 13v16a4 4 0 0 0 4 4h24a2 2 0 0 0 2-2V17a2 2 0 0 0-2-2H9a4 4 0 0 1-4-2z" />
                 <path d="M5 13a4 4 0 0 1 4-4h20v6" />
                 <path d="M5 13v16a4 4 0 0 0 4 4h24a2 2 0 0 0 2-2V17a2 2 0 0 0-2-2H9a4 4 0 0 1-4-2z" />
                 <circle cx="28" cy="24" r="2" />

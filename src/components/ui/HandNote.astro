@@ -1,0 +1,51 @@
+---
+// A short hand-written note with a hand-drawn arrow, to sit beside a photo.
+// The arrow points down and to the right; `flip` mirrors it to point left.
+interface Props {
+  flip?: boolean;
+  tilt?: number;
+  class?: string;
+}
+
+const { flip = false, tilt = -4, class: className } = Astro.props;
+---
+
+<span class:list={['hand-note', flip && 'flex-row-reverse', className]} style={`--tilt:${tilt}deg`} data-hand-note>
+  <span><slot /></span>
+  <svg
+    viewBox="0 0 44 40"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    style={flip ? 'transform:scaleX(-1)' : undefined}
+    aria-hidden="true"
+  >
+    <path d="M3 5c13 1 25 9 31 27"></path>
+    <path d="M34 32l-10-4M34 32l2-11"></path>
+  </svg>
+</span>
+
+<script>
+  import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { reducedMotion } from '../../lib/motion';
+
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
+
+  // The arrow draws itself as the note comes into view.
+  document.addEventListener('astro:page-load', () => {
+    if (reducedMotion()) return;
+    for (const note of document.querySelectorAll<HTMLElement>('[data-hand-note]')) {
+      gsap.from(note.querySelectorAll('path'), {
+        drawSVG: 0,
+        duration: 0.5,
+        stagger: 0.25,
+        ease: 'power1.inOut',
+        scrollTrigger: { trigger: note, start: 'top 88%', once: true },
+      });
+    }
+  });
+</script>
