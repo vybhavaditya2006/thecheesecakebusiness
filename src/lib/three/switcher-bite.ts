@@ -1,5 +1,13 @@
 import gsap from 'gsap';
-import { Group, Mesh, MeshBasicMaterial, type Object3D, PlaneGeometry, ShadowMaterial } from 'three';
+import {
+  Group,
+  HemisphereLight,
+  Mesh,
+  MeshBasicMaterial,
+  type Object3D,
+  PlaneGeometry,
+  ShadowMaterial,
+} from 'three';
 import type { FlavourId } from '../../content/flavours';
 import { createModelBite, MODEL_BITE } from './bite-model';
 import { createStage, studioLight } from './renderer';
@@ -33,10 +41,14 @@ export function mountSwitcherBite(
   const stage = createStage(container, { onFallback, sharp: true });
   const { scene, camera, key } = stage;
   scene.environment = studioLight();
-  scene.environmentIntensity = 0.3;
-  // Warm light, like a lamp over a counter.
+  scene.environmentIntensity = 0.16;
+  // Warm light, and not much of it: the bite should sit on the page like a
+  // printed picture, not glow as if lit from inside.
   key.color.set('#ffe2bd');
-  key.intensity = 2;
+  key.intensity = 1.45;
+  scene.traverse((light: Object3D) => {
+    if (light instanceof HemisphereLight) light.intensity = 1.3;
+  });
 
   const bite = createModelBite();
   const spinner = new Group();

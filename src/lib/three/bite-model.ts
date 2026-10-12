@@ -196,7 +196,7 @@ const toppings: Record<FlavourId, () => Group> = {
 
 // The cream is the same for every flavour but Coffee, which is light brown
 // all the way through.
-const creamColour = (flavour: FlavourId | null): Color => new Color(flavour === 'coffee' ? '#cf9e72' : '#fff0d6');
+const creamColour = (flavour: FlavourId | null): Color => new Color(flavour === 'coffee' ? '#c4905f' : '#faeacb');
 const smooth = (from: number, to: number, value: number): number => {
   const t = Math.max(0, Math.min(1, (value - from) / (to - from)));
   return t * t * (3 - 2 * t);
@@ -209,7 +209,7 @@ export function createModelBite(): ModelBite {
     cupGeometry(),
     matte('paper', () => ({
       map: paperCupTexture(FOLDS),
-      color: '#fff1e0',
+      color: '#f6e9d8',
       side: DoubleSide,
       roughness: 0.92,
     })),
