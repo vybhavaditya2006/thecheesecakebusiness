@@ -3,7 +3,7 @@ import { Vector3 } from 'three';
 import type { FlavourId } from '../../content/flavours';
 import { BITE, createBite, type Bite3D } from './bite';
 import { BOX, createBox, frameBox } from './box';
-import { dropBite, hide, tieBow } from './moves';
+import { dropBite } from './moves';
 import { createStage } from './renderer';
 
 // The box on /box in 3D. It mirrors the order: whatever is in the current box
@@ -36,7 +36,6 @@ export function mountBuilderBox(container: HTMLElement, { onLayout, onFallback }
   const stage = createStage(container, { onFallback });
   const box = createBox();
   stage.scene.add(box.group);
-  hide(box.ribbon, box.bow);
 
   const placed: (Bite3D | undefined)[] = [];
   const spare: Bite3D[] = [];
@@ -44,7 +43,7 @@ export function mountBuilderBox(container: HTMLElement, { onLayout, onFallback }
   const lid = { open: 1 };
   let shutNow = false;
 
-  // Camera first, then tell the page where the cavities ended up.
+  // Camera first, then tell the page where each bite's place ended up.
   const frame = (): void => {
     frameBox(stage, { fill: 0.9, lower: 0.17 });
     const point = new Vector3();
@@ -114,17 +113,13 @@ export function mountBuilderBox(container: HTMLElement, { onLayout, onFallback }
     };
     if (instant) {
       lid.open = shut ? 0 : 1;
-      if (!shut) hide(box.ribbon, box.bow);
       return apply();
     }
     const timeline = gsap.timeline({ delay: wait });
     if (shut) {
-      // Swing shut, then tie the bow.
-      timeline.to(lid, { open: 0, duration: 0.5, ease: 'power2.inOut', onUpdate: apply }).add(tieBow(stage, box));
+      timeline.to(lid, { open: 0, duration: 0.6, ease: 'power2.inOut', onUpdate: apply });
     } else {
-      timeline
-        .call(() => hide(box.ribbon, box.bow))
-        .to(lid, { open: 1, duration: 0.45, ease: 'power2.inOut', onUpdate: apply });
+      timeline.to(lid, { open: 1, duration: 0.45, ease: 'power2.inOut', onUpdate: apply });
     }
     moving.set(lid, timeline);
   };

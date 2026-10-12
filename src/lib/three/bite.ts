@@ -1,7 +1,6 @@
 import {
   type BufferGeometry,
   BoxGeometry,
-  CircleGeometry,
   CylinderGeometry,
   DodecahedronGeometry,
   DoubleSide,
@@ -19,7 +18,6 @@ import {
   bakedCreamTexture,
   compoteTexture,
   crumbTexture,
-  marbleTexture,
   paperCupTexture,
   waferTexture,
 } from './textures';
@@ -90,16 +88,6 @@ const bodyGeometry = (): BufferGeometry =>
   });
 
 const mesh = (geometry: BufferGeometry, material: Material): Mesh => new Mesh(geometry, material);
-
-// A flat disc lying on top of the bite.
-const disc = (name: string, radius: number, material: Material, lift = 0.004): Mesh => {
-  const top = mesh(
-    once(`disc-${name}`, () => new CircleGeometry(radius, 40).rotateX(-Math.PI / 2)),
-    material,
-  );
-  top.position.y = TOP + lift;
-  return top;
-};
 
 // A ring of small pieces scattered over the top.
 const scatter = (pieces: number, place: (piece: Mesh, index: number) => void, build: () => Mesh): Group => {
@@ -184,22 +172,8 @@ const toppings: Record<FlavourId, () => Group> = {
     );
   },
 
-  // Coffee: a marble swirl across the whole top, and one bean.
-  coffee: () => {
-    const group = new Group();
-    const marble = matte('marble', () => ({
-      map: marbleTexture(),
-      roughness: 0.5,
-    }));
-    const bean = mesh(
-      once('bean', () => new SphereGeometry(0.07, 14, 10).scale(1, 0.6, 1.5)),
-      matte('bean', () => ({ color: '#3b2416', roughness: 0.5 })),
-    );
-    bean.position.set(0.05, TOP + 0.045, 0.02);
-    bean.rotation.y = 0.7;
-    group.add(disc('marble', 0.4, marble), bean);
-    return group;
-  },
+  // Coffee: nothing on top. The flavour is in the cream itself.
+  coffee: () => new Group(),
 
   // Biscoff: biscuit crumbled over the bare top, in pieces of every size.
   biscoff: () => {
@@ -236,10 +210,13 @@ export function createBite(flavour: FlavourId): Bite3D {
       map: crumbTexture('#c79a5b', ['#9a6e3a', '#e3c08a', '#7d5527'], 3),
     })),
   );
-  const body = mesh(
-    bodyGeometry(),
-    matte('cream', () => ({ map: bakedCreamTexture(), roughness: 0.7 })),
-  );
+  // The cream is the same for every flavour but Coffee, which is light
+  // brown all the way through.
+  const cream = (of: FlavourId): Material =>
+    of === 'coffee'
+      ? matte('coffee-cream', () => ({ map: bakedCreamTexture(), color: '#cda27c', roughness: 0.7 }))
+      : matte('cream', () => ({ map: bakedCreamTexture(), roughness: 0.7 }));
+  const body = mesh(bodyGeometry(), cream(flavour));
   group.add(cup, crust, body);
 
   let topping = toppings[flavour]();
@@ -255,6 +232,7 @@ export function createBite(flavour: FlavourId): Bite3D {
       topping = toppings[next]();
       topping.visible = shown;
       group.add(topping);
+      body.material = cream(next);
       bite.flavour = next;
     },
     setPlain: (plain) => {

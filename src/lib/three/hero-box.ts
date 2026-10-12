@@ -1,14 +1,14 @@
 import { flavours } from '../../content/flavours';
 import { createBite } from './bite';
 import { createBox, frameBox } from './box';
-import { dropBite, hide, tieBow } from './moves';
+import { closeLid, dropBite } from './moves';
 import { createStage } from './renderer';
 
 // The Home hero in 3D: the box of five, one bite of each flavour. The bites
-// drop in, the bow ties, then the box turns very slightly from side to side.
+// drop in, the clear lid closes, then the pack turns very slightly from side to side.
 
 export interface HeroBox {
-  // The intro, from an empty box. Resolves when the bow is tied.
+  // The intro, from an empty pack. Resolves when the lid has closed.
   playIntro: () => Promise<void>;
   // Straight to the finished box, for when the 2D intro has already played.
   showFinished: () => void;
@@ -44,18 +44,20 @@ export function mountHeroBox(container: HTMLElement, { onFallback }: Options): H
     box.group.rotation.y = Math.sin(seconds * 0.45) * 0.05;
   });
 
-  const playing: ReturnType<typeof dropBite>[] = [];
+  const playing: (ReturnType<typeof dropBite> | ReturnType<typeof closeLid>)[] = [];
 
   return {
     playIntro: () =>
       new Promise((resolve) => {
-        hide(box.ribbon, box.bow);
         bites.forEach((bite, index) => {
           playing.push(dropBite(stage, bite.group, box.slots[index]!.y, index * BITE_GAP));
         });
-        playing.push(tieBow(stage, box, bites.length * BITE_GAP + 0.3).eventCallback('onComplete', resolve));
+        playing.push(closeLid(stage, box, bites.length * BITE_GAP + 0.35).eventCallback('onComplete', resolve));
       }),
-    showFinished: () => stage.invalidate(),
+    showFinished: () => {
+      box.setLid(0);
+      stage.invalidate();
+    },
     dispose: () => {
       playing.forEach((timeline) => timeline.kill());
       stage.dispose();

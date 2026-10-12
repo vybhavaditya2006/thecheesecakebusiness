@@ -174,15 +174,8 @@ export default function BoxBuilder() {
             <div ref={mount3D} className="pointer-events-none absolute -inset-x-[5%] -top-[40%] -bottom-[4%]" />
 
             <svg className={`absolute inset-0 size-full overflow-visible ${flat}`} {...svgProps}>
-              <ellipse cx="180" cy="231" rx="158" ry="7" fill="currentColor" stroke="none" opacity="0.1" />
-              <motion.path
-                d="M34 82L48 26H312L326 82Z"
-                className="fill-cream"
-                style={{ transformBox: 'fill-box', originX: 0.5, originY: 1 }}
-                animate={{ scaleY: lidShut ? 0 : 1 }}
-                transition={{ duration: 0.3, ease: 'easeIn' }}
-              />
-              <path d="M34 82H326L346 140H14Z" fill="currentColor" fillOpacity="0.1" />
+              <ellipse cx="180" cy="160" rx="160" ry="7" fill="currentColor" stroke="none" opacity="0.1" />
+              <rect x="14" y="70" width="332" height="84" rx="9" fill="#fff" fillOpacity="0.4" stroke="none" />
             </svg>
 
             {Array.from({ length: BOX }, (_, slot) => {
@@ -229,48 +222,33 @@ export default function BoxBuilder() {
             })}
 
             <svg className={`pointer-events-none absolute inset-0 size-full overflow-visible ${flat}`} {...svgProps}>
-              <clipPath id="order-box-front">
-                <path d="M14 140H346L338 228H22Z" />
-              </clipPath>
-              {/* The lid, folded down over the bites once the box is full. */}
-              <motion.path
-                d="M34 82H326L346 140H14Z"
-                className="fill-cream"
-                style={{ transformBox: 'fill-box', originX: 0.5, originY: 0 }}
+              {/* The clear lid, laid over the bites once the pack is full. */}
+              <motion.rect
+                x="14"
+                y="70"
+                width="332"
+                height="84"
+                rx="9"
+                fill="#fff"
+                stroke="none"
                 initial={false}
-                animate={{ scaleY: lidShut ? 1 : 0, opacity: lidShut ? 1 : 0 }}
-                transition={{ duration: 0.3, delay: lidShut ? 0.3 : 0, ease: 'easeOut' }}
+                animate={{ opacity: lidShut ? 0.45 : 0 }}
+                transition={{ duration: 0.35, delay: lidShut ? 0.3 : 0 }}
               />
-              <path d="M14 140H346L338 228H22Z" className="fill-cream" />
-              <path d="M30 151l12-6M30 159l20-10M312 216l16-9M320 220l10-6" strokeWidth="1" opacity="0.45" />
-              {/* The ribbon wraps the box and the bow ties. */}
-              <g clipPath="url(#order-box-front)">
-                <motion.path
-                  d="M10 183H350"
-                  strokeWidth="24"
-                  strokeLinecap="butt"
-                  initial={false}
-                  animate={{ pathLength: lidShut ? 1 : 0, opacity: lidShut ? 1 : 0 }}
-                  transition={{ duration: lidShut ? 0.4 : 0.15, delay: lidShut ? 0.6 : 0 }}
-                />
-              </g>
-              <motion.g
-                style={{ transformBox: 'fill-box', originX: 0.5, originY: 0.5 }}
+              <rect x="14" y="70" width="332" height="84" rx="9" />
+              <path d="M24 80H336" strokeWidth="1" opacity="0.4" />
+              <motion.path
+                d="M30 90h64M262 144h64"
+                stroke="#fff"
+                strokeWidth="2.5"
                 initial={false}
-                animate={{ scale: lidShut ? 1 : 0 }}
-                transition={
-                  lidShut ? { type: 'spring', stiffness: 400, damping: 12, delay: 0.95 } : { duration: 0.15 }
-                }
-              >
-                <svg x="125" y="158" width="110" height="57" viewBox="0 0 120 62">
-                  <BowPaths />
-                </svg>
-              </motion.g>
+                animate={{ opacity: lidShut ? 1 : 0.6 }}
+              />
             </svg>
 
-            {/* Crumb confetti when the bow ties. */}
+            {/* Crumb confetti as the pack closes. */}
             {lidShut && (
-              <div className="pointer-events-none absolute top-[60%] left-1/2" aria-hidden="true">
+              <div className="pointer-events-none absolute top-[45%] left-1/2" aria-hidden="true">
                 {Array.from({ length: 18 }, (_, crumb) => {
                   const angle = (crumb / 18) * Math.PI * 2;
                   const reach = 90 + (crumb % 3) * 45;

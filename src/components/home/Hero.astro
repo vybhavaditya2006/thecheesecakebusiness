@@ -1,12 +1,11 @@
 ---
-// Scene 1: the box drop. The markup below is the finished state; the script
+// Scene 1: the pack of five. The markup below is the finished state; the script
 // plays the intro on top of it, and reduced motion simply shows it as is.
 import { brand } from '../../content/brand';
 import { flavours } from '../../content/flavours';
 import { boxLabel, orderPath } from '../../content/site';
 import { wordmarkPaths } from '../../lib/wordmark-paths';
 import BitePhoto from '../ui/BitePhoto.astro';
-import Bow from '../ui/Bow.astro';
 import Button from '../ui/Button.astro';
 
 const wordmark = wordmarkPaths(brand.name);
@@ -60,7 +59,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
     <div class="warm-glow relative" style={`aspect-ratio:${STAGE.width}/${STAGE.height}`}>
       <!-- The drawn box: the first paint, and the fallback when 3D is not used. -->
       <div class="absolute inset-0" data-hero-flat>
-      <!-- Behind the bites: shadow, open lid, inside of the box. -->
+      <!-- Behind the bites: the shadow, and the clear pack they stand in. -->
       <svg
         class="absolute inset-0 size-full overflow-visible text-wine"
         viewBox={viewBox}
@@ -71,14 +70,11 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
         stroke-linecap="round"
         aria-hidden="true"
       >
-        <ellipse cx="180" cy="231" rx="158" ry="7" fill="currentColor" stroke="none" opacity="0.1"
-        ></ellipse>
-        <path d="M34 82L48 26H312L326 82Z" class="fill-cream"></path>
-        <path d="M60 37H300M66 46H294" stroke-width="1" opacity="0.45"></path>
-        <path d="M34 82H326L346 140H14Z" fill="currentColor" fill-opacity="0.1"></path>
+        <ellipse cx="180" cy="160" rx="160" ry="7" fill="currentColor" stroke="none" opacity="0.1"></ellipse>
+        <rect x="14" y="70" width="332" height="84" rx="9" fill="#fff" fill-opacity="0.4" stroke="none"></rect>
       </svg>
 
-      <ul aria-label="A box of five bites">
+      <ul aria-label="A pack of five bites">
         {
           bites.map((bite) => (
             <li
@@ -92,7 +88,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
         }
       </ul>
 
-      <!-- In front of the bites: box front, ribbon and bow. -->
+      <!-- In front of the bites: the pack's edge and the light on the plastic. -->
       <svg
         class="absolute inset-0 size-full overflow-visible text-wine"
         viewBox={viewBox}
@@ -103,24 +99,9 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
         stroke-linecap="round"
         aria-hidden="true"
       >
-        <clipPath id="hero-box-front">
-          <path d="M14 140H346L338 228H22Z"></path>
-        </clipPath>
-        <path d="M14 140H346L338 228H22Z" class="fill-cream"></path>
-        <path d="M30 151l12-6M30 159l20-10M312 216l16-9M320 220l10-6" stroke-width="1" opacity="0.45"
-        ></path>
-        <g clip-path="url(#hero-box-front)">
-          <path d="M10 183H350" stroke-width="24" stroke-linecap="butt" data-hero-ribbon></path>
-        </g>
-        <g data-hero-bow>
-          <Bow
-            x="125"
-            y="158"
-            width="110"
-            height="57"
-            class="[&_ellipse]:fill-wine [&_path]:fill-cream"
-          />
-        </g>
+        <rect x="14" y="70" width="332" height="84" rx="9" data-hero-pack></rect>
+        <path d="M24 80H336" stroke-width="1" opacity="0.4" data-hero-shine></path>
+        <path d="M30 90h64M262 144h64" stroke="#fff" stroke-width="2.5" opacity="0.9" data-hero-shine></path>
       </svg>
       </div>
 
@@ -222,24 +203,9 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
     });
 
     intro
-      // The ribbon wraps the box, then ties into the bow.
-      .from(
-        find('[data-hero-ribbon]'),
-        { drawSVG: 0, duration: 0.55, ease: 'power2.inOut' },
-        AT.ribbon - AT.bites,
-      )
-      .from(find('[data-hero-bow]'), { opacity: 0, duration: 0.05 }, AT.bow - AT.bites)
-      .from(
-        find('[data-hero-bow] path, [data-hero-bow] ellipse'),
-        { drawSVG: 0, duration: 0.25, stagger: 0.02 },
-        AT.bow - AT.bites,
-      )
-      .from(find('[data-hero-bow] path'), { fillOpacity: 0, duration: 0.2 }, AT.bow - AT.bites + 0.1)
-      .from(
-        find('[data-hero-bow]'),
-        { scale: 0.5, svgOrigin: '180 183', duration: 0.35, ease: 'back.out(3)' },
-        AT.bow - AT.bites,
-      );
+      // The pack is drawn round them, then the light catches the plastic.
+      .from(find('[data-hero-pack]'), { drawSVG: 0, duration: 0.6, ease: 'power2.inOut' }, AT.ribbon - AT.bites)
+      .from(find('[data-hero-shine]'), { drawSVG: 0, duration: 0.35, stagger: 0.08 }, AT.bow - AT.bites);
 
     return intro;
   };

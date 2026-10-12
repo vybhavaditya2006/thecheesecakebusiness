@@ -100,12 +100,16 @@ const flame = (x: number, y: number): string => `M${x} ${y}c-4-6 0-9 0-12 3 3 4 
   {
     kind === 'box' && (
       <>
-        <path d="M48 78L54 50H146L152 78" />
-        <path d="M55 78a9 9 0 0 1 18 0M73 78a9 9 0 0 1 18 0M91 78a9 9 0 0 1 18 0M109 78a9 9 0 0 1 18 0M127 78a9 9 0 0 1 18 0" />
-        <path d="M40 78H160L156 128H44Z" />
-        <path d="M42 102H158" stroke-width="7" stroke-linecap="butt" />
+        {/* A clear pack: five bites in a row, seen from above. */}
+        <rect x="30" y="62" width="140" height="42" rx="7" />
+        <path d="M38 56H162" stroke-width="1" opacity="0.5" />
+        <path d="M44 70h22M140 97h18" stroke-width="1" opacity="0.5" />
         <g data-pop>
-          <Bow x="72" y="86" width="56" height="29" class="[&_ellipse]:fill-wine [&_path]:fill-cream" />
+          <circle cx="46" cy="83" r="11" />
+          <circle cx="73" cy="83" r="11" />
+          <circle cx="100" cy="83" r="11" />
+          <circle cx="127" cy="83" r="11" />
+          <circle cx="154" cy="83" r="11" />
         </g>
       </>
     )

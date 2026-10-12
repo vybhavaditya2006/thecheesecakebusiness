@@ -3,6 +3,7 @@ Brand: working name "Miette", NOT final (it may change for trademark and domain 
 Pitch: whole cheesecakes are expensive, too much to finish, and too heavy for health-conscious people. The brand sells bite-sized portions: the craving is satisfied without overeating, and it costs less.
 Flavours: Blueberry, KitKat, Oreo, Coffee, Lotus Biscoff. Custom orders: build your own bite, Half & Half cake, gift box (5 or 10), party platter (25 or 50).
 Pricing: box of five pieces (pick any mix) ₹150, launch offer ₹125. Single piece ₹65, launch offer ₹50. Same price for every flavour.
+The pack: five bites go in a clear plastic box, in a row, with a clear lid. It has no ribbon or bow; draw and model it that way. Coffee is light brown all through with nothing on top.
 Pricing words: wherever a price appears, say "piece", never "bite" ("₹50 a piece", "Single piece", "Box of five pieces", "₹25 a piece in a box of five"), including the WhatsApp message and the live total. "Bite" stays only in descriptive and playful text.
 Delivery: free within 5 km of Nagarabhavi, Bengaluru 560072; paid beyond 5 km (charge confirmed on WhatsApp). Same-day delivery if in stock, otherwise made to order with the day confirmed on WhatsApp. Payment: UPI or cash. No minimum order. Kitchen coordinates: [12.96331, 77.51994] (Plus Code 7J4VXG79+8X).
 Contact: the email address appears in the footer and on Good to Know as a mailto link, for questions only. All ordering and payment happen on WhatsApp.
