@@ -33,19 +33,19 @@ const [first, ...rest] = [...brand.wholeCake, brand.brokeDown];
     </div>
 
     <!-- The slice's layers, each hung on a thin line from where it meets the rim. -->
-    <dl data-dive-labels>
+    <ul data-dive-labels>
       {
         cakeLayers.map((layer) => (
-          <div class="dive-label" data-dive-label={layer.id}>
+          <li class="dive-label" data-dive-label={layer.id}>
             <span class="dive-leader" aria-hidden="true" data-dive-leader />
-            <div data-dive-label-text>
-              <dt class="label-caps text-[0.65rem]">{layer.name}</dt>
-              <dd class="text-xs opacity-80">{layer.note}</dd>
-            </div>
-          </div>
+            <span data-dive-label-text>
+              <strong class="label-caps block text-[0.65rem] font-medium">{layer.name}</strong>
+              <span class="block text-xs">{layer.note}</span>
+            </span>
+          </li>
         ))
       }
-    </dl>
+    </ul>
 
     <ol class="dive-reasons">
       {
@@ -287,9 +287,11 @@ const [first, ...rest] = [...brand.wholeCake, brand.brokeDown];
     let gone = false;
 
     // Swapping this section in for WhyBites (or back) moves everything below.
-    const swap = (use3D: boolean): void => {
+    // Re-measuring every scroll scene is costly, so it is only done when the
+    // swap happens after the page has settled (the fallback), not on arrival.
+    const swap = (use3D: boolean, remeasure = false): void => {
       page.toggleAttribute('data-dive-on', use3D);
-      requestAnimationFrame(() => ScrollTrigger.refresh());
+      if (remeasure) requestAnimationFrame(() => ScrollTrigger.refresh());
     };
     const slow = window.setTimeout(() => section.toggleAttribute('data-loading', !cake), SLOW_LOAD);
     const loaded = (): void => {
@@ -302,7 +304,7 @@ const [first, ...rest] = [...brand.wholeCake, brand.brokeDown];
       scrub?.kill();
       cake?.dispose();
       cake = undefined;
-      swap(false);
+      swap(false, true);
     };
 
     // Each label hangs from where its layer meets the rim of the slice.

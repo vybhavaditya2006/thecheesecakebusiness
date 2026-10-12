@@ -1,6 +1,6 @@
 // Scene 5: pack your box. The only React island on the site.
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import { customOptions, isCustomOptionId, type CustomOptionId } from '../../content/custom';
 import BoxBuilder from './BoxBuilder';
 import CustomBuilder from './CustomBuilder';
@@ -27,12 +27,18 @@ const fromUrl = (): { tab: Tab; type: CustomOptionId } => {
 export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages }) {
   const [tab, setTab] = useState<Tab>(() => fromUrl().tab);
   const [type, setType] = useState<CustomOptionId>(() => fromUrl().type);
+  // The builder is drawn as a transition, in small slices, so that setting it
+  // up never holds the page still.
+  const [ready, setReady] = useState(false);
+  useEffect(() => startTransition(() => setReady(true)), []);
 
   // Keep the address in step, so the current view can be shared or reloaded.
   useEffect(() => {
     const query = tab === 'custom' ? `?tab=custom&type=${type}` : '';
     window.history.replaceState(window.history.state, '', `${window.location.pathname}${query}`);
   }, [tab, type]);
+
+  if (!ready) return <p className="px-5 py-24 text-center text-sm">Setting out the box…</p>;
 
   return (
     <MotionConfig reducedMotion="user">

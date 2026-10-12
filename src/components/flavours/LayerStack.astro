@@ -13,7 +13,7 @@ const { flavour, class: className } = Astro.props;
 ---
 
 <figure class:list={['layer-stack', className]}>
-  <figcaption class="label-caps text-[0.6rem] tracking-[0.2em] opacity-80">What’s inside</figcaption>
+  <figcaption class="label-caps text-[0.6rem] tracking-[0.2em]">What’s inside</figcaption>
   <div class="mt-1.5 flex items-stretch gap-3">
     <svg
       class="h-[5.25rem] w-16 shrink-0 overflow-visible"
@@ -51,7 +51,7 @@ const { flavour, class: className } = Astro.props;
         flavour.layers.map((layer) => (
           <div class="flex flex-col justify-center border-l border-wine/30 pl-3">
             <dt class="label-caps text-[0.6rem] leading-tight tracking-[0.15em]">{layer.part}</dt>
-            <dd class="text-xs leading-tight whitespace-nowrap opacity-80">{layer.what}</dd>
+            <dd class="text-xs leading-tight whitespace-nowrap">{layer.what}</dd>
           </div>
         ))
       }

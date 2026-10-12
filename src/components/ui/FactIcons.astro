@@ -16,7 +16,7 @@ const facts = [
 ] as const;
 ---
 
-<a href={paths.info} class:list={['fact-icons group', className]} aria-label="Delivery, timing and payment: see Good to Know">
+<a href={paths.info} class:list={['fact-icons group', className]}>
   <ul class="flex flex-wrap items-start justify-center gap-x-10 gap-y-6">
     {
       facts.map((fact) => (

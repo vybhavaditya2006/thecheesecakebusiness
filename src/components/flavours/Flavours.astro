@@ -139,7 +139,7 @@ const crumbs = [
               <p class="label-caps">
                 {pad(index + 1)} / {pad(count)}
               </p>
-              <h3 class="flavour-name leading-[0.9]">{flavour.name}</h3>
+              <h2 class="flavour-name leading-[0.9]">{flavour.name}</h2>
               <p class="max-w-sm">{flavour.note}</p>
               <LayerStack flavour={flavour} />
               <p class="flex items-center gap-3">
@@ -180,7 +180,7 @@ const crumbs = [
       <li class="flavour-panel flavour-else" data-flavour-panel>
         <div class="flavour-text flex flex-col gap-3">
           <p class="label-caps">{'Custom & gifts'}</p>
-          <h3 class="flavour-name leading-[0.9]">Something else?</h3>
+          <h2 class="flavour-name leading-[0.9]">Something else?</h2>
           <p class="max-w-sm">{customLine}</p>
           <Button class="mt-1" href={paths.custom}>{'See Custom & Gifts'}</Button>
         </div>
@@ -516,7 +516,7 @@ const crumbs = [
   import { canAffordEffects, finePointer, reducedMotion } from '../../lib/motion';
   import { addBite, isFlavourId } from '../../lib/order-store';
   import { getLenis } from '../../lib/smooth-scroll';
-  import { canUse3D } from '../../lib/three/support';
+  import { canUse3D, whenStirred } from '../../lib/three/support';
   import type { SwitcherBite } from '../../lib/three/switcher-bite';
 
   gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
@@ -618,7 +618,8 @@ const crumbs = [
       deepBite?.pulse();
     };
 
-    if (canUse3D()) {
+    const load3D = (): void => {
+      if (gone) return;
       import('../../lib/three/switcher-bite')
         .then(({ mountSwitcherBite }) => {
           if (gone) return;
@@ -638,7 +639,9 @@ const crumbs = [
           button.dataset.three = '';
         })
         .catch(() => {});
-    }
+    };
+    // The photo shows until the visitor has done something; then the 3D bite loads.
+    if (canUse3D()) whenStirred(load3D);
 
     // A tap goes on to the next panel.
     const onTap = (): void => goTo((index + 1) % panels.length);

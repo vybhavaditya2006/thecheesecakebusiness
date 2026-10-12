@@ -141,7 +141,7 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
   import { curtainClear } from '../../lib/curtain-state';
   import { reducedMotion } from '../../lib/motion';
   import type { HeroBox } from '../../lib/three/hero-box';
-  import { canUse3D } from '../../lib/three/support';
+  import { canUse3D, whenStirred } from '../../lib/three/support';
 
   gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger, SplitText);
 
@@ -249,7 +249,10 @@ const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
     });
 
     // The 3D box loads while the curtain clears; the drawn one is the fallback.
-    const loading = canUse3D() ? load3D(hero) : null;
+    // It is only fetched once the visitor has done something.
+    const loading = canUse3D()
+      ? new Promise<HeroBox | null>((resolve) => whenStirred(() => resolve(load3D(hero))))
+      : null;
     const flat = hero.querySelector<HTMLElement>('[data-hero-flat]');
     const deep = hero.querySelector<HTMLElement>('[data-hero-3d]');
 
