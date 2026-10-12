@@ -5,28 +5,24 @@ import { createModelBite, MODEL_BITE } from './bite-model';
 import { createStage, studioLight } from './renderer';
 import { shadowTexture } from './textures';
 
-// The switcher on /flavours: two modelled bites on opposite sides of a small
-// ring that turns about its upright axis, like the two sides of a globe. The
-// flavour in view is at the front; the next one is directly behind it, out of
-// sight. Half a turn swings the next one round to the front, and the one that
-// has gone behind is then changed to the flavour after that.
+// The switcher on /flavours: one modelled bite that stays where it is and
+// spins about its upright axis. As the page scrolls from one flavour to the
+// next it makes one full turn, and during that turn it becomes the next
+// flavour: the old topping shrinks away, the new one grows in, and the cream
+// shifts colour where the flavours differ.
 //
-// The turn is set by the page's scroll, so it runs backwards just as well.
+// Everything is set by the page's scroll, so it runs backwards just as well.
 
 export interface SwitcherBite {
   // Where the page is among the flavours: 0 is the first, 1 the second, and
-  // anything between is part way round.
+  // anything between is part way through the change.
   setPosition: (position: number) => void;
-  // A small lift, for the moment a flavour comes to the front.
+  // A small lift, for the moment a flavour is reached.
   pulse: () => void;
   dispose: () => void;
 }
 
 const MIDDLE = MODEL_BITE.height / 2 + 0.03;
-// How far each bite stands from the ring's axis.
-const RING = 0.56;
-// A bite at the back is this much smaller, so the front one covers it.
-const SMALLEST = 0.5;
 
 export function mountSwitcherBite(
   container: HTMLElement,
@@ -39,65 +35,35 @@ export function mountSwitcherBite(
   scene.environment = studioLight();
   scene.environmentIntensity = 0.22;
 
-  const ring = new Group();
+  const bite = createModelBite();
+  const spinner = new Group();
+  spinner.add(bite.group);
 
-  // One of the two bites. `side` is 1 for the one that starts at the front,
-  // -1 for the one that starts behind it.
-  const seat = (side: 1 | -1) => {
-    const bite = createModelBite(stops[0] ?? 'blueberry');
-    const shade = (): void =>
-      bite.group.traverse((part: Object3D) => {
-        part.castShadow = part.receiveShadow = true;
-      });
-    shade();
-
-    // The soft patch it stands on travels with it.
-    const patch = new Mesh(
-      new PlaneGeometry(1.7, 1.7).rotateX(-Math.PI / 2),
-      new MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false, opacity: 0.65 }),
-    );
-    patch.position.y = 0.002;
-    const holder = new Group();
-    holder.position.z = side * RING;
-    holder.add(bite.group, patch);
-    ring.add(holder);
-
-    let shown: FlavourId | null | undefined;
-    return {
-      side,
-      holder,
-      bite: bite.group,
-      show: (flavour: FlavourId | null): void => {
-        if (flavour === shown) return;
-        shown = flavour;
-        // A plain bite is the usual cream, whatever flavour stood here before.
-        bite.setFlavour(flavour ?? stops.find((stop) => stop !== null && stop !== 'coffee') ?? 'blueberry');
-        bite.setPlain(flavour === null);
-        shade();
-      },
-    };
-  };
-  const seats = [seat(1), seat(-1)];
-
-  // The ground shows only the shadows that fall on it.
+  // The ground shows only the shadow that falls on it, with a soft dark
+  // patch where the bite stands.
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
   key.shadow.radius = 6;
   key.shadow.bias = -0.0008;
   key.shadow.normalBias = 0.02;
-  Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2, near: 1, far: 20 });
+  Object.assign(key.shadow.camera, { left: -1.4, right: 1.4, top: 1.4, bottom: -1.4, near: 1, far: 20 });
   const ground = new Mesh(
-    new PlaneGeometry(8, 8).rotateX(-Math.PI / 2),
-    new ShadowMaterial({ color: '#4a0f18', opacity: 0.2 }),
+    new PlaneGeometry(6, 6).rotateX(-Math.PI / 2),
+    new ShadowMaterial({ color: '#4a0f18', opacity: 0.22 }),
   );
   ground.receiveShadow = true;
-  scene.add(ring, ground);
+  const contact = new Mesh(
+    new PlaneGeometry(1.7, 1.7).rotateX(-Math.PI / 2),
+    new MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false, opacity: 0.7 }),
+  );
+  contact.position.y = 0.002;
+  scene.add(spinner, ground, contact);
 
-  // From the front, a little above: enough to see the top of the bite.
+  // A three-quarter view from a little above, to see the top and the side.
   const frame = (): void => {
-    const away = 4.4 / Math.min(1, stage.aspect());
-    camera.position.set(0, MIDDLE + Math.sin(0.36) * away, RING + Math.cos(0.36) * away);
-    camera.lookAt(0, MIDDLE, RING * 0.6);
+    const away = 3.5 / Math.min(1, stage.aspect());
+    camera.position.set(0, MIDDLE + Math.sin(0.46) * away, Math.cos(0.46) * away);
+    camera.lookAt(0, MIDDLE + 0.04, 0);
   };
   frame();
   stage.onResize(frame);
@@ -108,33 +74,19 @@ export function mountSwitcherBite(
 
   const place = (seconds = clock): void => {
     clock = seconds;
-    // Half a turn for every stop.
-    const angle = position * Math.PI;
-    ring.rotation.y = angle;
+    // One full turn for every stop, so it always comes to rest facing the same way.
+    spinner.rotation.y = position * Math.PI * 2;
+    // A slow breath, and a lift as a flavour is reached.
+    spinner.position.y = Math.sin(seconds * 1.5) * 0.02 + lift.by;
+    contact.material.opacity = 0.7 - lift.by * 1.5;
 
-    for (const one of seats) {
-      // 1 when this bite faces the camera, -1 when it is directly behind.
-      const facing = Math.cos(angle) * one.side;
-      const near = (facing + 1) / 2;
-      // Smaller as it goes round the back, and gone while the front one
-      // would not quite cover it.
-      one.holder.scale.setScalar(SMALLEST + (1 - SMALLEST) * near * near);
-      // It also sinks a little as it goes behind, so it never shows over the
-      // top of the bite in front.
-      one.holder.position.y = -0.5 * (1 - near) * (1 - near);
-      one.holder.visible = facing > -0.94;
-      // The bite itself keeps its face to the camera as the ring turns.
-      one.bite.rotation.y = -angle;
-      // A slow breath, and a lift for the one arriving at the front.
-      one.bite.position.y = near * (Math.sin(seconds * 1.5) * 0.02 + lift.by);
-    }
-
-    // Between stop k and stop k + 1, the bite in front at k shows k and the
-    // other shows k + 1. Which bite that is alternates from stop to stop.
+    // Between stop k and stop k + 1 it is k turning into k + 1.
     const from = Math.max(0, Math.min(stops.length - 2, Math.floor(position)));
-    const even = from % 2 === 0;
-    seats[0]!.show(stops[even ? from : from + 1] ?? null);
-    seats[1]!.show(stops[even ? from + 1 : from] ?? null);
+    bite.blend(stops[from] ?? null, stops[from + 1] ?? null, Math.max(0, Math.min(1, position - from)));
+    // Anything new on top casts and takes shadows like the rest.
+    bite.group.traverse((part: Object3D) => {
+      part.castShadow = part.receiveShadow = true;
+    });
   };
   stage.onFrame(place);
   place();
@@ -150,7 +102,7 @@ export function mountSwitcherBite(
       pulsing?.kill();
       pulsing = gsap
         .timeline()
-        .to(lift, { by: 0.1, duration: 0.2, ease: 'power2.out' })
+        .to(lift, { by: 0.09, duration: 0.2, ease: 'power2.out' })
         .to(lift, { by: 0, duration: 0.55, ease: 'power2.inOut' });
     },
     dispose: () => {

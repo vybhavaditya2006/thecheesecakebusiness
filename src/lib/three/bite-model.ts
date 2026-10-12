@@ -1,6 +1,7 @@
 import {
   type BufferGeometry,
   BoxGeometry,
+  Color,
   CylinderGeometry,
   DodecahedronGeometry,
   DoubleSide,
@@ -29,10 +30,9 @@ import {
 
 export interface ModelBite {
   group: Group;
-  flavour: FlavourId;
-  setFlavour: (flavour: FlavourId) => void;
-  // A plain bite has no topping on it.
-  setPlain: (plain: boolean) => void;
+  // What the bite is: `from`, turning into `to` as `amount` goes from 0 to 1.
+  // Either may be null, for a plain bite with nothing on top.
+  blend: (from: FlavourId | null, to: FlavourId | null, amount: number) => void;
 }
 
 export const MODEL_BITE = { radius: 0.5, height: 0.56 } as const;
@@ -194,7 +194,15 @@ const toppings: Record<FlavourId, () => Group> = {
   },
 };
 
-export function createModelBite(flavour: FlavourId): ModelBite {
+// The cream is the same for every flavour but Coffee, which is light brown
+// all the way through.
+const creamColour = (flavour: FlavourId | null): Color => new Color(flavour === 'coffee' ? '#cda27c' : '#ffffff');
+const smooth = (from: number, to: number, value: number): number => {
+  const t = Math.max(0, Math.min(1, (value - from) / (to - from)));
+  return t * t * (3 - 2 * t);
+};
+
+export function createModelBite(): ModelBite {
   const group = new Group();
 
   const cup = mesh(
@@ -211,34 +219,38 @@ export function createModelBite(flavour: FlavourId): ModelBite {
       map: crumbTexture('#c79a5b', ['#9a6e3a', '#e3c08a', '#7d5527'], 3),
     })),
   );
-  // The cream is the same for every flavour but Coffee, which is light
-  // brown all the way through.
-  const cream = (of: FlavourId): Material =>
-    of === 'coffee'
-      ? matte('coffee-cream', () => ({ map: bakedCreamTexture(), color: '#cda27c', roughness: 0.7 }))
-      : matte('cream', () => ({ map: bakedCreamTexture(), roughness: 0.7 }));
-  const body = mesh(bodyGeometry(), cream(flavour));
-  group.add(cup, crust, body);
+  // This bite's own cream, so its colour can shift from one flavour to the next.
+  const cream = new MeshStandardMaterial({ map: bakedCreamTexture(), roughness: 0.7 });
+  group.add(cup, crust, mesh(bodyGeometry(), cream));
 
-  let topping = toppings[flavour]();
-  group.add(topping);
+  // Two places for a topping: the one going and the one coming. Each grows
+  // and shrinks about the top of the bite.
+  const place = () => {
+    const holder = new Group();
+    group.add(holder);
+    let held: FlavourId | null | undefined;
+    return (flavour: FlavourId | null, size: number): void => {
+      if (flavour !== held) {
+        held = flavour;
+        holder.clear();
+        if (flavour) holder.add(toppings[flavour]());
+      }
+      holder.visible = size > 0.001;
+      holder.scale.setScalar(Math.max(0.001, size));
+      holder.position.y = TOP * (1 - size);
+    };
+  };
+  const going = place();
+  const coming = place();
+  const colour = { from: new Color(), to: new Color() };
 
-  const bite: ModelBite = {
+  return {
     group,
-    flavour,
-    setFlavour: (next) => {
-      if (next === bite.flavour) return;
-      group.remove(topping);
-      const shown = topping.visible;
-      topping = toppings[next]();
-      topping.visible = shown;
-      group.add(topping);
-      body.material = cream(next);
-      bite.flavour = next;
-    },
-    setPlain: (plain) => {
-      topping.visible = !plain;
+    blend: (from, to, amount) => {
+      // The old topping is gone by half way; the new one grows in after that.
+      going(from, 1 - smooth(0.08, 0.5, amount));
+      coming(to, smooth(0.5, 0.92, amount));
+      cream.color.copy(colour.from.copy(creamColour(from))).lerp(colour.to.copy(creamColour(to)), smooth(0.2, 0.8, amount));
     },
   };
-  return bite;
 }
