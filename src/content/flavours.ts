@@ -9,8 +9,8 @@ export interface Flavour {
   note: string;
   // What bursts out around the bite in the flavour's scene.
   ingredient: string;
-  // True once the flavour's picture is a real photograph. The others are
-  // mock-ups (see src/lib/bite-images.ts) and get no hand-written note.
+  // True once the flavour's picture is a real photograph. Coffee's is still a
+  // mock-up (see src/lib/bite-images.ts) and gets no hand-written note.
   photographed?: boolean;
   // What the bite is made of, from the top down.
   layers: readonly Layer[];
@@ -55,6 +55,7 @@ export const flavours: readonly Flavour[] = [
     accent: '#111111',
     note: 'Cookies and cream, all the way down.',
     ingredient: 'Oreo crumbs',
+    photographed: true,
     layers: layersToConfirm,
   },
   {

@@ -17,23 +17,23 @@ const shots = flavours.flatMap((flavour) => {
 
 {
   shots.length > 0 && (
-    <section class="px-5 py-20" data-up-close>
+    <section class="overflow-x-clip px-5 py-20" data-up-close>
       <SectionTitle label={upClose.label} title={upClose.heading} />
 
       <p class="mx-auto mt-8 flex max-w-4xl justify-start pl-[8%]">
         <HandNote>{upClose.note}</HandNote>
       </p>
-      <ul class="mx-auto mt-2 grid max-w-4xl grid-cols-3 gap-3 sm:gap-6">
+      <ul class="mx-auto mt-2 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
         {shots.map(({ flavour, photo }) => (
           <li data-up-close-shot>
-            <figure class="warm-glow contact-shadow">
+            <figure class="warm-glow">
               <Picture
                 src={photo}
                 formats={['avif']}
                 fallbackFormat="webp"
                 quality={78}
                 widths={[240, 400, 600]}
-                sizes="(min-width: 56rem) 280px, 30vw"
+                sizes="(min-width: 40rem) 22vw, 44vw"
                 alt={`A ${flavour.name} cheesecake bite in its paper cup, seen from the side`}
                 class="aspect-[4/5] w-full rounded-2xl border border-wine/25 object-cover"
               />

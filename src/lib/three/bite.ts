@@ -163,24 +163,25 @@ const toppings: Record<FlavourId, () => Group> = {
     return group;
   },
 
-  // Oreo: a dark crumb with bigger cookie pieces.
+  // Oreo: cookie broken over the bare top, in dark pieces of every size.
   oreo: () => {
-    const group = new Group();
-    const crumb = matte('oreo-crumb', () => ({
-      map: crumbTexture('#1a1716', ['#0c0b0b', '#3a3534', '#f4efe6'], 61),
-    }));
     const cookie = matte('cookie', () => ({
-      color: '#171414',
+      map: crumbTexture('#1a1716', ['#0c0b0b', '#3a3534'], 61),
       roughness: 0.95,
     }));
-    const pieces = scatter(7, ringPlace(0.3, 0.04), () =>
-      mesh(
-        once('chunk', () => new DodecahedronGeometry(0.07, 0)),
-        cookie,
-      ),
+    return scatter(
+      14,
+      (piece, index) => {
+        ringPlace(0.36, 0.03)(piece, index);
+        const size = 0.8 + ((index * 0.53) % 1) * 1.2;
+        piece.scale.set(size, size * 0.7, size);
+      },
+      () =>
+        mesh(
+          once('chunk', () => new DodecahedronGeometry(0.07, 0)),
+          cookie,
+        ),
     );
-    group.add(disc('crumb', 0.36, crumb), pieces);
-    return group;
   },
 
   // Coffee: a marble swirl across the whole top, and one bean.

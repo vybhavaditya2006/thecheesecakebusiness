@@ -12,7 +12,7 @@ const shots = [
   ['blueberry-compote', 'Blueberry compote on a bite, close up'],
   ['layers', 'The layers of a bite seen through its paper cup'],
   ['kitkat-pieces', 'KitKat pieces on a bite, close up'],
-  ['paper-cup', 'The fluted edge of a paper cup'],
+  ['oreo-crumb', 'Oreo crumb on a bite, close up'],
 ].flatMap(([name, alt]) => {
   const photo = files[`../../assets/macro/${name}.webp`]?.default;
   return photo ? [{ photo, alt: alt! }] : [];
