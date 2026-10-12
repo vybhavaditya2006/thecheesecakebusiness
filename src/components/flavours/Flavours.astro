@@ -71,9 +71,9 @@ const crumbs = [
     </div>
   </div>
 
-  <!-- The switcher: the photo of the flavour in view. It turns with the
-       scroll, and at the edge-on moment the next flavour takes its place.
-       A tap goes to the next flavour. -->
+  <!-- The switcher: a 3D bite that turns like a globe with the scroll. Its
+       front half is the flavour in view and its back half the next one. The
+       photos under it are what shows without 3D. A tap goes to the next flavour. -->
   <button
     type="button"
     class="flavour-switch"
@@ -90,6 +90,7 @@ const crumbs = [
       }
       <span class="flavour-switch-face flavour-switch-again" data-switch-face>Start again</span>
     </span>
+    <span class="flavour-switch-3d" data-switch-3d></span>
     <span class="flavour-switch-name" data-switch-name>{first.name}</span>
   </button>
 
@@ -319,6 +320,17 @@ const crumbs = [
     display: none;
   }
 
+  /* Once the 3D bite is in, the photo steps aside. */
+  .flavour-switch[data-three] .flavour-switch-turn {
+    visibility: hidden;
+  }
+
+  .flavour-switch-3d {
+    position: absolute;
+    inset: -22%;
+    pointer-events: none;
+  }
+
   /* ---- Animated version: stacked screen-high panels (phones). */
   .motion [data-flavours] {
     --flavours-top: 6.25rem;
@@ -435,8 +447,8 @@ const crumbs = [
       top: auto;
       right: 2rem;
       bottom: 3rem;
-      width: 8.5rem;
-      height: 8.5rem;
+      width: 10rem;
+      height: 10rem;
     }
 
     /* On wide screens the flavour's name sits under its photo. */
@@ -503,6 +515,8 @@ const crumbs = [
   import { canAffordEffects, finePointer, reducedMotion } from '../../lib/motion';
   import { addBite, isFlavourId } from '../../lib/order-store';
   import { getLenis } from '../../lib/smooth-scroll';
+  import { canUse3D } from '../../lib/three/support';
+  import type { SwitcherBite } from '../../lib/three/switcher-bite';
 
   gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
@@ -588,14 +602,42 @@ const crumbs = [
     // the next flavour's photo takes its place.
     const setTurn = gsap.quickSetter(turner, 'rotationY', 'deg');
     let facing = 0;
+    let turned = 0;
+    let deepBite: SwitcherBite | undefined;
+    let gone = false;
     const turnTo = (position: number): void => {
+      turned = position;
+      deepBite?.setPosition(position);
       const nearest = Math.round(position);
       setTurn((position - nearest) * 180);
       if (nearest === facing) return;
       facing = nearest;
       faces.forEach((face, place) => face.classList.toggle('is-shown', place === nearest));
       dress(nearest);
+      deepBite?.pulse();
     };
+
+    if (canUse3D()) {
+      import('../../lib/three/switcher-bite')
+        .then(({ mountSwitcherBite }) => {
+          if (gone) return;
+          const mount = button.querySelector<HTMLElement>('[data-switch-3d]')!;
+          const stops = panels.map((panel) => {
+            const id = panel.dataset.flavourId;
+            return isFlavourId(id) ? id : null;
+          });
+          deepBite = mountSwitcherBite(mount, stops, {
+            // Too slow here: back to the photos.
+            onFallback: () => {
+              deepBite = undefined;
+              button.removeAttribute('data-three');
+            },
+          });
+          deepBite.setPosition(turned);
+          button.dataset.three = '';
+        })
+        .catch(() => {});
+    }
 
     // A tap goes on to the next panel.
     const onTap = (): void => goTo((index + 1) % panels.length);
@@ -731,6 +773,8 @@ const crumbs = [
     scene.addEventListener('focusin', reveal);
 
     return () => {
+      gone = true;
+      deepBite?.dispose();
       button.removeEventListener('click', onTap);
       scene.removeEventListener('focusin', reveal);
       media.revert();
