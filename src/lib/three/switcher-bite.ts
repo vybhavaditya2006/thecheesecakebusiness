@@ -33,7 +33,10 @@ export function mountSwitcherBite(
   const stage = createStage(container, { onFallback, sharp: true });
   const { scene, camera, key } = stage;
   scene.environment = studioLight();
-  scene.environmentIntensity = 0.22;
+  scene.environmentIntensity = 0.3;
+  // Warm light, like a lamp over a counter.
+  key.color.set('#ffe2bd');
+  key.intensity = 2;
 
   const bite = createModelBite();
   const spinner = new Group();
@@ -49,7 +52,7 @@ export function mountSwitcherBite(
   Object.assign(key.shadow.camera, { left: -1.4, right: 1.4, top: 1.4, bottom: -1.4, near: 1, far: 20 });
   const ground = new Mesh(
     new PlaneGeometry(6, 6).rotateX(-Math.PI / 2),
-    new ShadowMaterial({ color: '#4a0f18', opacity: 0.22 }),
+    new ShadowMaterial({ color: '#5a2414', opacity: 0.2 }),
   );
   ground.receiveShadow = true;
   const contact = new Mesh(
@@ -62,7 +65,7 @@ export function mountSwitcherBite(
   // A three-quarter view from a little above, to see the top and the side.
   const frame = (): void => {
     const away = 3.5 / Math.min(1, stage.aspect());
-    camera.position.set(0, MIDDLE + Math.sin(0.46) * away, Math.cos(0.46) * away);
+    camera.position.set(0, MIDDLE + Math.sin(0.4) * away, Math.cos(0.4) * away);
     camera.lookAt(0, MIDDLE + 0.04, 0);
   };
   frame();

@@ -37,7 +37,7 @@ export interface ModelBite {
 
 export const MODEL_BITE = { radius: 0.5, height: 0.56 } as const;
 
-const FOLDS = 30;
+const FOLDS = 38;
 const TOP = MODEL_BITE.height;
 
 // Geometry and materials are built once and shared by every bite.
@@ -66,7 +66,7 @@ const cupGeometry = (): BufferGeometry =>
       const z = position.getZ(index);
       const y = position.getY(index);
       // Deeper folds towards the rim.
-      const depth = 0.012 + (y + 0.22) * 0.05;
+      const depth = 0.007 + (y + 0.22) * 0.03;
       const push = 1 + (Math.cos(Math.atan2(z, x) * FOLDS) * depth) / Math.hypot(x, z);
       position.setXYZ(index, x * push, y, z * push);
     }
@@ -134,7 +134,7 @@ const toppings: Record<FlavourId, () => Group> = {
   kitkat: () => {
     const group = new Group();
     const chocolate = matte('chocolate', () => ({
-      color: '#74442a',
+      color: '#7a4424',
       roughness: 0.4,
     }));
     const cut = matte('wafer', () => ({ map: waferTexture(), roughness: 0.9 }));
@@ -196,7 +196,7 @@ const toppings: Record<FlavourId, () => Group> = {
 
 // The cream is the same for every flavour but Coffee, which is light brown
 // all the way through.
-const creamColour = (flavour: FlavourId | null): Color => new Color(flavour === 'coffee' ? '#cda27c' : '#ffffff');
+const creamColour = (flavour: FlavourId | null): Color => new Color(flavour === 'coffee' ? '#cf9e72' : '#fff0d6');
 const smooth = (from: number, to: number, value: number): number => {
   const t = Math.max(0, Math.min(1, (value - from) / (to - from)));
   return t * t * (3 - 2 * t);
@@ -209,18 +209,19 @@ export function createModelBite(): ModelBite {
     cupGeometry(),
     matte('paper', () => ({
       map: paperCupTexture(FOLDS),
+      color: '#fff1e0',
       side: DoubleSide,
-      roughness: 0.95,
+      roughness: 0.92,
     })),
   );
   const crust = mesh(
     once('crust', () => new CylinderGeometry(0.44, 0.415, 0.13, 40).translate(0, 0.085, 0)),
     matte('crust', () => ({
-      map: crumbTexture('#c79a5b', ['#9a6e3a', '#e3c08a', '#7d5527'], 3),
+      map: crumbTexture('#c9954f', ['#9a6a32', '#e6bf82', '#7d5222'], 3),
     })),
   );
   // This bite's own cream, so its colour can shift from one flavour to the next.
-  const cream = new MeshStandardMaterial({ map: bakedCreamTexture(), roughness: 0.7 });
+  const cream = new MeshStandardMaterial({ map: bakedCreamTexture(), roughness: 0.62 });
   group.add(cup, crust, mesh(bodyGeometry(), cream));
 
   // Two places for a topping: the one going and the one coming. Each grows
