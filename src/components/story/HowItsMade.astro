@@ -4,6 +4,11 @@
 import { kitchen } from '../../content/photos';
 import { howItsMade } from '../../content/story';
 import Snapshot from '../ui/Snapshot.astro';
+import StepSketch from './StepSketch.astro';
+
+// One drawing per step, in order. They show only what the kitchen photos
+// show (cups, a tray, the fridge, the pack); the words stay to be confirmed.
+const sketches = ['cups', 'tray', 'fridge', 'pack'] as const;
 import SectionTitle from '../ui/SectionTitle.astro';
 ---
 
@@ -24,10 +29,11 @@ import SectionTitle from '../ui/SectionTitle.astro';
     {
       howItsMade.steps.map((step, index) => (
         <li class="rounded-3xl border border-dashed border-wine/40 bg-cream p-5 text-center" data-made-step>
-          <span class="font-display text-5xl leading-none font-semibold" aria-hidden="true">
-            {index + 1}
+          <StepSketch kind={sketches[index % sketches.length]!} class="mx-auto w-24 overflow-visible" />
+          <span class="label-caps mt-3 block opacity-80" aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
           </span>
-          <h3 class="label-caps mt-3 font-sans">{step.title}</h3>
+          <h3 class="label-caps mt-1 font-sans">{step.title}</h3>
           <p class="mt-2 text-sm opacity-80">{step.detail}</p>
         </li>
       ))
@@ -35,21 +41,45 @@ import SectionTitle from '../ui/SectionTitle.astro';
   </ol>
 </section>
 
+<style is:global>
+  /* The "motion" class is set in Base.astro only when motion is allowed. */
+  .motion [data-made]:not([data-ready]) [data-made-step] {
+    opacity: 0;
+  }
+</style>
+
 <script>
   import gsap from 'gsap';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
   import { lazyScene } from '../../lib/scene';
 
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
+  // The steps play in order: each card rises, its sketch draws itself and
+  // its colour washes in, and then the next one starts.
   lazyScene('[data-made]', (scene) => {
-    gsap.from(gsap.utils.toArray<HTMLElement>('[data-made-step]', scene), {
-      y: 40,
-      opacity: 0,
-      duration: 0.6,
-      ease: 'back.out(1.6)',
-      stagger: 0.1,
-      scrollTrigger: { trigger: scene, start: 'top 75%', once: true },
+    const steps = gsap.utils.toArray<HTMLElement>('[data-made-step]', scene);
+    const sequence = gsap.timeline({
+      scrollTrigger: { trigger: steps[0], start: 'top 82%', once: true },
+      onStart: () => {
+        scene.dataset.ready = '';
+      },
+    });
+    steps.forEach((step, index) => {
+      const at = index * 0.55;
+      sequence
+        .fromTo(step, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' }, at)
+        .from(
+          step.querySelectorAll('[data-sketch] > :not([data-tone])'),
+          { drawSVG: 0, duration: 0.5, stagger: 0.05, ease: 'power1.inOut' },
+          at + 0.1,
+        )
+        .from(
+          step.querySelectorAll('[data-tone]'),
+          { opacity: 0, scale: 0.6, transformOrigin: '50% 50%', duration: 0.4, ease: 'power2.out' },
+          at + 0.4,
+        );
     });
   });
 </script>

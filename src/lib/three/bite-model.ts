@@ -57,7 +57,7 @@ const matte = (
   once(`material:${name}`, () => new MeshStandardMaterial({ roughness: 0.85, ...build() }));
 
 // The cup: a flared tube whose wall is pushed in and out to make the folds.
-const cupGeometry = (): BufferGeometry =>
+export const cupGeometry = (): BufferGeometry =>
   once('cup', () => {
     const geometry = new CylinderGeometry(MODEL_BITE.radius, 0.41, 0.44, FOLDS * 8, 4, true);
     const position = geometry.getAttribute('position');
@@ -76,7 +76,7 @@ const cupGeometry = (): BufferGeometry =>
   });
 
 // The body: straight sides and a softly rounded top edge.
-const bodyGeometry = (): BufferGeometry =>
+export const bodyGeometry = (): BufferGeometry =>
   once('body', () => {
     const radius = 0.455;
     const profile = [new Vector2(0.43, 0.13), new Vector2(radius, 0.2), new Vector2(radius, TOP - 0.07)];

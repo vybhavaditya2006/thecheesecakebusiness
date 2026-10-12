@@ -1,3 +1,5 @@
+import { brand } from './brand';
+
 export type CustomOptionId = 'build-your-own' | 'half-and-half' | 'gift-box' | 'party-platter';
 
 export interface CustomOption {
@@ -102,3 +104,17 @@ export const biteLayers: readonly BiteLayer[] = [
 
 // Longest gift note, in characters.
 export const giftNoteLimit = 140;
+
+// What a custom order might be for. Picking one adds it to the WhatsApp message.
+export const occasions = ['Diwali', 'Birthdays', 'Office'] as const;
+
+// Wording on the Custom & Gifts page.
+export const customPage = {
+  ask: `Ask ${brand.maker} on WhatsApp`,
+  occasionsHeading: 'What is it for?',
+  halves: ['First half', 'Second half'],
+  // How each WhatsApp message opens and closes.
+  opening: 'I would like to ask about a custom order:',
+  closing: '(Price, delivery and payment to be confirmed here.)',
+} as const;
+

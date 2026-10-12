@@ -1,15 +1,17 @@
 ---
-// When it arrives and how to pay: two cards, each with its icon.
-import { arrival, payment } from '../../content/info';
+// The practical facts as three cards, each with its icon. Delivery is given
+// in its short form here: the map above this has it in full.
+import { arrival, delivery, payment } from '../../content/info';
 
 const cards = [
+  { heading: delivery.short, notes: [`From ${delivery.area}.`], icon: 'delivery' },
   { ...arrival, icon: 'clock' },
   { ...payment, icon: 'wallet' },
 ];
 ---
 
 <section class="px-5 py-8">
-  <ul class="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2">
+  <ul class="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
     {
       cards.map((card) => (
         <li class="rounded-3xl border border-wine/25 bg-blush/40 p-7">
@@ -23,13 +25,25 @@ const cards = [
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            {card.icon === 'clock' ? (
+            {card.icon === 'delivery' && (
+              <>
+                <rect data-tone x="5" y="10" width="11" height="9" rx="1.5" />
+                <rect x="5" y="10" width="11" height="9" rx="1.5" />
+                <path d="M4 26h5M15 26h10l4-12h4M29 14l2 6" />
+                <circle data-tone cx="12" cy="27" r="4" />
+                <circle cx="12" cy="27" r="4" />
+                <circle data-tone cx="31" cy="27" r="4" />
+                <circle cx="31" cy="27" r="4" />
+              </>
+            )}
+            {card.icon === 'clock' && (
               <>
                 <circle data-tone cx="20" cy="21" r="14" />
                 <circle cx="20" cy="21" r="14" />
                 <path d="M20 12v9l6 4M14 4h12" />
               </>
-            ) : (
+            )}
+            {card.icon === 'wallet' && (
               <>
                 <path data-tone d="M5 13v16a4 4 0 0 0 4 4h24a2 2 0 0 0 2-2V17a2 2 0 0 0-2-2H9a4 4 0 0 1-4-2z" />
                 <path d="M5 13a4 4 0 0 1 4-4h20v6" />

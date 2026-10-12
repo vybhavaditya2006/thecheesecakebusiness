@@ -1,0 +1,416 @@
+---
+// Custom & Gifts: the four custom options, each with its own choices. Every
+// option ends in a button that opens WhatsApp with the choices written out;
+// nothing is added to the box here. An occasion, if picked, goes into every
+// message.
+//
+// The links work as they stand (with the first choice of each kind); the
+// script keeps them in step as choices are made.
+import { biteLayers, customOptions, customPage, customPricing, occasions } from '../../content/custom';
+import { flavours } from '../../content/flavours';
+import { halfAndHalfCake } from '../../content/photos';
+import { customMessage } from '../../lib/custom-message';
+import { whatsappLink } from '../../lib/wa-link';
+import Button from '../ui/Button.astro';
+import Snapshot from '../ui/Snapshot.astro';
+
+const option = (id: (typeof customOptions)[number]['id']) => customOptions.find((one) => one.id === id)!;
+const build = option('build-your-own');
+const half = option('half-and-half');
+const sized = [option('gift-box'), option('party-platter')];
+
+// The colour a flavour gives a cake: its own colour, thinned with cream.
+const cakeColour = (accent: string): string => `color-mix(in srgb, ${accent} 62%, var(--color-cream))`;
+// The colour of a layer's first choice, as the drawn bite's starting style.
+const starts = (id: string, property: 'color' | 'background'): string | undefined => {
+  const colour = biteLayers.find((layer) => layer.id === id)?.choices[0]?.colour;
+  return colour ? `${property}:${colour}` : undefined;
+};
+const bites = (count: number): string => `${count} bites`;
+const ask = (name: string, choices: string[]): string => whatsappLink(customMessage(name, choices));
+---
+
+<section class="custom px-5 pb-10" data-custom>
+  <!-- What it is for: optional, and added to whichever message is sent. -->
+  <div class="mx-auto max-w-3xl text-center">
+    <h2 class="label-caps font-sans opacity-80">{customPage.occasionsHeading}</h2>
+    <div class="mt-4 flex flex-wrap justify-center gap-2" role="group" aria-label={customPage.occasionsHeading} data-occasions>
+      {
+        occasions.map((occasion) => (
+          <button type="button" class="chip" aria-pressed="false" data-value={occasion}>
+            {occasion}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- Build your own bite: put together layer by layer as it is chosen. -->
+  <article id={build.id} class="custom-card" data-option={build.name}>
+    <div class="grid items-center gap-8 md:grid-cols-2">
+      <div class="custom-bite" data-custom-bite>
+        <div class="absolute inset-0" data-custom-3d></div>
+        <!-- The drawn bite: what shows without 3D. -->
+        <div class="custom-bite-flat" aria-hidden="true" data-custom-flat>
+          <span class="custom-flat-topping" style={starts('topping', 'color')} data-flat="topping">
+            {[0, 1, 2, 3, 4].map(() => <i />)}
+          </span>
+          <span class="custom-flat-filling" style={starts('filling', 'background')} data-flat="filling">
+            <i style={starts('centre', 'background')} data-flat="centre"></i>
+          </span>
+          <span class="custom-flat-base" style={starts('base', 'background')} data-flat="base"></span>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-4xl leading-tight">{build.name}</h2>
+        <p class="mt-2 text-sm">{build.description}</p>
+        {
+          biteLayers.map((layer) => (
+            <fieldset class="mt-5">
+              <legend class="label-caps opacity-80">{layer.name}</legend>
+              <div class="mt-2 flex flex-wrap gap-2" data-choice={layer.name} data-layer={layer.id}>
+                {layer.choices.map((choice, index) => (
+                  <button
+                    type="button"
+                    class="chip"
+                    aria-pressed={index === 0 ? 'true' : 'false'}
+                    data-value={choice.name}
+                    data-colour={choice.colour ?? ''}
+                  >
+                    {choice.name}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ))
+        }
+        <Button
+          class="mt-7"
+          href={ask(
+            build.name,
+            biteLayers.map((layer) => `${layer.name}: ${layer.choices[0]!.name}`),
+          )}
+          rel="noopener"
+          data-ask
+        >
+          {customPage.ask}
+        </Button>
+      </div>
+    </div>
+  </article>
+
+  <!-- Half & Half: one round cake, split down the middle. -->
+  <article id={half.id} class="custom-card" data-option={half.name} data-distinct>
+    <div class="grid items-center gap-8 md:grid-cols-2">
+      <div class="order-last md:order-first">
+        <h2 class="text-4xl leading-tight">{half.name}</h2>
+        <p class="mt-2 text-sm">{half.description}</p>
+        {
+          customPage.halves.map((label, side) => (
+            <fieldset class="mt-5">
+              <legend class="label-caps opacity-80">{label}</legend>
+              <div class="mt-2 flex flex-wrap gap-2" data-choice={label} data-half={side}>
+                {flavours.map((flavour, index) => (
+                  <button
+                    type="button"
+                    class="chip"
+                    aria-pressed={index === side ? 'true' : 'false'}
+                    data-value={flavour.name}
+                    data-colour={cakeColour(flavour.accent)}
+                  >
+                    {flavour.name}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ))
+        }
+        <Button
+          class="mt-7"
+          href={ask(
+            half.name,
+            customPage.halves.map((label, side) => `${label}: ${flavours[side]!.name}`),
+          )}
+          rel="noopener"
+          data-ask
+        >
+          {customPage.ask}
+        </Button>
+      </div>
+
+      <div class="relative mx-auto w-full max-w-xs">
+        <svg
+          class="w-full overflow-visible text-wine"
+          viewBox="0 0 200 200"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+          data-sketch
+        >
+          <!-- The crumb edge, then the two halves, then the cut between them. -->
+          <circle cx="100" cy="100" r="92" fill="color-mix(in srgb, var(--color-gold) 45%, var(--color-cream))"></circle>
+          <path d="M100 18A82 82 0 0 0 100 182Z" style={`fill:${cakeColour(flavours[0]!.accent)}`} data-half-fill="0"
+          ></path>
+          <path d="M100 18A82 82 0 0 1 100 182Z" style={`fill:${cakeColour(flavours[1]!.accent)}`} data-half-fill="1"
+          ></path>
+          <path d="M100 10V190" stroke-dasharray="5 5" stroke="var(--color-cream)"></path>
+          <path d="M42 62c10-14 22-22 36-26M150 150c-8 8-16 14-26 18" stroke-width="1" opacity="0.45"></path>
+        </svg>
+        <Snapshot
+          shot={halfAndHalfCake}
+          tilt={4}
+          sizes="9rem"
+          class="absolute -right-4 -bottom-10 w-36 sm:-right-12"
+        />
+      </div>
+    </div>
+  </article>
+
+  <!-- Gift box and party platter: pick a size. -->
+  <div class="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+    {
+      sized.map((one) => (
+        <article id={one.id} class="custom-card custom-card-small" data-option={one.name}>
+          <h2 class="text-4xl leading-tight">{one.name}</h2>
+          <p class="mt-2 text-sm">{one.description}</p>
+          <div class="mt-5 flex flex-wrap justify-center gap-2" role="group" aria-label="How many" data-choice="Size">
+            {(one.sizes ?? []).map((size, index) => (
+              <button type="button" class="chip" aria-pressed={index === 0 ? 'true' : 'false'} data-value={bites(size)}>
+                {bites(size)}
+              </button>
+            ))}
+          </div>
+          <Button class="mt-7" href={ask(one.name, [`Size: ${bites(one.sizes?.[0] ?? 0)}`])} rel="noopener" data-ask>
+            {customPage.ask}
+          </Button>
+        </article>
+      ))
+    }
+  </div>
+
+  <p class="mx-auto mt-14 max-w-sm text-center text-sm">{customPricing}</p>
+</section>
+
+<style is:global>
+  .custom-card {
+    max-width: 64rem;
+    margin: 3.5rem auto 0;
+    padding: 2rem 1.5rem;
+    border: 1px solid rgb(122 31 43 / 0.25);
+    border-radius: 1.5rem;
+    background: color-mix(in srgb, var(--color-blush) 40%, var(--color-cream));
+  }
+
+  .custom-card-small {
+    margin-top: 3.5rem;
+    text-align: center;
+  }
+
+  @media (min-width: 48rem) {
+    .custom-card {
+      padding: 3rem;
+    }
+
+    .custom-card-small {
+      margin-top: 1.5rem;
+    }
+  }
+
+  /* The stage for the bite being built. */
+  .custom-bite {
+    position: relative;
+    width: 100%;
+    max-width: 20rem;
+    aspect-ratio: 1;
+    margin-inline: auto;
+  }
+
+  /* The drawn bite, from the top down: topping, filling (with the centre in
+     it), base. A layer with no colour yet takes no part. */
+  .custom-bite-flat {
+    display: flex;
+    position: absolute;
+    inset: 22% 18% 16%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .custom-bite[data-three] .custom-bite-flat {
+    visibility: hidden;
+  }
+
+  .custom-flat-topping {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.15rem;
+    color: transparent;
+  }
+
+  .custom-flat-topping i {
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--color-wine);
+    border-radius: 50%;
+    background: currentcolor;
+  }
+
+  .custom-flat-topping i:nth-child(even) {
+    transform: translateY(3px);
+  }
+
+  .custom-flat-filling {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 48%;
+    border: 1.5px solid var(--color-wine);
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .custom-flat-filling i {
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1.5px solid var(--color-wine);
+    border-radius: 50%;
+  }
+
+  .custom-flat-base {
+    width: 100%;
+    height: 14%;
+    border: 1.5px solid var(--color-wine);
+    border-top: 0;
+    border-radius: 0 0 0.75rem 0.75rem;
+  }
+
+  [data-flat]:not([style]) {
+    visibility: hidden;
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { customMessage } from '../../lib/custom-message';
+  import { reducedMotion } from '../../lib/motion';
+  import type { CustomBite, CustomLayer } from '../../lib/three/custom-bite';
+  import { canUse3D, whenNear } from '../../lib/three/support';
+  import { whatsappLink } from '../../lib/wa-link';
+
+  document.addEventListener('astro:page-load', () => {
+    const page = document.querySelector<HTMLElement>('[data-custom]');
+    if (!page) return;
+
+    const picked = (group: Element): HTMLButtonElement | null => group.querySelector('.chip[aria-pressed="true"]');
+    const occasions = page.querySelector<HTMLElement>('[data-occasions]');
+    const options = Array.from(page.querySelectorAll<HTMLElement>('[data-option]'));
+
+    // Every option's link carries its choices, and the occasion if there is one.
+    const write = (): void => {
+      const occasion = (occasions && picked(occasions)?.dataset.value) || undefined;
+      for (const option of options) {
+        const choices = Array.from(option.querySelectorAll<HTMLElement>('[data-choice]'), (group) => {
+          return `${group.dataset.choice}: ${picked(group)?.dataset.value ?? ''}`;
+        });
+        const link = option.querySelector<HTMLAnchorElement>('[data-ask]');
+        if (link) link.href = whatsappLink(customMessage(option.dataset.option ?? '', choices, occasion));
+      }
+    };
+
+    // ---- The bite being built: in 3D when it can be, drawn otherwise.
+    const stand = page.querySelector<HTMLElement>('[data-custom-bite]');
+    let bite: CustomBite | undefined;
+    const show = (layer: CustomLayer, colour: string | null, drop = true): void => {
+      bite?.set(layer, colour);
+      const flat = stand?.querySelector<HTMLElement>(`[data-flat="${layer}"]`);
+      if (!flat) return;
+      if (!colour) return flat.removeAttribute('style');
+      // The topping's pieces take their colour from the row; the rest are filled.
+      flat.setAttribute('style', layer === 'topping' ? `color:${colour}` : `background:${colour}`);
+      if (drop && !bite && !reducedMotion()) {
+        gsap.fromTo(flat, { y: -48, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out' });
+      }
+    };
+    // What is picked now, bottom layer first, each a moment after the last.
+    const assemble = (): void => {
+      page.querySelectorAll<HTMLElement>('[data-layer]').forEach((group, order) => {
+        const colour = picked(group)?.dataset.colour || null;
+        const layer = group.dataset.layer as CustomLayer;
+        window.setTimeout(() => show(layer, colour), bite && !reducedMotion() ? order * 260 : 0);
+      });
+    };
+
+    // ---- Half & Half: each half takes its flavour's colour, and the two differ.
+    const halves = Array.from(page.querySelectorAll<HTMLElement>('[data-half]'));
+    const paintHalves = (): void => {
+      halves.forEach((group, side) => {
+        const chosen = picked(group);
+        const fill = page.querySelector<SVGElement>(`[data-half-fill="${group.dataset.half}"]`);
+        if (fill && chosen?.dataset.colour) fill.style.fill = chosen.dataset.colour;
+        // A flavour picked for one half cannot be picked for the other.
+        const other = halves[1 - side];
+        other?.querySelectorAll<HTMLButtonElement>('.chip').forEach((chip) => {
+          chip.disabled = chip.dataset.value === chosen?.dataset.value;
+        });
+      });
+    };
+
+    const choose = (event: Event): void => {
+      const chip = (event.target as Element).closest<HTMLButtonElement>('.chip');
+      const group = chip?.parentElement;
+      if (!chip || !group || chip.disabled) return;
+
+      // An occasion can be put back down; every other choice always has one picked.
+      const optional = group === occasions;
+      const was = chip.getAttribute('aria-pressed') === 'true';
+      group.querySelectorAll('.chip').forEach((other) => other.setAttribute('aria-pressed', 'false'));
+      chip.setAttribute('aria-pressed', optional && was ? 'false' : 'true');
+
+      if (group.dataset.layer) show(group.dataset.layer as CustomLayer, chip.dataset.colour || null);
+      if (group.dataset.half) paintHalves();
+      write();
+    };
+    page.addEventListener('click', choose);
+
+    paintHalves();
+    write();
+    assemble();
+
+    let gone = false;
+    const mount = stand?.querySelector<HTMLElement>('[data-custom-3d]');
+    const stopWaiting =
+      stand && mount && canUse3D()
+        ? whenNear(stand, async () => {
+            try {
+              const { mountCustomBite } = await import('../../lib/three/custom-bite');
+              if (gone) return;
+              bite = mountCustomBite(mount, {
+                // Too slow here: back to the drawn bite.
+                onFallback: () => {
+                  bite = undefined;
+                  stand.removeAttribute('data-three');
+                },
+              });
+              stand.dataset.three = '';
+              assemble();
+            } catch {
+              // The kit failed to load: the drawn bite stays.
+            }
+          })
+        : undefined;
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        gone = true;
+        stopWaiting?.();
+        page.removeEventListener('click', choose);
+        bite?.dispose();
+      },
+      { once: true },
+    );
+  });
+</script>

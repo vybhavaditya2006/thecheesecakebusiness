@@ -1,7 +1,6 @@
 import { brand } from '../content/brand';
 import { customPriceNote } from '../content/custom';
 import type { FlavourId } from '../content/flavours';
-import { contact } from '../content/info';
 import { formatPrice, priceBreakdown, pricing, saleActive } from '../content/pricing';
 import { countByFlavour, type CustomRequest } from './order-store';
 
@@ -49,6 +48,4 @@ export const orderMessage = (bites: readonly FlavourId[], custom: readonly Custo
     '(Delivery and payment to be confirmed here.)',
   ].join('\n');
 
-// With no number configured, WhatsApp asks the customer to pick a chat.
-export const whatsappLink = (message: string): string =>
-  `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(message)}`;
+export { whatsappLink } from './wa-link';
