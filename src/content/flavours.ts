@@ -9,8 +9,8 @@ export interface Flavour {
   note: string;
   // What bursts out around the bite in the flavour's scene.
   ingredient: string;
-  // True once the flavour's picture is a real photograph. Coffee's is still a
-  // mock-up (see src/lib/bite-images.ts) and gets no hand-written note.
+  // True once the flavour's picture is a real photograph. Coffee has none yet:
+  // it shows the 3D bite (see src/lib/bite-images.ts) and gets no hand-written note.
   photographed?: boolean;
   // What the bite is made of, from the top down.
   layers: readonly Layer[];

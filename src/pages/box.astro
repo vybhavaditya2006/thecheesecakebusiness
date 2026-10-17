@@ -5,6 +5,7 @@ import type { BiteImages } from '../components/order/parts';
 import { flavours } from '../content/flavours';
 import { boxLabel, seo } from '../content/site';
 import { biteImage } from '../lib/bite-images';
+import { CUTOUT_WIDTHS, QUALITY } from '../lib/photos';
 import SectionTitle from '../components/ui/SectionTitle.astro';
 import { saleActive, formatPrice, pricing } from '../content/pricing';
 import Base from '../layouts/Base.astro';
@@ -12,15 +13,19 @@ import Base from '../layouts/Base.astro';
 const key = saleActive ? 'offer' : 'regular';
 
 // The island is React, so Astro optimises the bite photos here and passes
-// their URLs in. Flavours without a photo are left out and show a placeholder.
+// their URLs in. The bites are drawn at most about 80px wide, so up to 320px
+// covers a 4x screen. Flavours without a picture show a placeholder.
 const biteImages: BiteImages = {};
 for (const flavour of flavours) {
   const src = biteImage(flavour.id);
   if (!src) continue;
+  const widths = CUTOUT_WIDTHS.filter((width) => width <= 320);
   const [avif, webp] = await Promise.all(
-    (['avif', 'webp'] as const).map((format) => getImage({ src, width: 192, format, quality: 80 })),
+    (['avif', 'webp'] as const).map((format) => getImage({ src, widths, format, quality: QUALITY.product })),
   );
-  if (avif && webp) biteImages[flavour.id] = { avif: avif.src, webp: webp.src };
+  if (avif && webp) {
+    biteImages[flavour.id] = { avif: avif.srcSet.attribute, webp: webp.src, webpSet: webp.srcSet.attribute };
+  }
 }
 ---
 

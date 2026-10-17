@@ -1,5 +1,5 @@
 // Photos from the kitchen, and the few words that go with each. The files
-// live in src/assets/photos/<name>.webp; a snapshot is only shown once its
+// live in src/assets/photos/masters/<name>.png; a snapshot is only shown once its
 // file exists.
 
 export interface Snapshot {

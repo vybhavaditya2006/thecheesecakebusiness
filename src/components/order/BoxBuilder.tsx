@@ -293,7 +293,7 @@ export default function BoxBuilder() {
                   whileTap={{ scale: 0.88 }}
                   onClick={(event) => add(flavour.id, event)}
                 >
-                  <Bite flavour={flavour} className="w-full text-[clamp(0.55rem,2.6vw,0.8rem)]" />
+                  <Bite flavour={flavour} eager className="w-full text-[clamp(0.55rem,2.6vw,0.8rem)]" />
                 </motion.button>
               </li>
             ))}

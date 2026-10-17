@@ -64,7 +64,7 @@ export function mountCustomBite(container: HTMLElement, { onFallback }: { onFall
   };
   const layers = {
     base: layer(
-      (material) => [new Mesh(new CylinderGeometry(0.44, 0.415, 0.13, 40).translate(0, 0.085, 0), material)],
+      (material) => [new Mesh(new CylinderGeometry(0.425, 0.4, 0.13, 40).translate(0, 0.085, 0), material)],
       0.9,
     ),
     filling: layer((material) => [new Mesh(bodyGeometry(), material)], 0.62),

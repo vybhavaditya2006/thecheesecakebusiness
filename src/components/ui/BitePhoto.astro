@@ -1,18 +1,19 @@
 ---
-// One bite: a cut-out photo of the real thing, standing on a soft shadow.
-// Until src/assets/bites/<id>.webp exists (a photo with its background
-// removed) it shows the placeholder instead: a cream circle with the flavour
-// name, or whatever is passed as the slot.
+// One bite: a cut-out photo of the real thing, standing on a soft shadow. A
+// flavour without a photo yet shows a still of the 3D bite instead (see
+// src/lib/bite-images.ts); with neither it is the placeholder: a cream circle
+// with the flavour name, or whatever is passed as the slot.
 import { Picture } from 'astro:assets';
 import type { Flavour } from '../../content/flavours';
-import { biteImage } from '../../lib/bite-images';
+import { biteImage, bitePhoto } from '../../lib/bite-images';
+import { CUTOUT_WIDTHS, QUALITY } from '../../lib/photos';
 
 interface Props {
   flavour: Flavour;
   // The rendered width, as a `sizes` attribute, so the browser picks the
   // smallest file that is sharp enough.
   sizes: string;
-  // Only for images in the hero: load at once instead of lazily.
+  // Only for images in a page's first screen: load at once instead of lazily.
   priority?: boolean;
   // Classes for the placeholder's text (size, weight).
   class?: string;
@@ -20,6 +21,7 @@ interface Props {
 
 const { flavour, sizes, priority = false, class: className } = Astro.props;
 const photo = biteImage(flavour.id);
+const alt = bitePhoto(flavour.id) ? `${flavour.name} cheesecake bite` : `${flavour.name} cheesecake bite, drawn`;
 const frame = 'size-full rounded-full border-[1.5px] border-wine bg-cream';
 ---
 
@@ -31,10 +33,10 @@ const frame = 'size-full rounded-full border-[1.5px] border-wine bg-cream';
         src={photo}
         formats={['avif']}
         fallbackFormat="webp"
-        quality={80}
-        widths={[96, 160, 240, 480, 720]}
+        quality={QUALITY.product}
+        widths={CUTOUT_WIDTHS}
         sizes={sizes}
-        alt={`${flavour.name} cheesecake bite`}
+        alt={alt}
         loading={priority ? 'eager' : 'lazy'}
         fetchpriority={priority ? 'high' : undefined}
         decoding={priority ? 'sync' : 'async'}

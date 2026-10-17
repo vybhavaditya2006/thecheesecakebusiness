@@ -1,16 +1,15 @@
 ---
 // Real photos of the bites, side on. A flavour appears here once it has a
-// photo at src/assets/photos/bite-<id>.webp.
-import type { ImageMetadata } from 'astro';
+// photo at src/assets/photos/masters/bite-<id>.png.
 import { Picture } from 'astro:assets';
 import { flavours } from '../../content/flavours';
 import { upClose } from '../../content/story';
+import { PHOTO_WIDTHS, photo as master, QUALITY } from '../../lib/photos';
 import HandNote from '../ui/HandNote.astro';
 import SectionTitle from '../ui/SectionTitle.astro';
 
-const photos = import.meta.glob<{ default: ImageMetadata }>('../../assets/photos/bite-*.webp', { eager: true });
 const shots = flavours.flatMap((flavour) => {
-  const photo = photos[`../../assets/photos/bite-${flavour.id}.webp`]?.default;
+  const photo = master(`bite-${flavour.id}`);
   return photo ? [{ flavour, photo }] : [];
 });
 ---
@@ -31,8 +30,8 @@ const shots = flavours.flatMap((flavour) => {
                 src={photo}
                 formats={['avif']}
                 fallbackFormat="webp"
-                quality={78}
-                widths={[240, 400, 600]}
+                quality={QUALITY.product}
+                widths={PHOTO_WIDTHS}
                 sizes="(min-width: 40rem) 22vw, 44vw"
                 alt={`A ${flavour.name} cheesecake bite in its paper cup, seen from the side`}
                 class="aspect-[4/5] w-full rounded-2xl border border-wine/25 object-cover"

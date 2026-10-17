@@ -1,17 +1,20 @@
 import type { ImageMetadata } from 'astro';
 import type { FlavourId } from '../content/flavours';
 
-// Bite photos live in src/assets/bites/<flavour id>.webp. A flavour without a
-// photo yet falls back to the cream-circle placeholder.
+// Bite cut-outs live in src/assets/bites/<flavour id>.png, made from the real
+// photos by scripts/process-photos.mjs.
 //
-// TODO: coffee.webp is a mock-up, not a photograph: a real photo of a
-// Blueberry bite with the compote painted out of its top and the cream turned
-// light brown, which is how Coffee is described (light brown, nothing on
-// top). Replace it with a real photo, cut out the same way, once Shlok has
-// made and photographed one. The other four are real photos.
-const photos = import.meta.glob<{ default: ImageMetadata }>('../assets/bites/*.webp', {
-  eager: true,
-});
+// TODO: Coffee has no photo yet. Until it does, it is shown as the modelled
+// 3D bite: live in the 3D scenes, and as a still of it
+// (src/assets/bites/renders/coffee.png, drawn by the same script) everywhere
+// else. Once Shlok has made and photographed a Coffee bite, add it to the
+// script's `pieces` and remove it from `stills`.
+const photos = import.meta.glob<{ default: ImageMetadata }>('../assets/bites/*.png', { eager: true });
+const renders = import.meta.glob<{ default: ImageMetadata }>('../assets/bites/renders/*.png', { eager: true });
 
+// The real photo of the bite, if there is one.
+export const bitePhoto = (id: FlavourId): ImageMetadata | undefined => photos[`../assets/bites/${id}.png`]?.default;
+
+// What to show for the bite: its photo, or else the still of the 3D bite.
 export const biteImage = (id: FlavourId): ImageMetadata | undefined =>
-  photos[`../assets/bites/${id}.webp`]?.default;
+  bitePhoto(id) ?? renders[`../assets/bites/renders/${id}.png`]?.default;

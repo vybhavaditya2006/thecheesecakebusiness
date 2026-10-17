@@ -1,10 +1,12 @@
 import { Group, Sprite, SpriteMaterial, SRGBColorSpace, type Texture, TextureLoader } from 'three';
 import type { FlavourId } from '../../content/flavours';
+import { createModelBite, type ModelBite } from './bite-model';
 import { onStageDispose, refreshStages } from './renderer';
 
 // A bite in a 3D scene: the real cut-out photo of that flavour, standing on
-// its base and always turned to face the camera. Nothing here is modelled;
-// what you see is the photograph.
+// its base and always turned to face the camera. What you see is the
+// photograph. A flavour with no photo yet (Coffee) is the modelled bite
+// instead, until its photo exists.
 
 export interface Bite3D {
   group: Group;
@@ -52,11 +54,24 @@ export function createBite(flavour: FlavourId): Bite3D {
   photo.center.set(0.5, 0);
   group.add(photo);
 
+  // Made only if a flavour without a photo is ever shown.
+  let model: ModelBite | undefined;
+
   const bite: Bite3D = {
     group,
     flavour,
     setFlavour: (next) => {
       bite.flavour = next;
+      const photographed = Boolean(urlOf(next));
+      photo.visible = photographed;
+      if (!photographed) {
+        if (!model) {
+          model = createModelBite();
+          group.add(model.group);
+        }
+        model.blend(next, next, 1);
+      }
+      if (model) model.group.visible = !photographed;
       textureOf(next, (texture) => {
         // A slow picture must not overwrite a flavour chosen since.
         if (bite.flavour !== next) return;

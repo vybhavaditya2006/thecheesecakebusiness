@@ -75,11 +75,17 @@ export const cupGeometry = (): BufferGeometry =>
     return geometry;
   });
 
-// The body: straight sides and a softly rounded top edge.
+// The body: sides that follow the cup's flare up to its rim, so the cream
+// never shows through between the folds, and a softly rounded top edge.
 export const bodyGeometry = (): BufferGeometry =>
   once('body', () => {
     const radius = 0.455;
-    const profile = [new Vector2(0.43, 0.13), new Vector2(radius, 0.2), new Vector2(radius, TOP - 0.07)];
+    const profile = [
+      new Vector2(0.415, 0.13),
+      new Vector2(0.45, 0.3),
+      new Vector2(radius, 0.36),
+      new Vector2(radius, TOP - 0.07),
+    ];
     for (let step = 1; step <= 6; step += 1) {
       const angle = (step / 6) * (Math.PI / 2);
       profile.push(new Vector2(radius - 0.07 + Math.cos(angle) * 0.07, TOP - 0.07 + Math.sin(angle) * 0.07));
@@ -215,7 +221,7 @@ export function createModelBite(): ModelBite {
     })),
   );
   const crust = mesh(
-    once('crust', () => new CylinderGeometry(0.44, 0.415, 0.13, 40).translate(0, 0.085, 0)),
+    once('crust', () => new CylinderGeometry(0.425, 0.4, 0.13, 40).translate(0, 0.085, 0)),
     matte('crust', () => ({
       map: crumbTexture('#c9954f', ['#9a6a32', '#e6bf82', '#7d5222'], 3),
     })),

@@ -39,7 +39,7 @@ export const howItsMade = {
 } as const;
 
 // Real photos of the bites, side on. Only flavours with a photo in
-// src/assets/photos/bite-<id>.webp are shown.
+// src/assets/photos/masters/bite-<id>.png are shown.
 export const upClose = {
   label: 'Real photos',
   heading: 'The bites, up close',

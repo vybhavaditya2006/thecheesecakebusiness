@@ -84,7 +84,7 @@ const crumbs = [
       {
         flavours.map((flavour, index) => (
           <span class:list={['flavour-switch-face', index === 0 && 'is-shown']} data-switch-face>
-            <BitePhoto flavour={flavour} sizes="(min-width: 48rem) 9rem, 5rem" class="text-[0.6rem]" />
+            <BitePhoto flavour={flavour} sizes="(min-width: 48rem) 9rem, 5rem" priority={index === 0} class="text-[0.6rem]" />
           </span>
         ))
       }
@@ -125,6 +125,7 @@ const crumbs = [
                 <BitePhoto
                   flavour={flavour}
                   sizes="(min-width: 48rem) min(28vw, 42svh), min(40vw, 16svh)"
+                  priority={index === 0}
                   class="text-[clamp(0.8rem,2.2vw,1.6rem)]"
                 />
                 {flavour.photographed && biteImage(flavour.id) && (
