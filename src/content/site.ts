@@ -73,6 +73,23 @@ export const seo = {
 export const customOrderLink = (optionId: string): string =>
   `${paths.box}?tab=custom&type=${optionId}`;
 
+// Home (v3): the words that are only on Home.
+export const home = {
+  line: `Cheesecake pieces, made by ${brand.maker} in ${delivery.area}.`,
+  order: 'Order',
+  seeFlavours: 'See flavours',
+  contactLabel: 'Get in touch',
+  call: 'Call',
+  whatsapp: 'WhatsApp',
+  email: 'Email',
+  tilesLabel: 'What you can order',
+  flavoursLabel: 'The flavours',
+  flavoursHeading: `${flavours.length} flavours, one price`,
+  storyLabel: 'Our Story',
+  storyHeading: `Meet ${brand.maker}`,
+  storyLink: 'Read the story',
+} as const;
+
 // Home: how ordering works, in three steps.
 export const ordering = {
   heading: 'How ordering works',

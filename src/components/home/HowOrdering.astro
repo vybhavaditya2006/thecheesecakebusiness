@@ -1,67 +1,52 @@
 ---
-// How ordering works: three steps, each with a sketch that draws itself.
-import { boxLabel, orderPath, ordering } from '../../content/site';
-import StorySketch from '../story/StorySketch.astro';
-import { delivery } from '../../content/info';
-import Button from '../ui/Button.astro';
-import FactIcons from '../ui/FactIcons.astro';
-import Sticker from '../ui/Sticker.astro';
-import SectionTitle from '../ui/SectionTitle.astro';
+// How ordering works: three short numbered lines beside one photo.
+import { Picture } from 'astro:assets';
+import { ordering } from '../../content/site';
+import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
+import Frame from '../v3/Frame.astro';
+import Reveal from '../v3/Reveal.astro';
+
+const PHOTO = 'kitchen-tray-a';
+const picture = photo(PHOTO);
 ---
 
-<section class="relative bg-blush/45 px-5 py-20" data-ordering>
-  <SectionTitle label="Three steps" title={ordering.heading} />
-  <p class="absolute top-8 right-4 sm:top-12 sm:right-[8%]">
-    <Sticker tilt={9}><span class="label-caps text-[0.65rem]">{delivery.short}</span></Sticker>
-  </p>
-
-  <ol class="mx-auto mt-12 grid max-w-4xl gap-10 sm:grid-cols-3 sm:gap-6">
-    {
-      ordering.steps.map((step, index) => (
-        <li class="text-center" data-ordering-step>
-          <StorySketch kind={step.sketch} class="mx-auto w-40 overflow-visible" />
-          <p class="label-caps mt-4 opacity-80" aria-hidden="true">
-            {String(index + 1).padStart(2, '0')}
-          </p>
-          <h3 class="mt-1 text-3xl leading-tight">{step.title}</h3>
-          <p class="mx-auto mt-2 max-w-[16rem] text-sm">{step.detail}</p>
-        </li>
-      ))
-    }
-  </ol>
-
-  <FactIcons class="mx-auto mt-14 block w-fit" />
-
-  <p class="mt-12 text-center">
-    <Button href={orderPath}>{boxLabel}</Button>
-  </p>
+<section class="px-4 py-16 sm:px-6 sm:py-24" aria-labelledby="ordering-heading">
+  <div class="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1fr_1fr] md:gap-16">
+    <Reveal class="md:order-2">
+      <Frame>
+        {
+          picture && (
+            <Picture
+              src={picture}
+              formats={['avif']}
+              fallbackFormat="webp"
+              quality={qualityOf(PHOTO)}
+              widths={PHOTO_WIDTHS}
+              sizes="(min-width: 72rem) 34rem, (min-width: 48rem) 46vw, calc(100vw - 2.8rem)"
+              alt="A tray of cheesecake pieces, half topped with Oreo crumb and half with KitKat"
+              class="aspect-square w-full object-cover"
+            />
+          )
+        }
+      </Frame>
+    </Reveal>
+    <Reveal delay={0.1}>
+      <h2 id="ordering-heading" class="text-5xl leading-tight font-semibold sm:text-6xl">{ordering.heading}</h2>
+      <ol class="mt-8 border-t border-[var(--color-hairline)]">
+        {
+          ordering.steps.map((step, index) => (
+            <li class="flex gap-5 border-b border-[var(--color-hairline)] py-5">
+              <span class="font-display text-3xl leading-none tabular-nums opacity-70" aria-hidden="true">
+                {index + 1}
+              </span>
+              <span>
+                <span class="block font-display text-2xl leading-tight">{step.title}</span>
+                <span class="mt-1 block text-sm">{step.detail}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+    </Reveal>
+  </div>
 </section>
-
-<script>
-  import gsap from 'gsap';
-  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  import { lazyScene } from '../../lib/scene';
-
-  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
-
-  lazyScene('[data-ordering]', (scene) => {
-    gsap.utils.toArray<HTMLElement>('[data-ordering-step]', scene).forEach((step, index) => {
-      const find = (selector: string) => gsap.utils.toArray<SVGElement>(selector, step);
-
-      gsap
-        .timeline({ scrollTrigger: { trigger: step, start: 'top 80%', once: true }, delay: index * 0.15 })
-        .from(find('[data-sketch] > :not([data-pop])'), {
-          drawSVG: 0,
-          duration: 0.6,
-          stagger: 0.08,
-          ease: 'power1.inOut',
-        })
-        .from(
-          find('[data-pop]'),
-          { scale: 0, transformOrigin: '50% 50%', duration: 0.35, stagger: 0.08, ease: 'back.out(3)' },
-          '-=0.2',
-        );
-    });
-  });
-</script>

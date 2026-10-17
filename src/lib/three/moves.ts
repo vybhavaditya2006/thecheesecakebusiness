@@ -1,9 +1,8 @@
 import gsap from 'gsap';
 import type { Group } from 'three';
-import type { Box3D } from './box';
 import type { Stage } from './renderer';
 
-// The moves the hero and the box builder share. Each one asks the stage for
+// The moves the box builder uses. Each one asks the stage for
 // frames while it runs, so nothing renders once it has settled.
 
 const FALL = { height: 3.4, seconds: 0.38 };
@@ -25,19 +24,4 @@ export const dropBite = (stage: Stage, bite: Group, restY: number, delay = 0): g
     )
     .to(bite.scale, { x: 1.05, y: 0.92, z: 1.05, duration: 0.08, ease: 'power1.out' })
     .to(bite.scale, { x: 1, y: 1, z: 1, duration: 0.3, ease: 'power2.out' });
-};
-
-// The clear lid swings shut over the bites.
-export const closeLid = (stage: Stage, box: Box3D, delay = 0): gsap.core.Tween => {
-  const lid = { open: 1 };
-  return gsap.to(lid, {
-    open: 0,
-    delay,
-    duration: 0.7,
-    ease: 'power2.inOut',
-    onUpdate: () => {
-      box.setLid(lid.open);
-      stage.invalidate();
-    },
-  });
 };

@@ -1,0 +1,73 @@
+---
+// The five flavours as cut-outs in a row, each opening its flavour on
+// /flavours. On a phone the row scrolls sideways.
+import { flavours } from '../../content/flavours';
+import { home, paths } from '../../content/site';
+import BitePhoto from '../ui/BitePhoto.astro';
+import Label from '../v3/Label.astro';
+import Reveal from '../v3/Reveal.astro';
+import Section from '../v3/Section.astro';
+---
+
+<Section label={home.flavoursLabel} heading={home.flavoursHeading} id="flavours-row">
+  <Reveal>
+    <ul class="flavour-row">
+      {
+        flavours.map((flavour) => (
+          <li>
+            <a href={`${paths.flavours}#${flavour.id}`} class="flavour-row-link group block text-center">
+              <span class="block aspect-square">
+                <BitePhoto flavour={flavour} sizes="(min-width: 64rem) 11rem, (min-width: 40rem) 17vw, 36vw" />
+              </span>
+              <Label as="span" class="mt-3 inline-block border-b border-transparent pb-0.5 group-hover:border-current">
+                {flavour.name}
+              </Label>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Reveal>
+</Section>
+
+<style>
+  .flavour-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 36vw;
+    gap: 1rem;
+    overflow-x: auto;
+    margin-inline: -1rem;
+    padding: 0 1rem 0.5rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .flavour-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .flavour-row > li {
+    scroll-snap-align: center;
+  }
+
+  @media (min-width: 40rem) {
+    .flavour-row {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      overflow: visible;
+      margin-inline: 0;
+      padding: 0;
+    }
+  }
+
+  .flavour-row-link :global(.bite-cutout) {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (hover: hover) {
+    .flavour-row-link:hover :global(.bite-cutout) {
+      transform: translateY(-0.4rem);
+    }
+  }
+</style>

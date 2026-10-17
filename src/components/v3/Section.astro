@@ -1,0 +1,35 @@
+---
+// A page section: the same width and spacing everywhere, with an optional
+// small caps label and heading, which reveal together.
+import Label from './Label.astro';
+import Reveal from './Reveal.astro';
+
+interface Props {
+  label?: string;
+  heading?: string;
+  // For aria-labelledby; needed only with a heading.
+  id?: string;
+  class?: string;
+}
+
+const { label, heading, id, class: className } = Astro.props;
+const headingId = heading && id ? `${id}-heading` : undefined;
+---
+
+<section id={id} class:list={['px-4 py-16 sm:px-6 sm:py-24', className]} aria-labelledby={headingId}>
+  <div class="mx-auto max-w-6xl">
+    {
+      (label || heading) && (
+        <Reveal class="mb-10 text-center sm:mb-14">
+          {label && <Label>{label}</Label>}
+          {heading && (
+            <h2 id={headingId} class="mt-3 text-4xl leading-tight font-semibold sm:text-5xl">
+              {heading}
+            </h2>
+          )}
+        </Reveal>
+      )
+    }
+    <slot />
+  </div>
+</section>

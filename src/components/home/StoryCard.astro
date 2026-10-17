@@ -1,0 +1,42 @@
+---
+// A card for the maker, linking to Our Story, where the story itself lives.
+import { Picture } from 'astro:assets';
+import { brand } from '../../content/brand';
+import { home, paths } from '../../content/site';
+import { PHOTO_WIDTHS, photo, QUALITY } from '../../lib/photos';
+import Card from '../v3/Card.astro';
+import Label from '../v3/Label.astro';
+import Reveal from '../v3/Reveal.astro';
+
+const picture = photo('shlok');
+---
+
+<section class="px-4 pt-8 pb-20 sm:px-6 sm:pb-28">
+  <Reveal class="mx-auto max-w-3xl">
+    <Card as="a" href={paths.story} class="story-card grid grid-cols-[7rem_1fr] items-center gap-5 p-4 sm:grid-cols-[11rem_1fr] sm:gap-10 sm:p-6">
+      <span class="block aspect-[4/5] overflow-hidden border border-[var(--color-hairline)] bg-blush/50">
+        {
+          picture && (
+            <Picture
+              src={picture}
+              formats={['avif']}
+              fallbackFormat="webp"
+              quality={QUALITY.other}
+              widths={PHOTO_WIDTHS}
+              sizes="(min-width: 40rem) 11rem, 7rem"
+              alt=""
+              class="size-full object-cover object-top"
+              pictureAttributes={{ class: 'block size-full' }}
+            />
+          )
+        }
+      </span>
+      <span>
+        <Label as="span" class="block">{home.storyLabel}</Label>
+        <span class="mt-2 block font-display text-4xl leading-tight font-semibold sm:text-5xl">{home.storyHeading}</span>
+        <span class="mt-2 block text-sm">{brand.descriptor}</span>
+        <span class="label-caps mt-4 inline-block border-b border-current pb-0.5 text-[0.7rem]">{home.storyLink}</span>
+      </span>
+    </Card>
+  </Reveal>
+</section>

@@ -1,0 +1,27 @@
+---
+// A light card with a hairline frame. `glass` lets a photo show through a
+// little, for a card that sits over one.
+interface Props {
+  as?: 'div' | 'article' | 'a' | 'li';
+  href?: string;
+  glass?: boolean;
+  class?: string;
+}
+
+const { as: Tag = 'div', href, glass = false, class: className } = Astro.props;
+---
+
+<Tag href={href} class:list={['v3-card', !/(^|\s)(grid|flex|inline-flex|inline-grid)(\s|$)/.test(className ?? '') && 'block', glass && 'v3-card-glass', className]}>
+  <slot />
+</Tag>
+
+<style>
+  .v3-card {
+    border: 1px solid var(--color-hairline);
+    background: var(--color-card);
+  }
+
+  .v3-card-glass {
+    background: rgb(250 245 239 / 0.9);
+  }
+</style>

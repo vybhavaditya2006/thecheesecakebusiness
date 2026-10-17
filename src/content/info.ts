@@ -16,8 +16,6 @@ export const delivery = {
   paidNote: 'Beyond 5 km delivery is paid; the charge is confirmed on WhatsApp.',
   // The short form, for the footer and the order summary.
   short: 'Free within 5 km',
-  // Where the bites are made, for a sticker.
-  madeIn: 'Made in Nagarabhavi',
   minimumOrder: 0,
 } as const;
 
@@ -45,6 +43,9 @@ export const contact = {
   // Shlok's WhatsApp number, in international format without the "+".
   whatsapp: '916362813519',
   whatsappNote: 'Orders and payment happen here.',
+  // For calls: the same number as WhatsApp, as it is written and as a tel: link.
+  phone: '+91 63628 13519',
+  tel: '+916362813519',
   // For questions only; orders stay on WhatsApp.
   email: 'shlokajaypawar@gmail.com',
   emailNote: 'For questions only.',

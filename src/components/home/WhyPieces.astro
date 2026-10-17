@@ -1,0 +1,47 @@
+---
+// Why pieces: one large photo of a single piece beside the pitch in three
+// short lines.
+import { Picture } from 'astro:assets';
+import { brand } from '../../content/brand';
+import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
+import Frame from '../v3/Frame.astro';
+import Reveal from '../v3/Reveal.astro';
+
+// No photo of a piece pulled apart exists yet; this is the sharpest single piece.
+const PHOTO = 'bite-biscoff';
+const picture = photo(PHOTO);
+const { heading, lines } = brand.whyPieces;
+---
+
+<section class="px-4 py-16 sm:px-6 sm:py-24" aria-labelledby="why-pieces-heading">
+  <div class="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1.15fr_1fr] md:gap-16">
+    <Reveal>
+      <Frame>
+        {
+          picture && (
+            <Picture
+              src={picture}
+              formats={['avif']}
+              fallbackFormat="webp"
+              quality={qualityOf(PHOTO)}
+              widths={PHOTO_WIDTHS}
+              sizes="(min-width: 72rem) 38rem, (min-width: 48rem) 52vw, calc(100vw - 2.8rem)"
+              alt="A Lotus Biscoff cheesecake piece, biscuit crumbled over the top, seen from the side"
+              class="aspect-[4/5] w-full object-cover"
+            />
+          )
+        }
+      </Frame>
+    </Reveal>
+    <Reveal delay={0.1}>
+      <h2 id="why-pieces-heading" class="text-5xl leading-tight font-semibold sm:text-6xl">{heading}</h2>
+      <ul class="mt-8 border-t border-[var(--color-hairline)]">
+        {
+          lines.map((line) => (
+            <li class="border-b border-[var(--color-hairline)] py-5 font-display text-3xl sm:text-4xl">{line}</li>
+          ))
+        }
+      </ul>
+    </Reveal>
+  </div>
+</section>

@@ -1,0 +1,83 @@
+---
+// Three tiles: a single piece, a box of five pieces, and whole cheesecakes.
+// Each is a photo in a hairline frame, a label, its price and one button.
+import { Picture } from 'astro:assets';
+import { wholeCheesecakes } from '../../content/custom';
+import { formatPrice, pricing, saleActive } from '../../content/pricing';
+import { boxLabel, home, orderPath } from '../../content/site';
+import { whatsappLink } from '../../lib/wa-link';
+import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
+import Button from '../v3/Button.astro';
+import Frame from '../v3/Frame.astro';
+import Label from '../v3/Label.astro';
+import Reveal from '../v3/Reveal.astro';
+import Section from '../v3/Section.astro';
+
+const key = saleActive ? 'offer' : 'regular';
+const tiles = [
+  {
+    photo: 'bite-kitkat',
+    alt: 'A KitKat cheesecake piece in its paper cup, seen from the side',
+    label: 'Pieces',
+    price: `${formatPrice(pricing.single[key])} a piece`,
+    was: saleActive ? formatPrice(pricing.single.regular) : undefined,
+    button: { label: home.order, href: orderPath },
+  },
+  {
+    photo: 'packs-of-five',
+    alt: 'Clear packs of five cheesecake pieces',
+    label: pricing.box.name,
+    price: formatPrice(pricing.box[key]),
+    was: saleActive ? formatPrice(pricing.box.regular) : undefined,
+    button: { label: boxLabel, href: orderPath },
+  },
+  {
+    photo: 'half-and-half',
+    alt: 'A whole round cheesecake in its tin, half one flavour and half another',
+    label: wholeCheesecakes.name,
+    price: wholeCheesecakes.note,
+    button: { label: `Ask on ${home.whatsapp}`, href: whatsappLink(wholeCheesecakes.ask), external: true },
+  },
+];
+---
+
+<Section label={home.tilesLabel}>
+  <ul class="grid gap-8 sm:grid-cols-3 sm:gap-6">
+    {
+      tiles.map((tile, index) => {
+        const picture = photo(tile.photo);
+        return (
+          <Reveal as="li" delay={index * 0.08} class="flex flex-col">
+            <Frame>
+              {picture && (
+                <Picture
+                  src={picture}
+                  formats={['avif']}
+                  fallbackFormat="webp"
+                  quality={qualityOf(tile.photo)}
+                  widths={PHOTO_WIDTHS}
+                  sizes="(min-width: 72rem) 22rem, (min-width: 40rem) 30vw, calc(100vw - 2.8rem)"
+                  alt={tile.alt}
+                  class="aspect-[4/5] w-full object-cover"
+                />
+              )}
+            </Frame>
+            <Label as="h3" class="mt-5">{tile.label}</Label>
+            <p class="mt-2 font-display text-2xl">
+              {tile.was && <s class="mr-2 text-lg opacity-60">{tile.was}</s>}
+              {tile.price}
+            </p>
+            <Button
+              href={tile.button.href}
+              class="mt-4 self-start"
+              target={tile.button.external ? '_blank' : undefined}
+              rel={tile.button.external ? 'noopener' : undefined}
+            >
+              {tile.button.label}
+            </Button>
+          </Reveal>
+        );
+      })
+    }
+  </ul>
+</Section>

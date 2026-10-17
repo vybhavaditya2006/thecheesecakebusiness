@@ -1,9 +1,14 @@
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import type { ScrollTrigger as ScrollTriggerType } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { reducedMotion } from './motion';
 
-gsap.registerPlugin(ScrollTrigger);
+// ScrollTrigger is not loaded here: only pages with scroll scenes load it
+// (and register it), so a page without them, like Home, never downloads it.
+const scrollTrigger = (): typeof ScrollTriggerType | undefined =>
+  (gsap.core as unknown as { globals: () => Record<string, unknown> }).globals().ScrollTrigger as
+    | typeof ScrollTriggerType
+    | undefined;
 
 let lenis: Lenis | null = null;
 let tickerAttached = false;
@@ -19,7 +24,7 @@ export const startSmoothScroll = (): void => {
   if (lenis || reducedMotion()) return;
 
   lenis = new Lenis();
-  lenis.on('scroll', ScrollTrigger.update);
+  lenis.on('scroll', () => scrollTrigger()?.update());
 
   if (!tickerAttached) {
     gsap.ticker.add(raf);
@@ -51,7 +56,7 @@ const glideToAnchor = (event: MouseEvent): void => {
 
 // Called before a page swap: drops the old page's ScrollTriggers and Lenis.
 export const stopSmoothScroll = (): void => {
-  ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+  scrollTrigger()?.getAll().forEach((trigger) => trigger.kill());
   lenis?.destroy();
   lenis = null;
 };

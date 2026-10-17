@@ -1,12 +1,12 @@
-# Cheesecake bites site — project rules (Round 2)
+# Cheesecake bites site — project rules (v3)
 Brand: working name "Miette", NOT final (it may change for trademark and domain reasons). Never hard-code the name anywhere: read name, tagline, logo path and domain from src/content/brand.ts so a rename is a one-file change. Cheesecake bites by Shlok. Tagline: "A little, well made." Current campaign: Diwali & Dussehra launch special.
 Pitch: whole cheesecakes are expensive, too much to finish, and too heavy for health-conscious people. The brand sells bite-sized portions: the craving is satisfied without overeating, and it costs less.
-Flavours: Blueberry, KitKat, Oreo, Coffee, Lotus Biscoff. Custom orders: build your own bite, Half & Half cake, gift box (5 or 10), party platter (25 or 50).
+Flavours: Blueberry, KitKat, Oreo, Coffee, Lotus Biscoff. Custom orders: build your own bite, Half & Half cake, gift box (5 or 10), party platter (25 or 50). Whole cheesecakes: sizes and price on WhatsApp (no sizes or prices on the site).
 Pricing: box of five pieces (pick any mix) ₹150, launch offer ₹125. Single piece ₹65, launch offer ₹50. Same price for every flavour.
 The pack: five bites go in a clear plastic box, in a row, with a clear lid. It has no ribbon or bow; draw and model it that way. Coffee is light brown all through with nothing on top.
 Pricing words: wherever a price appears, say "piece", never "bite" ("₹50 a piece", "Single piece", "Box of five pieces", "₹25 a piece in a box of five"), including the WhatsApp message and the live total. "Bite" stays only in descriptive and playful text.
 Delivery: free within 5 km of Nagarabhavi, Bengaluru 560072; paid beyond 5 km (charge confirmed on WhatsApp). Same-day delivery if in stock, otherwise made to order with the day confirmed on WhatsApp. Payment: UPI or cash. No minimum order. Kitchen coordinates: [12.96331, 77.51994] (Plus Code 7J4VXG79+8X).
-Contact: the email address appears in the footer and on Good to Know as a mailto link, for questions only. All ordering and payment happen on WhatsApp.
+Contact: the email address appears in the footer and on Good to Know as a mailto link, for questions only. The phone number for calls is the WhatsApp number. All ordering and payment happen on WhatsApp.
 
 ## Site
 Six pages, plus a 404 page. Do not add others.
@@ -16,19 +16,25 @@ Six pages, plus a 404 page. Do not add others.
 - Our Story (/story)
 - Custom & Gifts (/custom)
 - Good to Know (/info)
-Each page has one job and its own entrance transition.
-Say it once: every fact has one home page where it is explained in full. Elsewhere it appears only in a different, shorter form (sticker, icon, number, link), never the same sentence twice.
+Each page has one job. All pages share one horizontal slide page transition.
+Say it once: every fact has one home page where it is explained in full. Elsewhere it appears only in a different, shorter form (label, icon, number, link), never the same sentence twice.
 
 ## Ordering
 No forms and no email. Build your box -> Book -> wa.me link to Shlok's number with the order prefilled.
 Removed in Round 2, do not bring back: Web3Forms, the details form, the address check and send-order.
 
-## Look and feel
-Look: the launch poster. Cream #F3E7DA background, wine #7A1F2B type and accents, deep wine #4A0F18 footer. Supporting colours, used sparingly: gold #C89B3C for small decorative accents (rules, stickers, ornaments; never body text on cream) and blush #EDD3C8 for panels and section bands. No further colours. Flavour accents inside flavour scenes, and thinned with cream as the second tone of an illustration: blueberry #5B3FA0, kitkat #D2232A, oreo #111111, coffee #6F4E37, biscoff #C8813C. Script logo SVG, Cormorant Garamond headings, letter-spaced DM Sans caps labels, DM Sans body. Etched sketch illustrations.
-Graphics: illustrations get two-tone fills and soft shadows; light paper texture on cream; warm glow and contact shadows under products; tilted stickers; icons for practical info.
-Feel: premium first, then fun and catchy. Clean and professional; nothing that reads as made for children (no googly eyes, rubbery bounces or toy-like shapes). Award-site level animation (reference: https://tubikstudio.com/works/planetono), but every animation features the cheesecake or makes ordering more fun.
-No mascot for now: the Crumb Monster was tried and dropped. Do not bring it back unless asked.
-Micro-interactions: bite cursor on desktop, magnetic squishy buttons, letter-wave headings, hand-drawn price strikes, scroll-reactive sale ribbon, wine curtain transition between pages, drifting crumbs.
+## Look and feel (v3)
+Look: calm, photo-first and premium. Cream #F3E7DA background, wine #7A1F2B type and accents, deep wine #4A0F18 footer, light card #FAF5EF (at about 90% over photos). Gold #C89B3C only for small rules and ornaments, never body text on cream; blush #EDD3C8 for panels and bands. No further colours. Flavour accents only inside a flavour's own scene: blueberry #5B3FA0, kitkat #D2232A, oreo #111111, coffee #6F4E37, biscoff #C8813C. Script wordmark SVG, Cormorant Garamond headings, letter-spaced DM Sans small caps labels, DM Sans body.
+Parts (src/components/v3): hairline frame (1px wine line round photos and cards), outlined button that fills wine on hover, card, small caps label, section. Use these rather than one-off styles.
+Photos: real photos in hairline frames, through the photo pipeline (scripts/process-photos.mjs). Cut-outs for single pieces.
+Feel: clean and professional; nothing that reads as made for children.
+Motion: one slide-and-fade reveal for whole blocks (src/components/v3/Reveal.astro), and one horizontal slide page transition for every page. Easing is calm (power or expo out): no bounce, back or elastic.
+Removed in v3, do not bring back: SplitText letter and word waves, staggered bullets, stamps, count-ups, stickers, hand-written notes, magnetic squishy buttons, the per-page entrances (lid, untie, roll, pin, turn), the Home cake dive, the pinned Why bites scene, and anything left of the Crumb Monster.
+Kept: the Taste cursor (the bite cursor on desktop) and the Flavours switcher piece.
+Offer banner: permanent, full width on every page, no close button and nothing saved in the browser; the text loops seamlessly with no gap or jump and is never clipped at 320 px, 375 px or desktop widths.
+
+## Home (v3)
+In order: 1) hero: a full-width photo with a light card (wordmark, tagline, one line about cheesecake pieces made in Nagarabhavi, Order and See flavours buttons); 2) directly under it, on the first screen at 375 px: a contact strip of three outlined buttons, Call (shows the number), WhatsApp, Email (shows the address); 3) three tiles: Pieces, Box of five pieces, Whole cheesecakes; 4) Why pieces: one large photo beside three short lines; 5) the five flavours as cut-outs, each linking to its flavour; 6) how ordering works in three numbered lines with one photo; 7) a Shlok photo card linking to Our Story.
 
 ## 3D
 - three.js (vanilla). One shared kit in src/lib/three for the bite, the box of five and the whole cake.

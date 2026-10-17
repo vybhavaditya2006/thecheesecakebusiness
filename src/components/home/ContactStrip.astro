@@ -1,0 +1,54 @@
+---
+// Directly under the hero: call, WhatsApp or email, as three outlined
+// buttons in a row. Ordering itself happens on WhatsApp (see /box).
+import { contact } from '../../content/info';
+import { home } from '../../content/site';
+import Button from '../v3/Button.astro';
+import Reveal from '../v3/Reveal.astro';
+
+const [user, domain] = contact.email.split('@');
+---
+
+<section class="px-4 py-3 sm:px-6 sm:py-6" aria-label={home.contactLabel}>
+  <Reveal class="mx-auto grid max-w-6xl grid-cols-3 gap-2 sm:gap-4">
+    <Button href={`tel:${contact.tel}`} block class="contact-button">
+      {home.call}
+      <span class="contact-value">{contact.phone}</span>
+    </Button>
+    <Button href={`https://wa.me/${contact.whatsapp}`} block class="contact-button" target="_blank" rel="noopener">
+      {home.whatsapp}
+    </Button>
+    <Button href={`mailto:${contact.email}`} block class="contact-button">
+      {home.email}
+      <!-- Breaks at the @ on narrow screens rather than overflowing. -->
+      <span class="contact-value">{user}<wbr />@{domain}</span>
+    </Button>
+  </Reveal>
+</section>
+
+<style>
+  .contact-button {
+    padding-inline: 0.3rem;
+  }
+
+  /* Narrow phones: less letter-spacing, so every label fits its button. */
+  @media (max-width: 23rem) {
+    .contact-button {
+      letter-spacing: 0.12em;
+    }
+  }
+
+  .contact-value {
+    font-size: clamp(0.58rem, 2.9vw, 0.66rem);
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.25;
+    opacity: 0.85;
+  }
+
+  @media (min-width: 40rem) {
+    .contact-value {
+      font-size: 0.8rem;
+    }
+  }
+</style>

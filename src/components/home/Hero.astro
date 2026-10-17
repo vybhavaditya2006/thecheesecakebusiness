@@ -1,291 +1,66 @@
 ---
-// Scene 1: the pack of five. The markup below is the finished state; the script
-// plays the intro on top of it, and reduced motion simply shows it as is.
+// Home's first screen: a full-width photo with a light card over it. It is
+// kept short enough on a 375 px phone for the contact strip to show under it.
+import { Picture } from 'astro:assets';
 import { brand } from '../../content/brand';
-import { flavours } from '../../content/flavours';
-import { boxLabel, orderPath } from '../../content/site';
-import { wordmarkPaths } from '../../lib/wordmark-paths';
-import BitePhoto from '../ui/BitePhoto.astro';
-import Button from '../ui/Button.astro';
+import { home, orderPath, paths } from '../../content/site';
+import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
+import Button from '../v3/Button.astro';
+import Card from '../v3/Card.astro';
+import Reveal from '../v3/Reveal.astro';
+import Wordmark from '../ui/Wordmark.astro';
 
-const wordmark = wordmarkPaths(brand.name);
-
-// Box artwork units (both SVG layers and the bites share this 360 × 250 grid).
-const STAGE = { width: 360, height: 250 };
-const BITE = { size: 58, pitch: 62, centreY: 112 };
-
-const bites = flavours.map((flavour, index) => {
-  const centreX = STAGE.width / 2 + (index - (flavours.length - 1) / 2) * BITE.pitch;
-  return {
-    ...flavour,
-    left: ((centreX - BITE.size / 2) / STAGE.width) * 100,
-    top: ((BITE.centreY - BITE.size / 2) / STAGE.height) * 100,
-  };
-});
-const biteWidth = (BITE.size / STAGE.width) * 100;
-const viewBox = `0 0 ${STAGE.width} ${STAGE.height}`;
+// TODO: swap for a daylight photo of a box of five when Shlok has one. This
+// WhatsApp photo is only 940 px wide, so it is soft across a wide screen.
+const HERO = 'packs-of-five';
+const picture = photo(HERO);
 ---
 
-<section
-  class="hero flex min-h-[calc(100svh-6.25rem)] flex-col items-center justify-center gap-5 overflow-x-clip px-5 py-8 text-center"
-  data-hero
->
-  <!-- Shown from the very first paint (no intro), so the page has content before any script runs. -->
-  <p class="label-caps flex items-center gap-3">
-    <span class="h-0.5 w-6 bg-gold" aria-hidden="true"></span>
-    <span class="opacity-80">{brand.campaign}</span>
-    <span class="h-0.5 w-6 bg-gold" aria-hidden="true"></span>
-  </p>
-
-  <svg
-    class="w-[min(62vw,21rem)] overflow-visible text-wine"
-    viewBox={wordmark.viewBox}
-    role="img"
-    aria-label={brand.name}
-    fill="currentColor"
-    stroke="currentColor"
-    stroke-width="0.6"
-    data-intro
-    data-hero-logo
-  >
-    {wordmark.letters.map((letter) => <path d={letter} />)}
-  </svg>
-
-  <h1 class="text-3xl leading-tight italic sm:text-4xl" data-intro data-hero-tagline>
-    {brand.tagline}
-  </h1>
-
-  <div class="@container w-full max-w-[30rem]" data-intro data-hero-stage>
-    <div class="warm-glow relative" style={`aspect-ratio:${STAGE.width}/${STAGE.height}`}>
-      <!-- The drawn box: the first paint, and the fallback when 3D is not used. -->
-      <div class="absolute inset-0" data-hero-flat>
-      <!-- Behind the bites: the shadow, and the clear pack they stand in. -->
-      <svg
-        class="absolute inset-0 size-full overflow-visible text-wine"
-        viewBox={viewBox}
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-        aria-hidden="true"
-      >
-        <ellipse cx="180" cy="160" rx="160" ry="7" fill="currentColor" stroke="none" opacity="0.1"></ellipse>
-        <rect x="14" y="70" width="332" height="84" rx="9" fill="#fff" fill-opacity="0.4" stroke="none"></rect>
-      </svg>
-
-      <p class="sr-only">A pack of five bites, one of each flavour.</p>
-      <ul aria-hidden="true">
-        {
-          bites.map((bite) => (
-            <li
-              class="hero-bite absolute aspect-square"
-              style={`left:${bite.left}%;top:${bite.top}%;width:${biteWidth}%`}
-              data-hero-bite
-            >
-              <BitePhoto flavour={bite} sizes="(min-width: 30rem) 78px, 16vw" priority class="text-[3.1cqw]" />
-            </li>
-          ))
-        }
-      </ul>
-
-      <!-- In front of the bites: the pack's edge and the light on the plastic. -->
-      <svg
-        class="absolute inset-0 size-full overflow-visible text-wine"
-        viewBox={viewBox}
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-        aria-hidden="true"
-      >
-        <rect x="14" y="70" width="332" height="84" rx="9" data-hero-pack></rect>
-        <path d="M24 80H336" stroke-width="1" opacity="0.4" data-hero-shine></path>
-        <path d="M30 90h64M262 144h64" stroke="#fff" stroke-width="2.5" opacity="0.9" data-hero-shine></path>
-      </svg>
-      </div>
-
-      <!-- The 3D box mounts here. It reaches above the box so bites can fall in. -->
-      <div class="hero-3d pointer-events-none absolute -inset-x-[8%] -top-[45%] -bottom-[4%]" data-hero-3d></div>
-    </div>
-  </div>
-
-  <div data-intro data-hero-cta>
-    <Button href={orderPath}>{boxLabel}</Button>
+<section class="relative isolate overflow-hidden" aria-labelledby="hero-heading">
+  {
+    picture && (
+      <Picture
+        src={picture}
+        formats={['avif']}
+        fallbackFormat="webp"
+        quality={qualityOf(HERO)}
+        widths={PHOTO_WIDTHS}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+        alt="Three clear packs of five cheesecake pieces, side by side, seen from above"
+        class="absolute inset-0 -z-10 size-full object-cover"
+        pictureAttributes={{ class: 'contents' }}
+      />
+    )
+  }
+  <div class="hero-room mx-auto flex max-w-6xl items-end px-4 pt-10 pb-4 sm:items-center sm:px-6 sm:py-16">
+    <Reveal class="w-full sm:max-w-md">
+      <Card glass class="px-6 py-6 text-center sm:px-10 sm:py-10">
+        <h1 id="hero-heading" class="text-[3.4rem] leading-none text-wine sm:text-7xl">
+          <Wordmark />
+        </h1>
+        <p class="mt-2 font-display text-2xl italic sm:text-3xl">{brand.tagline}</p>
+        <p class="mx-auto mt-3 max-w-xs text-sm leading-snug sm:text-base">{home.line}</p>
+        <div class="mt-5 grid grid-cols-2 gap-3">
+          <Button href={orderPath} block>{home.order}</Button>
+          <Button href={paths.flavours} block>{home.seeFlavours}</Button>
+        </div>
+      </Card>
+    </Reveal>
   </div>
 </section>
 
-<style is:global>
-  /* Hidden only while the intro is waiting to start. The "motion" class is
-     set in Base.astro when motion is allowed; reduced motion never hides. */
-  .motion [data-hero]:not([data-ready]) [data-intro] {
-    visibility: hidden;
+<style>
+  /* Tall enough to be a hero, short enough on a phone for the contact strip
+     to fit on the first screen below it. */
+  .hero-room {
+    min-height: min(31rem, calc(100svh - 15rem));
   }
 
-  .hero-3d {
-    opacity: 0;
-  }
-
-  .hero-bite {
-    /* Squash against the floor of the box. */
-    transform-origin: 50% 100%;
+  @media (min-width: 40rem) {
+    .hero-room {
+      min-height: min(44rem, calc(100svh - 14rem));
+    }
   }
 </style>
-
-<script>
-  import gsap from 'gsap';
-  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  import { SplitText } from 'gsap/SplitText';
-  import { curtainClear } from '../../lib/curtain-state';
-  import { reducedMotion } from '../../lib/motion';
-  import type { HeroBox } from '../../lib/three/hero-box';
-  import { canUse3D, whenStirred } from '../../lib/three/support';
-
-  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger, SplitText);
-
-  // Intro beats, in seconds. The last one must end by 2.5.
-  const AT = { logo: 0, tagline: 0.15, bites: 0.3, ribbon: 1.45, bow: 1.9, cta: 2.15 };
-  const BITE_GAP = 0.18;
-  const FALL = 0.3;
-  // How long the intro waits for the 3D box before playing the drawn one (ms).
-  const WAIT_FOR_3D = 650;
-
-  // Don't let a slow font hold the intro back.
-  const fontsReady = (): Promise<unknown> =>
-    Promise.race([document.fonts.ready, new Promise((resolve) => setTimeout(resolve, 400))]);
-
-  // Logo, tagline and button: the same whichever box is shown.
-  const playIntro = (hero: HTMLElement): gsap.core.Timeline => {
-    const find = (selector: string) => gsap.utils.toArray<HTMLElement>(selector, hero);
-    const split = SplitText.create(find('[data-hero-tagline]'), { type: 'words,chars' });
-    const intro = gsap.timeline({ onComplete: () => split.revert() });
-
-    intro
-      .from(find('[data-hero-stage]'), { opacity: 0, duration: 0.3 }, 0)
-      // Logo: each letter's outline draws, then fills in.
-      .from(
-        find('[data-hero-logo] path'),
-        { drawSVG: 0, duration: 0.45, stagger: 0.04, ease: 'power1.inOut' },
-        AT.logo,
-      )
-      .from(find('[data-hero-logo] path'), { fillOpacity: 0, duration: 0.3 }, AT.logo + 0.4)
-      .from(
-        split.chars,
-        { yPercent: 80, opacity: 0, duration: 0.35, stagger: 0.018, ease: 'back.out(2)' },
-        AT.tagline,
-      )
-      .from(find('[data-hero-cta]'), { scale: 0, duration: 0.3, ease: 'back.out(2.5)' }, AT.cta);
-
-    return intro;
-  };
-
-  // The drawn box's own intro, timed from when the bites start to fall.
-  const playFlatBox = (hero: HTMLElement): gsap.core.Timeline => {
-    const find = (selector: string) => gsap.utils.toArray<HTMLElement>(selector, hero);
-    const intro = gsap.timeline();
-
-    // Bites tumble in one by one, squash on landing, then spring back.
-    find('[data-hero-bite]').forEach((bite, index) => {
-      const start = index * BITE_GAP;
-      const spin = index % 2 ? 200 : -200;
-
-      intro
-        .from(bite, { yPercent: -650, duration: FALL, ease: 'power2.in' }, start)
-        .from(bite, { opacity: 0, duration: 0.1 }, start)
-        .from(bite.firstElementChild, { rotation: spin, duration: FALL, ease: 'none' }, start)
-        .to(bite, { scaleX: 1.22, scaleY: 0.7, duration: 0.07, ease: 'power1.out' }, start + FALL)
-        .to(
-          bite,
-          { scaleX: 1, scaleY: 1, duration: 0.4, ease: 'elastic.out(1.1, 0.45)' },
-          start + FALL + 0.07,
-        );
-    });
-
-    intro
-      // The pack is drawn round them, then the light catches the plastic.
-      .from(find('[data-hero-pack]'), { drawSVG: 0, duration: 0.6, ease: 'power2.inOut' }, AT.ribbon - AT.bites)
-      .from(find('[data-hero-shine]'), { drawSVG: 0, duration: 0.35, stagger: 0.08 }, AT.bow - AT.bites);
-
-    return intro;
-  };
-
-  // Fetches the 3D kit and mounts the box. Resolves to null if that fails.
-  const load3D = async (hero: HTMLElement): Promise<HeroBox | null> => {
-    const flat = hero.querySelector<HTMLElement>('[data-hero-flat]');
-    const deep = hero.querySelector<HTMLElement>('[data-hero-3d]');
-    if (!flat || !deep) return null;
-
-    try {
-      const { mountHeroBox } = await import('../../lib/three/hero-box');
-      if (!hero.isConnected) return null;
-      const box: HeroBox = mountHeroBox(deep, {
-        // Too slow here: back to the drawn box.
-        onFallback: () => {
-          box.dispose();
-          gsap.set(flat, { autoAlpha: 1 });
-          gsap.set(deep, { opacity: 0 });
-        },
-      });
-      document.addEventListener('astro:before-swap', () => box.dispose(), { once: true });
-      return box;
-    } catch {
-      return null;
-    }
-  };
-
-  document.addEventListener('astro:page-load', async () => {
-    const hero = document.querySelector<HTMLElement>('[data-hero]');
-    if (!hero || reducedMotion()) return;
-
-    // On scroll the box lifts and tilts. The intro animates the box's
-    // children, so the two never fight over the same element.
-    gsap.to(hero.querySelector('[data-hero-stage] > div'), {
-      yPercent: -14,
-      rotation: -4,
-      ease: 'none',
-      scrollTrigger: { trigger: hero, start: 0, end: 'bottom top', scrub: true },
-    });
-
-    // The 3D box loads while the curtain clears; the drawn one is the fallback.
-    // It is only fetched once the visitor has done something.
-    const loading = canUse3D()
-      ? new Promise<HeroBox | null>((resolve) => whenStirred(() => resolve(load3D(hero))))
-      : null;
-    const flat = hero.querySelector<HTMLElement>('[data-hero-flat]');
-    const deep = hero.querySelector<HTMLElement>('[data-hero-3d]');
-
-    await Promise.all([curtainClear(), fontsReady()]);
-    if (!hero.isConnected) return;
-
-    if (loading) gsap.set(flat, { autoAlpha: 0 });
-    hero.dataset.ready = '';
-    const playing = [playIntro(hero)];
-    document.addEventListener('astro:before-swap', () => playing.forEach((intro) => intro.kill()), { once: true });
-
-    const waited = new Promise<null>((resolve) => setTimeout(() => resolve(null), WAIT_FOR_3D));
-    const box = loading && (await Promise.race([loading, waited]));
-    if (!hero.isConnected) return;
-
-    if (box) {
-      gsap.set(deep, { opacity: 1 });
-      void box.playIntro();
-      return;
-    }
-
-    // Not ready in time (or not used): the drawn box plays, and the 3D one
-    // takes over quietly once both it and the intro are done.
-    gsap.set(flat, { autoAlpha: 1 });
-    const flatIntro = playFlatBox(hero);
-    playing.push(flatIntro);
-    const late = await loading;
-    if (!late) return;
-    // A finished timeline never resolves, so only wait for one still playing.
-    if (flatIntro.progress() < 1) await flatIntro;
-    if (!hero.isConnected) return;
-    late.showFinished();
-    gsap.to(flat, { autoAlpha: 0, duration: 0.4 });
-    gsap.to(deep, { opacity: 1, duration: 0.4 });
-  });
-</script>

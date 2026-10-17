@@ -1,0 +1,26 @@
+---
+// A hairline frame round a photo: a thin wine line with a narrow cream
+// margin inside it, like a print in a mount.
+interface Props {
+  as?: 'div' | 'figure';
+  class?: string;
+}
+
+const { as: Tag = 'div', class: className } = Astro.props;
+---
+
+<Tag class:list={['v3-frame', !/(^|\s)(grid|flex|inline-flex|inline-grid)(\s|$)/.test(className ?? '') && 'block', className]}>
+  <slot />
+</Tag>
+
+<style>
+  .v3-frame {
+    padding: 0.4rem;
+    border: 1px solid var(--color-hairline);
+    background: var(--color-card);
+  }
+
+  .v3-frame :global(img) {
+    display: block;
+  }
+</style>

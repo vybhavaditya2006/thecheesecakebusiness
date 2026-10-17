@@ -67,6 +67,8 @@ const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
 </section>
 
 <script>
+  // The prices count up here; only this page uses it.
+  import '../../lib/count-up';
   import gsap from 'gsap';
   import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';

@@ -1,23 +1,22 @@
 ---
-import DiveIn from '../components/home/DiveIn.astro';
-import FlavourTeaser from '../components/home/FlavourTeaser.astro';
+import ContactStrip from '../components/home/ContactStrip.astro';
+import FlavourRow from '../components/home/FlavourRow.astro';
 import Hero from '../components/home/Hero.astro';
 import HowOrdering from '../components/home/HowOrdering.astro';
 import LocalBusiness from '../components/home/LocalBusiness.astro';
-import MakerCard from '../components/home/MakerCard.astro';
-import WhyBites from '../components/home/WhyBites.astro';
-import MacroStrip from '../components/home/MacroStrip.astro';
+import OrderTiles from '../components/home/OrderTiles.astro';
+import StoryCard from '../components/home/StoryCard.astro';
+import WhyPieces from '../components/home/WhyPieces.astro';
 import Base from '../layouts/Base.astro';
 ---
 
 <Base>
   <LocalBusiness slot="head" />
   <Hero />
-  <!-- The 3D cake scene, and the drawn version it falls back to. -->
-  <DiveIn />
-  <WhyBites />
-  <FlavourTeaser />
-  <MacroStrip />
+  <ContactStrip />
+  <OrderTiles />
+  <WhyPieces />
+  <FlavourRow />
   <HowOrdering />
-  <MakerCard />
+  <StoryCard />
 </Base>

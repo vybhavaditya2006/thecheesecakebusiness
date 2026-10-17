@@ -1,0 +1,74 @@
+---
+// The v3 button: a wine outline that fills with wine on hover. The fill is
+// a layer that fades in, so only opacity is animated.
+interface Props {
+  href?: string;
+  type?: 'button' | 'submit';
+  // Stretch to the width of its container.
+  block?: boolean;
+  class?: string;
+  [attribute: string]: unknown;
+}
+
+const { href, type = 'button', block = false, class: className, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  class:list={['v3-button label-caps', block ? 'flex w-full' : 'inline-flex', className]}
+  {...rest}
+>
+  <span class="v3-button-face"><slot /></span>
+</Tag>
+
+<style>
+  .v3-button {
+    position: relative;
+    isolation: isolate;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.7rem 1.4rem;
+    border: 1px solid var(--color-wine);
+    color: var(--color-wine);
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .v3-button::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: var(--color-wine);
+    opacity: 0;
+    transition: opacity 0.25s ease-out;
+  }
+
+  .v3-button-face {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  @media (hover: hover) {
+    .v3-button:hover {
+      color: var(--color-cream);
+    }
+
+    .v3-button:hover::before {
+      opacity: 1;
+    }
+  }
+
+  .v3-button:active::before {
+    opacity: 1;
+  }
+
+  .v3-button:active {
+    color: var(--color-cream);
+  }
+</style>

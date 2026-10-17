@@ -10,6 +10,13 @@ export interface CustomOption {
   sizes?: readonly number[];
 }
 
+// Whole cheesecakes: sizes and price are only given on WhatsApp.
+export const wholeCheesecakes = {
+  name: 'Whole cheesecakes',
+  note: 'Sizes and price on WhatsApp',
+  ask: `Hi ${brand.maker}! I'd like to ask about a whole cheesecake.`,
+} as const;
+
 // Custom orders are priced and confirmed on WhatsApp.
 export const customPriceNote = 'Price confirmed on WhatsApp';
 // The same fact in full, for the Custom & Gifts page.
