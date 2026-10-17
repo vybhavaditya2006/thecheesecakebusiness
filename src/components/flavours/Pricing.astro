@@ -1,6 +1,6 @@
 ---
 // Pricing: two cards. On entering view a hand-drawn line strikes the old
-// price and the offer price pops in.
+// price and the offer price fades up into place.
 import { packsOfFive } from '../../content/photos';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
 import Snapshot from '../ui/Snapshot.astro';
@@ -83,8 +83,8 @@ const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
       gsap
         .timeline({ scrollTrigger: { trigger: card, start: 'top 78%', once: true } })
         .from(find('[data-price-strike]'), { drawSVG: 0, duration: 0.5, ease: 'power2.inOut' })
-        .from(find('[data-price-offer]'), { scale: 0, opacity: 0, duration: 0.5, ease: 'back.out(2.5)' }, '-=0.1')
-        .from(find('[data-price-sticker]'), { scale: 0, rotation: -60, duration: 0.5, ease: 'back.out(2)' }, '-=0.25');
+        .from(find('[data-price-offer]'), { y: 12, opacity: 0, duration: 0.8, ease: 'expo.out' }, '-=0.1')
+        .from(find('[data-price-sticker]'), { y: 12, opacity: 0, duration: 0.8, ease: 'expo.out' }, '-=0.6');
     });
   });
 </script>

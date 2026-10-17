@@ -3,16 +3,19 @@
 // orders: horizontal and pinned on desktop, stacked snap panels on phones.
 // Without motion the same markup is a plain grid of cards. A small switcher
 // bite stays in a corner and turns to show whichever flavour is in view.
-import { customOptions } from '../../content/custom';
+import { Picture } from 'astro:assets';
+import { customOptions, wholeCheesecakes } from '../../content/custom';
 import { flavours } from '../../content/flavours';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
 import { biteImage } from '../../lib/bite-images';
+import { ingredientImage } from '../../lib/ingredient-images';
+import { CUTOUT_WIDTHS, QUALITY } from '../../lib/photos';
 import BitePhoto from '../ui/BitePhoto.astro';
 import HandNote from '../ui/HandNote.astro';
 import Button from '../ui/Button.astro';
 import { paths } from '../../content/site';
-import Ingredient from './Ingredient.astro';
 import LayerStack from './LayerStack.astro';
+import Card from '../v3/Card.astro';
 
 const price = pricing.single;
 const count = flavours.length;
@@ -21,20 +24,18 @@ const first = flavours[0]!;
 // The custom options by name, as one line.
 const customLine = customOptions.map((option) => option.name).join(' · ');
 
-// Where the ingredient pieces settle around the bite, as % of the visual box.
-const PIECES = 7;
-const pieces = (flavourIndex: number) =>
-  Array.from({ length: PIECES }, (_, piece) => {
-    const angle = ((piece * 360) / PIECES + flavourIndex * 17 - 80) * (Math.PI / 180);
-    const radius = 39 + (piece % 3) * 4;
-    const size = 11 + (piece % 2) * 4;
-    return {
-      size,
-      left: 50 + radius * Math.cos(angle) - size / 2,
-      top: 50 + radius * Math.sin(angle) - size / 2,
-      turn: (piece * 53 + flavourIndex * 31) % 360,
-    };
-  });
+// Where the ingredient cut-outs rest around the bite, as % of the visual
+// box: left, top, width, a slight turn, and whether the photo is mirrored, so
+// copies of one photo do not look alike. Each flavour uses the first few.
+const SPOTS = [
+  { left: 0, top: 62, size: 24, turn: -8, flip: false },
+  { left: 74, top: 4, size: 20, turn: 12, flip: true },
+  { left: 76, top: 66, size: 22, turn: 6, flip: true },
+  { left: 4, top: 8, size: 17, turn: -14, flip: false },
+  { left: 42, top: 82, size: 16, turn: 18, flip: false },
+] as const;
+// How many cut-outs each ingredient gets: small ones more, big ones fewer.
+const HOW_MANY: Record<string, number> = { blueberries: 5, 'coffee-beans': 5, oreo: 4, biscoff: 4, kitkat: 3 };
 
 // Background crumbs: position (%), size (px), drift (px) and duration (s).
 const crumbs = [
@@ -109,14 +110,30 @@ const crumbs = [
             data-flavour-name={flavour.name}
           >
             <div class="flavour-visual relative aspect-square shrink-0" data-flavour-visual>
-              {pieces(index).map((piece) => (
-                <Ingredient
-                  kind={flavour.id}
-                  class="absolute"
-                  style={`left:${piece.left}%;top:${piece.top}%;width:${piece.size}%;rotate:${piece.turn}deg`}
-                  data-ingredient
-                />
-              ))}
+              {ingredientImage(flavour) &&
+                SPOTS.slice(0, HOW_MANY[flavour.ingredientPhoto] ?? 4).map((spot) => (
+                  <span
+                    class="flavour-ingredient absolute"
+                    style={`left:${spot.left}%;top:${spot.top}%;width:${spot.size}%;rotate:${spot.turn}deg`}
+                    data-ingredient
+                    data-from={spot.left < 50 ? 'left' : 'right'}
+                    aria-hidden="true"
+                  >
+                    <span class="flavour-ingredient-shadow" />
+                    <Picture
+                      src={ingredientImage(flavour)!}
+                      formats={['avif']}
+                      fallbackFormat="webp"
+                      quality={QUALITY.product}
+                      widths={CUTOUT_WIDTHS}
+                      sizes={`(min-width: 48rem) calc(min(38vw, 58svh) * ${spot.size / 100}), calc(min(56vw, 21svh) * ${spot.size / 100})`}
+                      alt=""
+                      loading="lazy"
+                      class:list={['relative block h-auto w-full', spot.flip && '-scale-x-100']}
+                      pictureAttributes={{ class: 'contents' }}
+                    />
+                  </span>
+                ))}
               {/* A cut-out photo stands larger than the placeholder circle. */}
               <div
                 class:list={['absolute', biteImage(flavour.id) ? 'inset-[14%]' : 'inset-[27%]']}
@@ -142,6 +159,14 @@ const crumbs = [
               </p>
               <h2 class="flavour-name leading-[0.9]">{flavour.name}</h2>
               <p class="max-w-sm">{flavour.note}</p>
+              {/* Shown only once Shlok has confirmed them (see flavours.ts). */}
+              {(flavour.calories !== null || flavour.ingredients?.length) && (
+                <p class="max-w-sm text-sm opacity-70">
+                  {[flavour.calories !== null && `${flavour.calories} kcal a piece`, flavour.ingredients?.join(', ')]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              )}
               <LayerStack flavour={flavour} />
               <p class="flex items-center gap-3">
                 {saleActive && (
@@ -174,6 +199,9 @@ const crumbs = [
               <Button class="mt-1" data-add-to-box={flavour.id}>
                 Add to box<span class="sr-only">: {flavour.name}</span>
               </Button>
+              <Card as="a" href={`${paths.flavours}#whole`} class="flavour-whole label-caps mt-2 px-4 py-3 text-[0.65rem]">
+                {wholeCheesecakes.also}<span aria-hidden="true"> →</span>
+              </Card>
             </div>
           </li>
         ))
@@ -247,6 +275,19 @@ const crumbs = [
   .flavour-else .flavour-text {
     align-items: center;
     text-align: center;
+  }
+
+  /* An ingredient cut-out, and the soft shadow where it rests. */
+  .flavour-ingredient-shadow {
+    position: absolute;
+    inset: auto 8% -6% 8%;
+    height: 22%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(74 15 24 / 0.28), transparent);
+  }
+
+  .flavour-whole {
+    width: fit-content;
   }
 
   /* The price, as a tag on a string. */
@@ -406,6 +447,33 @@ const crumbs = [
   .motion [data-flavour-note],
   .motion [data-ingredient] {
     opacity: 0;
+  }
+
+  /* Phones: a slimmer "whole cheesecake" tile, and on short screens
+     everything a little tighter, so a panel always fits its screen. */
+  @media (max-width: 47.99rem) {
+    .motion .flavour-whole {
+      padding: 0.5rem 0.9rem;
+    }
+  }
+
+  @media (max-width: 47.99rem) and (max-height: 44rem) {
+    .motion .flavour-panel {
+      gap: 0.6rem;
+      padding-top: 2.25rem;
+    }
+
+    .motion .flavour-text {
+      gap: 0.45rem;
+    }
+
+    .motion .flavour-name {
+      font-size: 2.4rem;
+    }
+
+    .motion .flavour-visual {
+      width: min(50vw, 19svh);
+    }
   }
 
   /* ---- Animated version: pinned, horizontal (desktop). */
@@ -648,13 +716,12 @@ const crumbs = [
     const onTap = (): void => goTo((index + 1) % panels.length);
     button.addEventListener('click', onTap);
 
-    // The bite spins in and scales up; ingredients burst out and settle.
+    // The bite turns in and grows a little; the ingredients slide in from
+    // their own side and settle.
     const arrive = (panel: HTMLElement): void => {
       const visual = panel.querySelector<HTMLElement>('[data-flavour-visual]');
       // The last panel has no bite to bring in.
       if (!visual) return;
-      const centreX = visual.clientWidth / 2;
-      const centreY = visual.clientHeight / 2;
 
       arrival?.kill();
       arrival = gsap.timeline().fromTo(
@@ -665,17 +732,12 @@ const crumbs = [
       );
 
       find('[data-ingredient]', panel).forEach((piece, order) => {
+        const away = (piece.dataset.from === 'left' ? -1 : 1) * visual.clientWidth * 0.18;
         arrival!.fromTo(
           piece,
-          {
-            x: centreX - (piece.offsetLeft + piece.offsetWidth / 2),
-            y: centreY - (piece.offsetTop + piece.offsetHeight / 2),
-            scale: 0,
-            rotation: order % 2 ? -40 : 40,
-            opacity: 1,
-          },
-          { x: 0, y: 0, scale: 1, rotation: 0, duration: 1.2, ease: 'expo.out' },
-          0.1 + order * 0.04,
+          { x: away, opacity: 0 },
+          { x: 0, opacity: 1, duration: 1.1, ease: 'expo.out' },
+          0.15 + order * 0.05,
         );
       });
 

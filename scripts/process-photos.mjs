@@ -5,6 +5,8 @@
 //
 //   node scripts/process-photos.mjs              everything
 //   node scripts/process-photos.mjs kitkat oreo  only those (by output name)
+//   node scripts/process-photos.mjs ingredients  only the ingredient cut-outs
+//                                    (or ingredients/kitkat for one)
 //
 // Needs: Python with rembg (pip install "rembg[cpu]", which brings pymatting
 // and scipy) for the cut-outs, and Chrome or Edge for the stills of the 3D bite.
@@ -13,6 +15,8 @@
 // Single pieces      -> src/assets/bites/<flavour>.png, cut out, 2000 px on the long side
 // 3D textures        -> src/assets/bites/tex/<flavour>.webp (small copies for three.js)
 // No photo yet       -> src/assets/bites/renders/<flavour>.png, a still of the 3D bite
+// Ingredients        -> src/assets/ingredients/<name>.png, cut out, 1200 px, from
+//                       photodump/ingredients/<name>.heic (or .jpg), when it exists
 // Before and after   -> review/ (git-ignored), at 100%
 //
 // Neither size is ever reached by enlarging: a crop smaller than that keeps
@@ -70,12 +74,20 @@ const photos = [
 // Shlok, cut out (the original also came through WhatsApp).
 const people = [{ name: 'shlok', from: 'shlok-original.jpg' }];
 
+// Ingredient cut-outs for the Flavours page, one per flavour (see
+// ingredientPhoto in src/content/flavours.ts). Each is made only once its
+// original is in photodump/ingredients/; until then the page shows none.
+const ingredients = ['blueberries', 'kitkat', 'oreo', 'coffee-beans', 'biscoff'];
+const ingredientOriginal = (name) =>
+  ['heic', 'HEIC', 'jpg', 'jpeg', 'JPG', 'JPEG'].map((ext) => `ingredients/${name}.${ext}`).find((file) => existsSync(join(dump, file)));
+
 // Flavours without a photo, shown as a still of the modelled 3D bite.
 const stills = ['coffee'];
 
 const PHOTO_SIZE = 2400;
 const PIECE_SIZE = 2000;
 const STILL_SIZE = 1600;
+const INGREDIENT_SIZE = 1200;
 
 // ---- Reading originals.
 
@@ -414,7 +426,7 @@ const before = (name, kind) => {
   const path = { piece: `src/assets/bites/${name}.webp`, person: `src/assets/photos/${name}.webp` }[kind]
     ?? (name.startsWith('macro-') ? `src/assets/macro/${name.slice(6)}.webp` : `src/assets/photos/${name}.webp`);
   try {
-    return execFileSync('git', ['show', `HEAD:${path}`], { cwd: root, maxBuffer: 64 << 20 });
+    return execFileSync('git', ['show', `HEAD:${path}`], { cwd: root, maxBuffer: 64 << 20, stdio: ['ignore', 'pipe', 'ignore'] });
   } catch {
     return null;
   }
@@ -494,6 +506,16 @@ for (const piece of pieces.filter((p) => wanted(p.name))) {
   await makeTexture(piece.name);
   report('piece', result, piece.name);
   await compare(piece.name, 'piece', result.out);
+}
+// Asked for as ingredients/<name>, or all of them as ingredients.
+for (const name of ingredients.filter((name) => wanted(`ingredients/${name}`) || only.has('ingredients'))) {
+  const from = ingredientOriginal(name);
+  if (!from) {
+    console.log(`skip   ${name.padEnd(26)} no photodump/ingredients/${name}.heic or .jpg yet`);
+    continue;
+  }
+  const result = await makeCutOut({ name, from }, 'src/assets/ingredients', INGREDIENT_SIZE, 'isnet-general-use');
+  report('ingr.', result, name);
 }
 for (const person of people.filter((p) => wanted(p.name))) {
   const result = await makeCutOut(person, 'src/assets/photos/masters', PHOTO_SIZE, 'isnet-general-use');

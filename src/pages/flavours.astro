@@ -1,6 +1,7 @@
 ---
 import Flavours from '../components/flavours/Flavours.astro';
 import Pricing from '../components/flavours/Pricing.astro';
+import WholeCakes from '../components/flavours/WholeCakes.astro';
 import Button from '../components/ui/Button.astro';
 import { boxLabel, orderPath, seo } from '../content/site';
 import Base from '../layouts/Base.astro';
@@ -9,6 +10,7 @@ import Base from '../layouts/Base.astro';
 <Base title={seo.flavours.title} description={seo.flavours.description} entrance="roll">
   <Flavours />
   <Pricing />
+  <WholeCakes />
   <p class="px-5 pt-6 pb-24 text-center">
     <Button href={orderPath}>{boxLabel}</Button>
   </p>

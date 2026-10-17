@@ -14,6 +14,10 @@ export interface CustomOption {
 export const wholeCheesecakes = {
   name: 'Whole cheesecakes',
   note: 'Sizes and price on WhatsApp',
+  // On each flavour, linking to the whole-cheesecake part of /flavours.
+  also: 'Also as a whole cheesecake',
+  // That part of /flavours, where this is said in full.
+  detail: 'Every flavour also comes as a whole cheesecake. Sizes and price are sorted out on WhatsApp.',
   ask: `Hi ${brand.maker}! I'd like to ask about a whole cheesecake.`,
 } as const;
 

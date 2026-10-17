@@ -1,0 +1,42 @@
+---
+// Whole cheesecakes: where "Also as a whole cheesecake" on each flavour
+// leads (/flavours#whole). Sizes and price are only given on WhatsApp.
+import { Picture } from 'astro:assets';
+import { wholeCheesecakes } from '../../content/custom';
+import { whatsappLink } from '../../lib/wa-link';
+import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
+import Button from '../v3/Button.astro';
+import Frame from '../v3/Frame.astro';
+import Reveal from '../v3/Reveal.astro';
+
+const PHOTO = 'half-and-half';
+const picture = photo(PHOTO);
+---
+
+<section id="whole" class="px-5 py-20" aria-labelledby="whole-heading">
+  <div class="mx-auto grid max-w-4xl items-center gap-10 sm:grid-cols-[1fr_1.1fr] sm:gap-14">
+    <Reveal>
+      <Frame>
+        {
+          picture && (
+            <Picture
+              src={picture}
+              formats={['avif']}
+              fallbackFormat="webp"
+              quality={qualityOf(PHOTO)}
+              widths={PHOTO_WIDTHS}
+              sizes="(min-width: 56rem) 24rem, (min-width: 40rem) 42vw, calc(100vw - 3.3rem)"
+              alt="A whole round cheesecake in its tin, half one flavour and half another"
+              class="aspect-square w-full object-cover"
+            />
+          )
+        }
+      </Frame>
+    </Reveal>
+    <Reveal delay={0.1}>
+      <h2 id="whole-heading" class="text-4xl leading-tight font-semibold sm:text-5xl">{wholeCheesecakes.name}</h2>
+      <p class="mt-4 max-w-sm">{wholeCheesecakes.detail}</p>
+      <Button href={whatsappLink(wholeCheesecakes.ask)} class="mt-6" target="_blank" rel="noopener">Ask on WhatsApp</Button>
+    </Reveal>
+  </div>
+</section>
