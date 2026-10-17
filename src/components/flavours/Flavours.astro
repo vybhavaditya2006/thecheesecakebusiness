@@ -4,7 +4,8 @@
 // Without motion the same markup is a plain grid of cards. A small switcher
 // bite stays in a corner and turns to show whichever flavour is in view.
 import { Picture } from 'astro:assets';
-import { customOptions, wholeCheesecakes } from '../../content/custom';
+import { customOptions } from '../../content/custom';
+import { wholeCakes } from '../../content/whole-cakes';
 import { flavours } from '../../content/flavours';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
 import { biteImage } from '../../lib/bite-images';
@@ -200,7 +201,7 @@ const crumbs = [
                 Add to box<span class="sr-only">: {flavour.name}</span>
               </Button>
               <Card as="a" href={`${paths.flavours}#whole`} class="flavour-whole label-caps mt-2 px-4 py-3 text-[0.65rem]">
-                {wholeCheesecakes.also}<span aria-hidden="true"> →</span>
+                {wholeCakes.also}<span aria-hidden="true"> →</span>
               </Card>
             </div>
           </li>

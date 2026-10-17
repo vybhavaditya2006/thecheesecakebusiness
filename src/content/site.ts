@@ -19,6 +19,7 @@ export const boxLabel = 'Build your box';
 // The links in the nav and the footer, in order.
 export const navLinks = [
   { href: paths.flavours, label: 'Flavours' },
+  { href: `${paths.flavours}#whole`, label: 'Whole Cakes' },
   { href: paths.story, label: 'Our Story' },
   { href: paths.custom, label: 'Custom & Gifts' },
   { href: paths.info, label: 'Good to Know' },

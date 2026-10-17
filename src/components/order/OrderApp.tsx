@@ -2,24 +2,30 @@
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { startTransition, useEffect, useState } from 'react';
 import { customOptions, isCustomOptionId, type CustomOptionId } from '../../content/custom';
+import { wholeCakes } from '../../content/whole-cakes';
 import BoxBuilder from './BoxBuilder';
 import CustomBuilder from './CustomBuilder';
 import OrderSummary from './OrderSummary';
 import { BiteImagesContext, type BiteImages } from './parts';
+import WholeBuilder from './WholeBuilder';
 
-type Tab = 'box' | 'custom';
+type Tab = 'box' | 'custom' | 'whole';
 
 const tabs: readonly { id: Tab; label: string }[] = [
   { id: 'box', label: 'Build a box' },
   { id: 'custom', label: 'Custom' },
+  { id: 'whole', label: wholeCakes.one },
 ];
+const isTab = (id: unknown): id is Tab => tabs.some((tab) => tab.id === id);
 
-// /box?tab=custom&type=<option> opens straight on a custom option.
+// /box?tab=custom&type=<option> opens straight on a custom option, and
+// /box?tab=whole on whole cheesecakes.
 const fromUrl = (): { tab: Tab; type: CustomOptionId } => {
   const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
   const type = params.get('type');
   return {
-    tab: params.get('tab') === 'custom' ? 'custom' : 'box',
+    tab: isTab(tab) ? tab : 'box',
     type: isCustomOptionId(type) ? type : customOptions[0]!.id,
   };
 };
@@ -34,7 +40,7 @@ export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages 
 
   // Keep the address in step, so the current view can be shared or reloaded.
   useEffect(() => {
-    const query = tab === 'custom' ? `?tab=custom&type=${type}` : '';
+    const query = tab === 'custom' ? `?tab=custom&type=${type}` : tab === 'whole' ? '?tab=whole' : '';
     window.history.replaceState(window.history.state, '', `${window.location.pathname}${query}`);
   }, [tab, type]);
 
@@ -52,7 +58,9 @@ export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages 
             // Arrow keys move between tabs, as screen-reader users expect.
             onKeyDown={(event) => {
               if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
-              const next = tab === 'box' ? 'custom' : 'box';
+              const at = tabs.findIndex((item) => item.id === tab);
+              const step = event.key === 'ArrowRight' ? 1 : -1;
+              const next = tabs[(at + step + tabs.length) % tabs.length]!.id;
               setTab(next);
               event.currentTarget.querySelector<HTMLElement>(`#tab-${next}`)?.focus();
             }}
@@ -66,7 +74,7 @@ export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages 
                 aria-selected={tab === item.id}
                 tabIndex={tab === item.id ? 0 : -1}
                 aria-controls="order-panel"
-                className={`label-caps relative rounded-full px-5 py-3 transition-colors ${tab === item.id ? 'text-cream' : 'text-wine'}`}
+                className={`label-caps relative rounded-full px-2.5 py-3 tracking-[0.14em] transition-colors sm:px-5 sm:tracking-[0.25em] ${tab === item.id ? 'text-cream' : 'text-wine'}`}
                 onClick={() => setTab(item.id)}
               >
                 {tab === item.id && (
@@ -93,7 +101,13 @@ export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages 
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.2 }}
             >
-              {tab === 'box' ? <BoxBuilder /> : <CustomBuilder type={type} onType={setType} />}
+              {tab === 'box' ? (
+                <BoxBuilder />
+              ) : tab === 'custom' ? (
+                <CustomBuilder type={type} onType={setType} />
+              ) : (
+                <WholeBuilder />
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

@@ -1,42 +1,79 @@
 ---
-// Whole cheesecakes: where "Also as a whole cheesecake" on each flavour
-// leads (/flavours#whole). Sizes and price are only given on WhatsApp.
+// Whole cheesecakes, at the end of /flavours (#whole): where "Also as a
+// whole cheesecake" on each flavour and "Whole Cakes" in the nav lead. This
+// is their one home; they are ordered on /box?tab=whole.
 import { Picture } from 'astro:assets';
-import { wholeCheesecakes } from '../../content/custom';
-import { whatsappLink } from '../../lib/wa-link';
+import { flavourById } from '../../content/flavours';
+import { formatPrice } from '../../content/pricing';
+import { paths } from '../../content/site';
+import { pricedSizes, wholeCakes } from '../../content/whole-cakes';
 import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
 import Button from '../v3/Button.astro';
 import Frame from '../v3/Frame.astro';
+import Label from '../v3/Label.astro';
 import Reveal from '../v3/Reveal.astro';
 
-const PHOTO = 'half-and-half';
-const picture = photo(PHOTO);
+const picture = wholeCakes.photo ? photo(wholeCakes.photo) : undefined;
+const sizes = wholeCakes.sizes ?? [];
+const anyPrice = pricedSizes().length > 0;
 ---
 
-<section id="whole" class="px-5 py-20" aria-labelledby="whole-heading">
-  <div class="mx-auto grid max-w-4xl items-center gap-10 sm:grid-cols-[1fr_1.1fr] sm:gap-14">
+<section id="whole" class="px-5 py-20 sm:py-28" aria-labelledby="whole-heading">
+  <div class="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[1.2fr_1fr] md:gap-14">
     <Reveal>
       <Frame>
         {
-          picture && (
+          picture ? (
             <Picture
               src={picture}
               formats={['avif']}
               fallbackFormat="webp"
-              quality={qualityOf(PHOTO)}
+              quality={qualityOf(wholeCakes.photo!)}
               widths={PHOTO_WIDTHS}
-              sizes="(min-width: 56rem) 24rem, (min-width: 40rem) 42vw, calc(100vw - 3.3rem)"
-              alt="A whole round cheesecake in its tin, half one flavour and half another"
+              sizes="(min-width: 64rem) 33rem, (min-width: 48rem) 52vw, calc(100vw - 3.3rem)"
+              alt={wholeCakes.photoAlt}
               class="aspect-square w-full object-cover"
             />
+          ) : (
+            <div class="flex aspect-square w-full items-center justify-center bg-cream">
+              <Label as="span">Photo coming soon</Label>
+            </div>
           )
         }
       </Frame>
     </Reveal>
+
     <Reveal delay={0.1}>
-      <h2 id="whole-heading" class="text-4xl leading-tight font-semibold sm:text-5xl">{wholeCheesecakes.name}</h2>
-      <p class="mt-4 max-w-sm">{wholeCheesecakes.detail}</p>
-      <Button href={whatsappLink(wholeCheesecakes.ask)} class="mt-6" target="_blank" rel="noopener">Ask on WhatsApp</Button>
+      <h2 id="whole-heading" class="text-5xl leading-tight font-semibold sm:text-6xl">{wholeCakes.name}</h2>
+
+      <ul class="mt-6 flex flex-wrap gap-2" aria-label="Flavours">
+        {
+          wholeCakes.flavours.map((id) => (
+            <li class="label-caps border border-[var(--color-hairline)] px-3 py-1.5 text-[0.65rem]">
+              {flavourById(id).name}
+            </li>
+          ))
+        }
+      </ul>
+
+      {
+        sizes.length > 0 ? (
+          <ul class="mt-6 border-t border-[var(--color-hairline)]">
+            {sizes.map((size) => (
+              <li class="flex items-baseline justify-between gap-4 border-b border-[var(--color-hairline)] py-3">
+                <span class="font-display text-2xl">{size.label}</span>
+                <span class="text-sm">{size.price === null ? 'Price on WhatsApp' : formatPrice(size.price)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="mt-6 font-display text-2xl">{wholeCakes.priceNote}</p>
+        )
+      }
+      {sizes.length > 0 && !anyPrice && <p class="mt-3 text-sm">{wholeCakes.priceNote}</p>}
+
+      <p class="mt-4 text-sm">{wholeCakes.leadTime}</p>
+      <Button href={`${paths.box}?tab=whole`} class="mt-6">{wholeCakes.order}</Button>
     </Reveal>
   </div>
 </section>

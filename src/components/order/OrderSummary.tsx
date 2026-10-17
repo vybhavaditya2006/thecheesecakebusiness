@@ -5,8 +5,20 @@ import { customPriceNote } from '../../content/custom';
 import { countedOrder, formatPrice, priceBreakdown, pricing, saleActive } from '../../content/pricing';
 import { delivery } from '../../content/info';
 import { booking } from '../../content/site';
-import { $bites, $custom, clearOrder, countByFlavour, removeCustom } from '../../lib/order-store';
-import { orderMessage, whatsappLink } from '../../lib/whatsapp';
+import { wholeCakes, wholeCakeSize } from '../../content/whole-cakes';
+import {
+  $bites,
+  $custom,
+  $wholeCakes,
+  clearOrder,
+  countByFlavour,
+  removeCustom,
+  removeWholeCake,
+  wholeCakePrice,
+  wholeCakeTotals,
+} from '../../lib/order-store';
+import { formatCakeDate, orderMessage, unpricedWholeCakes, whatsappLink } from '../../lib/whatsapp';
+import { flavourById } from '../../content/flavours';
 import BookingNotice from './BookingNotice';
 
 // The total, counting up or down to its new value whenever it changes.
@@ -28,10 +40,13 @@ function Total({ value }: { value: number }) {
 function Lines({ onBook }: { onBook: () => void }) {
   const bites = useStore($bites);
   const custom = useStore($custom);
+  const whole = useStore($wholeCakes);
   const { boxes, singles, total, regularTotal } = priceBreakdown(bites.length);
+  const cakes = wholeCakeTotals(whole);
+  const onlyUnpriced = !bites.length && !custom.length && !cakes.priced;
   const key = saleActive ? 'offer' : 'regular';
 
-  if (!bites.length && !custom.length) {
+  if (!bites.length && !custom.length && !whole.length) {
     return <p className="text-sm opacity-80">Nothing in your order yet.</p>;
   }
 
@@ -88,14 +103,48 @@ function Lines({ onBook }: { onBook: () => void }) {
         </div>
       ))}
 
+      {whole.map((cake) => {
+        const price = wholeCakePrice(cake);
+        return (
+          <div key={cake.id} className="rounded-2xl border border-wine/25 p-3">
+            <div className="flex items-start justify-between gap-3">
+              <strong className="font-display text-lg leading-tight">{wholeCakes.one}</strong>
+              <button
+                type="button"
+                className="size-7 shrink-0 rounded-full border border-wine leading-none"
+                aria-label={`Remove ${wholeCakes.one}: ${flavourById(cake.flavour).name}`}
+                onClick={() => removeWholeCake(cake.id)}
+              >
+                ×
+              </button>
+            </div>
+            <ul className="mt-1 space-y-0.5">
+              <li>{flavourById(cake.flavour).name}</li>
+              {cake.size && <li>{wholeCakeSize(cake.size)?.label}</li>}
+              <li>For {formatCakeDate(cake.date)}</li>
+              {cake.message && <li>Message: {cake.message}</li>}
+            </ul>
+            <p className="label-caps mt-2 text-[0.6rem]">{price === null ? wholeCakes.priceNote : formatPrice(price)}</p>
+          </div>
+        );
+      })}
+
       <p className="flex items-baseline justify-between gap-4 border-t border-wine/25 pt-3">
         <span className="text-xs">{bites.length ? `${countedOrder(bites.length)} =` : 'Total'}</span>
-        <span className="font-display text-3xl font-semibold">
+        <span className="text-right font-display text-3xl font-semibold">
           {saleActive && regularTotal > total && (
-            <s className="mr-2 text-lg font-normal opacity-80">{formatPrice(regularTotal)}</s>
+            <s className="mr-2 text-lg font-normal opacity-80">{formatPrice(regularTotal + cakes.priced)}</s>
           )}
-          <Total value={total} />
+          {/* Only whole cheesecakes still to be priced: no sum to show. */}
+          {!onlyUnpriced && <Total value={total + cakes.priced} />}
           {custom.length > 0 && <span className="text-base font-normal"> + custom</span>}
+          {cakes.unpriced > 0 && (
+            <span className="block text-base font-normal">
+              {onlyUnpriced
+                ? unpricedWholeCakes(cakes.unpriced).replace(/^\+ (.)/, (_, first: string) => first.toUpperCase())
+                : unpricedWholeCakes(cakes.unpriced)}
+            </span>
+          )}
         </span>
       </p>
       <p className="text-xs opacity-80">
@@ -119,16 +168,23 @@ function Lines({ onBook }: { onBook: () => void }) {
 export default function OrderSummary() {
   const bites = useStore($bites);
   const custom = useStore($custom);
+  const whole = useStore($wholeCakes);
   const [open, setOpen] = useState(false);
   // The order as it stood when "Book" was pressed.
   const [booked, setBooked] = useState<string | null>(null);
-  const empty = !bites.length && !custom.length;
+  const empty = !bites.length && !custom.length && !whole.length;
   const book = (): void => {
     setOpen(false);
-    setBooked(orderMessage(bites, custom));
+    setBooked(orderMessage(bites, custom, whole));
   };
   const { total } = priceBreakdown(bites.length);
-  const count = [bites.length && countedOrder(bites.length), custom.length && `${custom.length} custom`]
+  const cakes = wholeCakeTotals(whole);
+  const onlyUnpriced = !bites.length && !custom.length && !cakes.priced && cakes.unpriced > 0;
+  const count = [
+    bites.length && countedOrder(bites.length),
+    custom.length && `${custom.length} custom`,
+    whole.length && `${whole.length} ${whole.length === 1 ? 'whole cheesecake' : 'whole cheesecakes'}`,
+  ]
     .filter(Boolean)
     .join(' + ');
 
@@ -168,8 +224,13 @@ export default function OrderSummary() {
             <span className="block text-xs leading-tight opacity-80">{count || 'Your order is empty'}</span>
             <span className="font-display text-2xl leading-none font-semibold">
               {bites.length > 0 && '= '}
-              <Total value={total} />
+              {onlyUnpriced ? (
+                <span className="text-base font-normal">Price on WhatsApp</span>
+              ) : (
+                <Total value={total + cakes.priced} />
+              )}
               {custom.length > 0 && <span className="text-sm font-normal"> + custom</span>}
+              {cakes.unpriced > 0 && !onlyUnpriced && <span className="text-sm font-normal"> + whole cheesecake</span>}
             </span>
           </p>
           <div className="flex shrink-0 items-center gap-2">
