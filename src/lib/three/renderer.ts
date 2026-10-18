@@ -1,4 +1,5 @@
 import {
+  Color,
   DirectionalLight,
   HemisphereLight,
   type Material,
@@ -34,6 +35,9 @@ export interface Stage {
   // Run on every frame while on screen (for idle motion). Returns a remover.
   onFrame: (callback: (seconds: number) => void) => () => void;
   onResize: (callback: () => void) => void;
+  // Compiles every material in the scene now, so nothing stalls the first
+  // time it comes into view.
+  prepare: () => void;
   dispose: () => void;
 }
 
@@ -42,6 +46,10 @@ interface Options {
   onFallback: () => void;
   // A small view can afford more pixels than the usual cap, to stay sharp.
   sharp?: boolean;
+  // What clear plastic (a transmission material) shows behind it where the
+  // scene has nothing: the page's colour. Without it three.js fills that in
+  // with half-white, and the plastic looks milky.
+  backdrop?: string;
 }
 
 const MIN_FPS = 45;
@@ -71,6 +79,9 @@ const renderer = (): WebGLRenderer => {
     shared.setScissorTest(true);
     // Costs nothing unless a scene has something casting a shadow.
     shared.shadowMap.enabled = true;
+    // What clear plastic shows through itself is drawn at half size on
+    // phones: through plastic nobody can tell, and it halves that pass.
+    if (isPhone()) shared.transmissionResolutionScale = 0.5;
   }
   return shared;
 };
@@ -88,7 +99,7 @@ export const studioLight = (): Texture => {
 };
 
 // Draws one stage into the corner of the shared canvas, growing it if need be.
-const draw = (scene: Scene, camera: PerspectiveCamera, target: HTMLCanvasElement): void => {
+const draw = (scene: Scene, camera: PerspectiveCamera, target: HTMLCanvasElement, backdrop?: Color): void => {
   const gl = renderer();
   const { width, height } = target;
   const buffer = gl.domElement;
@@ -98,7 +109,17 @@ const draw = (scene: Scene, camera: PerspectiveCamera, target: HTMLCanvasElement
   gl.setViewport(0, 0, width, height);
   gl.setScissor(0, 0, width, height);
   gl.clear();
-  gl.render(scene, camera);
+  if (backdrop) {
+    // The canvas itself stays clear (cleared above); only the pass that
+    // draws what is behind the plastic is cleared to the backdrop.
+    gl.autoClear = false;
+    gl.setClearColor(backdrop, 1);
+    gl.render(scene, camera);
+    gl.setClearColor(0x000000, 0);
+    gl.autoClear = true;
+  } else {
+    gl.render(scene, camera);
+  }
 
   // The viewport is measured from the bottom of the buffer; the copy from its top.
   const context = target.getContext('2d')!;
@@ -106,7 +127,8 @@ const draw = (scene: Scene, camera: PerspectiveCamera, target: HTMLCanvasElement
   context.drawImage(buffer, 0, buffer.height - height, width, height, 0, 0, width, height);
 };
 
-export function createStage(container: HTMLElement, { onFallback, sharp = false }: Options): Stage {
+export function createStage(container: HTMLElement, { onFallback, sharp = false, backdrop }: Options): Stage {
+  const backdropColour = backdrop ? new Color(backdrop) : undefined;
   const cap = sharp ? DPR_CAP.sharp : isPhone() ? DPR_CAP.phone : DPR_CAP.desktop;
   const ratio = Math.min(window.devicePixelRatio, cap);
 
@@ -163,7 +185,7 @@ export function createStage(container: HTMLElement, { onFallback, sharp = false 
 
     if (dirty || measuring || frameCallbacks.size) {
       frameCallbacks.forEach((callback) => callback(now / 1000));
-      if (canvas.width && canvas.height) draw(scene, camera, canvas);
+      if (canvas.width && canvas.height) draw(scene, camera, canvas, backdropColour);
       dirty = false;
     }
     if (measuring || frameCallbacks.size) frame = requestAnimationFrame(loop);
@@ -214,6 +236,9 @@ export function createStage(container: HTMLElement, { onFallback, sharp = false 
     },
     onResize: (callback) => {
       resizeCallbacks.add(callback);
+    },
+    prepare: () => {
+      renderer().compile(scene, camera);
     },
     dispose: () => {
       if (disposed) return;

@@ -3,7 +3,7 @@ Brand: working name "Miette", NOT final (it may change for trademark and domain 
 Pitch: whole cheesecakes are expensive, too much to finish, and too heavy for health-conscious people. The brand sells bite-sized portions: the craving is satisfied without overeating, and it costs less.
 Flavours: Blueberry, KitKat, Oreo, Coffee, Lotus Biscoff. Custom orders: build your own bite, Half & Half cake, gift box (5 or 10), party platter (25 or 50). Whole cheesecakes (src/content/whole-cakes.ts): all five flavours; their home is /flavours#whole ("Whole Cakes" in the nav), and they are ordered on the Whole cheesecake tab of /box with a flavour, a size once sizes exist, a preferred date (confirmed on WhatsApp) and an optional message for the cake. Sizes and prices stay null until Shlok confirms them; until then they read "Sizes and price on WhatsApp".
 Pricing: box of five pieces (pick any mix) ₹150, launch offer ₹125. Single piece ₹65, launch offer ₹50. Same price for every flavour.
-The pack: five bites go in a clear plastic box, in a row, with a clear lid. It has no ribbon or bow; draw and model it that way. Coffee is light brown all through with nothing on top.
+The pack: a long white paper tray with five round cups in a single row, and a clear plastic (PET) sleeve the tray slides into. It has no ribbon or bow; draw and model it that way. The shape is provisional until Shlok's packaging photos arrive. Coffee is light brown all through with nothing on top.
 Pricing words: wherever a price appears, say "piece", never "bite" ("₹50 a piece", "Single piece", "Box of five pieces", "₹25 a piece in a box of five"), including the WhatsApp message and the live total. "Bite" stays only in descriptive and playful text.
 Delivery: free within 5 km of Nagarabhavi, Bengaluru 560072; paid beyond 5 km (charge confirmed on WhatsApp). Same-day delivery if in stock, otherwise made to order with the day confirmed on WhatsApp. Payment: UPI or cash. No minimum order. Kitchen coordinates: [12.96331, 77.51994] (Plus Code 7J4VXG79+8X).
 Contact: the email address appears in the footer and on Good to Know as a mailto link, for questions only. The phone number for calls is the WhatsApp number. All ordering and payment happen on WhatsApp.
@@ -37,7 +37,7 @@ Offer banner: permanent, full width on every page, no close button and nothing s
 In order: 1) hero: a full-width photo with a light card (wordmark, tagline, one line about cheesecake pieces made in Nagarabhavi, Order and See flavours buttons); 2) directly under it, on the first screen at 375 px: a contact strip of three outlined buttons, Call (shows the number), WhatsApp, Email (shows the address); 3) three tiles: Pieces, Box of five pieces, Whole cheesecakes; 4) Why pieces: one large photo beside three short lines; 5) the five flavours as cut-outs, each linking to its flavour; 6) how ordering works in three numbered lines with one photo; 7) a Shlok photo card linking to Our Story.
 
 ## 3D
-- three.js (vanilla). One shared kit in src/lib/three for the bite, the box of five and the whole cake.
+- three.js (vanilla). One shared kit in src/lib/three for the bite and the pack of five (tray and sleeve).
 - One WebGL canvas per page.
 - Loaded lazily when a 3D object is a screen away.
 - Procedural geometry and canvas-painted textures; no model files.

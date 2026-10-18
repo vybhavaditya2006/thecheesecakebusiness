@@ -5,6 +5,7 @@ import { Picture } from 'astro:assets';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
 import { boxLabel, home, orderPath, paths } from '../../content/site';
 import { wholeCakePriceLine, wholeCakes } from '../../content/whole-cakes';
+import { flavours } from '../../content/flavours';
 import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
 import Button from '../v3/Button.astro';
 import Frame from '../v3/Frame.astro';
@@ -29,6 +30,8 @@ const tiles = [
     price: formatPrice(pricing.box[key]),
     was: saleActive ? formatPrice(pricing.box.regular) : undefined,
     button: { label: boxLabel, href: orderPath },
+    // The 3D pack slides into its sleeve here, where the device can run it.
+    pack: true,
   },
   {
     photo: 'half-and-half',
@@ -47,7 +50,7 @@ const tiles = [
         const picture = photo(tile.photo);
         return (
           <Reveal as="li" delay={index * 0.08} class="flex flex-col">
-            <Frame>
+            <Frame class="relative">
               {picture && (
                 <Picture
                   src={picture}
@@ -58,6 +61,13 @@ const tiles = [
                   sizes="(min-width: 72rem) 22rem, (min-width: 40rem) 30vw, calc(100vw - 2.8rem)"
                   alt={tile.alt}
                   class="aspect-[4/5] w-full object-cover"
+                  data-pack-photo={tile.pack ? '' : undefined}
+                />
+              )}
+              {tile.pack && (
+                <div
+                  class="pack-tile pointer-events-none absolute inset-[0.4rem]"
+                  data-pack-tile={flavours.map((flavour) => flavour.id).join(' ')}
                 />
               )}
             </Frame>
@@ -78,3 +88,65 @@ const tiles = [
     }
   </ul>
 </Section>
+
+<style>
+  /* Once the 3D pack is in, it stands on plain cream instead of the photo. */
+  .pack-tile[data-three] {
+    background: var(--color-cream);
+  }
+</style>
+
+<script>
+  import type { FlavourId } from '../../content/flavours';
+  import { canUse3D, whenNear } from '../../lib/three/support';
+
+  // The pack loads only once the visitor has stirred and the tile is near,
+  // and slides into its sleeve once, the first time the tile is well in view.
+  document.addEventListener('astro:page-load', () => {
+    const mount = document.querySelector<HTMLElement>('[data-pack-tile]');
+    if (!mount || !canUse3D()) return;
+    const photo = mount.parentElement?.querySelector<HTMLElement>('[data-pack-photo]');
+    let gone = false;
+    let tile: { play: () => void; dispose: () => void } | undefined;
+    let watch: IntersectionObserver | undefined;
+
+    const stopWaiting = whenNear(mount, async () => {
+      try {
+        const { mountPackTile } = await import('../../lib/three/pack-tile');
+        if (gone) return;
+        const flavours = (mount.dataset.packTile ?? '').split(' ') as FlavourId[];
+        tile = mountPackTile(mount, flavours, {
+          // Too slow here: back to the photo.
+          onFallback: () => {
+            mount.removeAttribute('data-three');
+            if (photo) photo.style.opacity = '';
+          },
+        });
+        mount.dataset.three = '';
+        if (photo) photo.style.opacity = '0';
+        watch = new IntersectionObserver(
+          (entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+            watch?.disconnect();
+            tile?.play();
+          },
+          { threshold: 0.6 },
+        );
+        watch.observe(mount);
+      } catch {
+        // The kit failed to load: the photo stays.
+      }
+    });
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        gone = true;
+        stopWaiting();
+        watch?.disconnect();
+        tile?.dispose();
+      },
+      { once: true },
+    );
+  });
+</script>

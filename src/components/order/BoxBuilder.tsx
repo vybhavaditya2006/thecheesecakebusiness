@@ -1,7 +1,7 @@
 import { useStore } from '@nanostores/react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { flavourById, flavours, type FlavourId } from '../../content/flavours';
+import { AnimatePresence, motion } from 'motion/react';
+import { useRef } from 'react';
+import { flavourById, flavours } from '../../content/flavours';
 import { formatPrice, priceBreakdown, pricing } from '../../content/pricing';
 import {
   $bites,
@@ -12,17 +12,18 @@ import {
   removeBiteAt,
   removeBox,
 } from '../../lib/order-store';
-import { Bite, BowPaths } from './parts';
+import { Bite, PackSketch } from './parts';
 import { useBox3D } from './useBox3D';
 
 const BOX = pricing.box.bites;
 
-// Box artwork units, shared by the SVG layers and the bite slots.
+// Pack artwork units, shared by the SVG layers and the piece slots.
 const STAGE = { width: 360, height: 250 };
 const SLOT = { size: 58, pitch: 62, centreY: 112 };
 
+const cupX = (slot: number): number => STAGE.width / 2 + (slot - (BOX - 1) / 2) * SLOT.pitch;
 const slotStyle = (slot: number) => ({
-  left: `${((STAGE.width / 2 + (slot - (BOX - 1) / 2) * SLOT.pitch - SLOT.size / 2) / STAGE.width) * 100}%`,
+  left: `${((cupX(slot) - SLOT.size / 2) / STAGE.width) * 100}%`,
   top: `${((SLOT.centreY - SLOT.size / 2) / STAGE.height) * 100}%`,
   width: `${(SLOT.size / STAGE.width) * 100}%`,
 });
@@ -37,94 +38,32 @@ const svgProps = {
   'aria-hidden': true,
 } as const;
 
-// How long the packed box stays on show before a fresh one opens (ms).
-const CLOSING = { hideBites: 1900, reopen: 2300 };
-// How long a bite is in the air between a flavour button and its slot (s).
-const FLIGHT = 0.55;
-
-interface Flyer {
-  key: number;
-  id: FlavourId;
-  from: { x: number; y: number };
-  to: { x: number; y: number };
-  size: number;
-}
-
-const centre = (element: Element) => {
-  const box = element.getBoundingClientRect();
-  return { x: box.left + box.width / 2, y: box.top + box.height / 2, width: box.width };
-};
+// Calm easing for everything here (v3): out, no bounce.
+const EASE_OUT = [0.16, 1, 0.3, 1] as const;
+const EASE_IN_OUT = [0.65, 0, 0.35, 1] as const;
 
 export default function BoxBuilder() {
   const bites = useStore($bites);
   const singles = useStore($singlesMode);
-  const reduceMotion = useReducedMotion();
 
   const packedCount = Math.floor(bites.length / BOX);
   const current = bites.slice(packedCount * BOX);
   const packed = Array.from({ length: packedCount }, (_, box) => bites.slice(box * BOX, (box + 1) * BOX));
 
-  // While a just-filled box is being closed, it stays on show.
-  const [closing, setClosing] = useState<FlavourId[] | null>(null);
-  const [lidShut, setLidShut] = useState(false);
-  const [flyers, setFlyers] = useState<Flyer[]>([]);
-  const slots = useRef<(HTMLDivElement | null)[]>([]);
-  const stage = useRef<HTMLDivElement>(null);
-  const mount3D = useRef<HTMLDivElement>(null);
-  const timers = useRef<number[]>([]);
-  const nextKey = useRef(0);
-
-  useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
-
-  const shown = closing ?? current;
-  const boxNumber = closing ? packedCount - 1 : packedCount;
-  const visiblePacked = closing ? packed.slice(0, -1) : packed;
+  // A full box stays on show, in its sleeve, until a piece is taken out of it
+  // or a flavour starts the next one.
+  const sleeved = current.length === 0 && packedCount > 0;
+  const shown = sleeved ? packed[packedCount - 1]! : current;
+  const boxNumber = sleeved ? packedCount - 1 : packedCount;
+  const visiblePacked = sleeved ? packed.slice(0, -1) : packed;
   const { toNextBox } = priceBreakdown(bites.length);
 
-  // The 3D box, when this device can run it; the drawn box otherwise.
-  const three = useBox3D(stage, mount3D, shown, lidShut, !singles);
+  const stage = useRef<HTMLDivElement>(null);
+  const mount3D = useRef<HTMLDivElement>(null);
+
+  // The 3D pack, when this device can run it; the drawn pack otherwise.
+  const three = useBox3D(stage, mount3D, shown, sleeved, boxNumber, !singles);
   const flat = three ? 'opacity-0' : '';
-
-  // A bite has landed: add it, and close the box if that was the fifth.
-  const land = (id: FlavourId): void => {
-    const all = $bites.get();
-    const inBox = all.length % BOX;
-
-    if (inBox === BOX - 1 && !reduceMotion) {
-      setClosing([...all.slice(all.length - inBox), id]);
-      setLidShut(true);
-      timers.current.push(
-        window.setTimeout(() => setClosing(null), CLOSING.hideBites),
-        window.setTimeout(() => setLidShut(false), CLOSING.reopen),
-      );
-    }
-    addBite(id);
-  };
-
-  // Tapping a flavour flings a bite from the button into the next free slot.
-  const add = (id: FlavourId, event: MouseEvent<HTMLButtonElement>): void => {
-    if (lidShut) return;
-    const slotIndex = current.length + flyers.length;
-    if (slotIndex >= BOX) return;
-
-    const slot = slots.current[slotIndex];
-    // In 3D the bite drops into the box by itself; nothing flies across the page.
-    if (reduceMotion || three || !slot) return land(id);
-
-    const from = centre(event.currentTarget);
-    const to = centre(slot);
-    const flyer: Flyer = { key: nextKey.current++, id, from, to, size: to.width };
-    setFlyers((flying) => [...flying, flyer]);
-
-    // Land on a timer, not on the animation's callback, so a bite is never
-    // lost if the browser skips the animation (a hidden tab, for instance).
-    timers.current.push(
-      window.setTimeout(() => {
-        setFlyers((flying) => flying.filter((other) => other.key !== flyer.key));
-        land(id);
-      }, FLIGHT * 1000),
-    );
-  };
 
   return (
     <div data-box-builder>
@@ -168,118 +107,93 @@ export default function BoxBuilder() {
         </ul>
       ) : (
         <>
-          {/* The box: lid and inside behind, bites in the slots, front on top. */}
-          <div ref={stage} className="relative mx-auto w-full max-w-[19rem] text-wine sm:mt-6 sm:max-w-[26rem]" style={{ aspectRatio: `${STAGE.width}/${STAGE.height}` }}>
-            {/* The 3D box mounts here. It reaches above the box so bites can fall in. */}
+          {/* The pack: the tray behind, pieces in its cups, the sleeve over them. */}
+          <div
+            ref={stage}
+            className="relative mx-auto w-full max-w-[19rem] touch-pan-y text-wine select-none sm:mt-6 sm:max-w-[26rem]"
+            style={{ aspectRatio: `${STAGE.width}/${STAGE.height}` }}
+          >
+            {/* The 3D pack mounts here. It reaches above the tray so pieces can drop in. */}
             <div ref={mount3D} className="pointer-events-none absolute -inset-x-[5%] -top-[40%] -bottom-[4%]" />
 
+            {/* The paper tray: a long white card with five round cups. */}
             <svg className={`absolute inset-0 size-full overflow-visible ${flat}`} {...svgProps}>
-              <ellipse cx="180" cy="160" rx="160" ry="7" fill="currentColor" stroke="none" opacity="0.1" />
-              <rect x="14" y="70" width="332" height="84" rx="9" fill="#fff" fillOpacity="0.4" stroke="none" />
+              <ellipse cx="180" cy="160" rx="166" ry="8" fill="currentColor" stroke="none" opacity="0.1" />
+              <rect x="16" y="86" width="328" height="64" rx="10" fill="#fbf8f3" />
+              {Array.from({ length: BOX }, (_, slot) => (
+                <ellipse key={slot} cx={cupX(slot)} cy="118" rx="26" ry="17" fill="#efe8de" strokeWidth="1.2" />
+              ))}
             </svg>
 
-            {Array.from({ length: BOX }, (_, slot) => {
-              const id = shown[slot];
-              const flavour = id && flavourById(id);
-              return (
-                <div
-                  key={slot}
-                  ref={(element) => {
-                    slots.current[slot] = element;
-                  }}
-                  className="absolute aspect-square"
-                  style={three?.slots[slot] ?? slotStyle(slot)}
-                >
-                  <span className={`absolute inset-[8%] rounded-full border border-dashed border-wine/40 ${flat}`} aria-hidden="true" />
-                  <AnimatePresence initial={false}>
-                    {flavour && (
-                      <motion.button
-                        key={`${boxNumber}-${slot}-${flavour.id}`}
-                        type="button"
-                        className="absolute inset-0"
-                        style={{ originY: 1 }}
-                        aria-label={`Take ${flavour.name} out of the box`}
-                        disabled={lidShut}
-                        onClick={(event) => {
-                          // The bite's button is about to vanish; hand keyboard
-                          // focus to that flavour's "add" button instead.
-                          const builder = event.currentTarget.closest('[data-box-builder]');
-                          removeBiteAt(boxNumber * BOX + slot);
-                          builder?.querySelector<HTMLElement>(`[data-add="${flavour.id}"]`)?.focus();
-                        }}
-                        // Squash on landing, then spring back.
-                        initial={{ scaleX: 1.25, scaleY: 0.68 }}
-                        animate={{ scaleX: 1, scaleY: 1 }}
-                        exit={lidShut ? { opacity: 0 } : { y: '-90%', scale: 0, rotate: 120 }}
-                        transition={{ type: 'spring', stiffness: 520, damping: 13 }}
-                      >
-                        <Bite flavour={flavour} className={`size-full text-[clamp(0.5rem,2.4vw,0.72rem)] ${flat}`} />
-                      </motion.button>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-
-            <svg className={`pointer-events-none absolute inset-0 size-full overflow-visible ${flat}`} {...svgProps}>
-              {/* The clear lid, laid over the bites once the pack is full. */}
-              <motion.rect
-                x="14"
-                y="70"
-                width="332"
-                height="84"
-                rx="9"
-                fill="#fff"
-                stroke="none"
-                initial={false}
-                animate={{ opacity: lidShut ? 0.45 : 0 }}
-                transition={{ duration: 0.35, delay: lidShut ? 0.3 : 0 }}
-              />
-              <rect x="14" y="70" width="332" height="84" rx="9" />
-              <path d="M24 80H336" strokeWidth="1" opacity="0.4" />
-              <motion.path
-                d="M30 90h64M262 144h64"
-                stroke="#fff"
-                strokeWidth="2.5"
-                initial={false}
-                animate={{ opacity: lidShut ? 1 : 0.6 }}
-              />
-            </svg>
-
-            {/* Crumb confetti as the pack closes. */}
-            {lidShut && (
-              <div className="pointer-events-none absolute top-[45%] left-1/2" aria-hidden="true">
-                {Array.from({ length: 18 }, (_, crumb) => {
-                  const angle = (crumb / 18) * Math.PI * 2;
-                  const reach = 90 + (crumb % 3) * 45;
-                  const colour = closing ? flavourById(closing[crumb % BOX] ?? 'oreo').accent : undefined;
+            {/* A new box slides in as the full one slides away. */}
+            <AnimatePresence initial={false} mode="popLayout">
+              <motion.div
+                key={boxNumber}
+                className="absolute inset-0"
+                initial={{ x: '110%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-110%' }}
+                transition={{ duration: 0.5, ease: EASE_OUT }}
+              >
+                {Array.from({ length: BOX }, (_, slot) => {
+                  const id = shown[slot];
+                  const flavour = id && flavourById(id);
                   return (
-                    <motion.span
-                      key={crumb}
-                      className="absolute size-2 rounded-[40%_60%_55%_45%] bg-wine"
-                      style={{ backgroundColor: crumb % 2 ? colour : undefined }}
-                      initial={{ x: 0, y: 0, opacity: 0, scale: 1 }}
-                      animate={{
-                        x: Math.cos(angle) * reach,
-                        y: Math.sin(angle) * reach - 50,
-                        opacity: [0, 1, 1, 0],
-                        rotate: 240,
-                        scale: 0.6,
-                      }}
-                      transition={{ duration: 0.9, delay: 1.05, ease: 'easeOut' }}
-                    />
+                    <div key={slot} className="absolute aspect-square" style={three?.slots[slot] ?? slotStyle(slot)}>
+                      <AnimatePresence initial={false}>
+                        {flavour && (
+                          <motion.button
+                            key={`${slot}-${flavour.id}`}
+                            type="button"
+                            className="absolute inset-0"
+                            aria-label={`Take ${flavour.name} out of the box`}
+                            onClick={(event) => {
+                              // The piece's button is about to vanish; hand keyboard
+                              // focus to that flavour's "add" button instead.
+                              const builder = event.currentTarget.closest('[data-box-builder]');
+                              removeBiteAt(boxNumber * BOX + slot);
+                              builder?.querySelector<HTMLElement>(`[data-add="${flavour.id}"]`)?.focus();
+                            }}
+                            // Drops into its cup and settles: ease out, no bounce.
+                            initial={{ y: '-70%', opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: '-60%', opacity: 0, scale: 0.6 }}
+                            transition={{ duration: 0.45, ease: EASE_OUT }}
+                          >
+                            <Bite flavour={flavour} className={`size-full text-[clamp(0.5rem,2.4vw,0.72rem)] ${flat}`} />
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   );
                 })}
-              </div>
-            )}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* The clear sleeve: waits off to the side and slides over the full tray. */}
+            <div className={`pointer-events-none absolute -inset-y-[10%] inset-x-0 overflow-hidden ${flat}`}>
+              <motion.svg
+                className="absolute inset-0 size-full overflow-visible"
+                viewBox={`0 -25 ${STAGE.width} ${STAGE.height * 1.2}`}
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+                initial={false}
+                animate={{ x: sleeved ? '0%' : '105%' }}
+                transition={{ duration: sleeved ? 1 : 0.7, ease: sleeved ? EASE_OUT : EASE_IN_OUT }}
+              >
+                <rect x="10" y="58" width="340" height="98" rx="6" fill="#fff" fillOpacity="0.22" strokeWidth="1.2" strokeOpacity="0.45" />
+                <path d="M28 70h110M222 146h100" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
+              </motion.svg>
+            </div>
           </div>
 
           <p className="mt-3 text-center text-sm sm:mt-6" aria-live="polite">
-            {lidShut
-              ? 'Box packed!'
+            {sleeved
+              ? 'Box of five packed. Tap a piece to take it out, or a flavour to start the next box.'
               : shown.length === 0
                 ? 'Tap a flavour to drop it in the box.'
-                : `${shown.length} of ${BOX} in the box. Tap a bite to take it out.`}
+                : `${shown.length} of ${BOX} in the box. Tap a piece to take it out.`}
           </p>
 
           <ul className="mx-auto mt-3 flex max-w-md justify-center gap-2 sm:mt-5 sm:gap-4">
@@ -291,7 +205,7 @@ export default function BoxBuilder() {
                   aria-label={`Add ${flavour.name} to the box`}
                   data-add={flavour.id}
                   whileTap={{ scale: 0.88 }}
-                  onClick={(event) => add(flavour.id, event)}
+                  onClick={() => addBite(flavour.id)}
                 >
                   <Bite flavour={flavour} eager className="w-full text-[clamp(0.55rem,2.6vw,0.8rem)]" />
                 </motion.button>
@@ -335,9 +249,7 @@ export default function BoxBuilder() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8 }}
               >
-                <svg className="w-9 shrink-0" viewBox="0 0 120 62" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <BowPaths />
-                </svg>
+                <PackSketch className="w-12 shrink-0" />
                 <span className="flex-1 text-sm">
                   <strong className="label-caps block">{pricing.box.name}</strong>
                   {countByFlavour(box)
@@ -358,29 +270,6 @@ export default function BoxBuilder() {
         </ul>
       )}
 
-      {/* Bites in flight from a flavour button to their slot. */}
-      {flyers.map((flyer) => (
-        <motion.span
-          key={flyer.key}
-          className="pointer-events-none fixed top-0 left-0 z-[60]"
-          style={{ width: flyer.size, height: flyer.size, marginLeft: -flyer.size / 2, marginTop: -flyer.size / 2 }}
-          initial={{ x: flyer.from.x, y: flyer.from.y, scale: 0.7, rotate: 0 }}
-          animate={{
-            x: flyer.to.x,
-            // Up and over: an arc that peaks above both ends.
-            y: [flyer.from.y, Math.min(flyer.from.y, flyer.to.y) - 90, flyer.to.y],
-            scale: 1,
-            rotate: 360,
-          }}
-          transition={{
-            duration: FLIGHT,
-            x: { duration: FLIGHT, ease: 'linear' },
-            y: { duration: FLIGHT, times: [0, 0.45, 1], ease: ['easeOut', 'easeIn'] },
-          }}
-        >
-          <Bite flavour={flavourById(flyer.id)} className="size-full text-[0.6rem]" />
-        </motion.span>
-      ))}
     </div>
   );
 }

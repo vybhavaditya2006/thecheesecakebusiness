@@ -45,10 +45,14 @@ const textureOf = (flavour: FlavourId, onReady: (texture: Texture) => void): voi
   textures.set(flavour, loading);
 };
 
-export function createBite(flavour: FlavourId): Bite3D {
+// `solid`: a hard-edged cut-out instead of a soft one. Clear plastic drawn
+// with transmission (the pack's sleeve) shows only solid things through it.
+export function createBite(flavour: FlavourId, { solid = false }: { solid?: boolean } = {}): Bite3D {
   const group = new Group();
   // Unlit: the photograph already has its own light and shade.
-  const material = new SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0 });
+  const material = solid
+    ? new SpriteMaterial({ alphaTest: 0.5, opacity: 0, transparent: false })
+    : new SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0 });
   const photo = new Sprite(material);
   // Stands on its base, so it lands and squashes against the floor.
   photo.center.set(0.5, 0);

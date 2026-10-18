@@ -150,3 +150,29 @@ export const shadowTexture = (): CanvasTexture =>
     context.fillStyle = blob;
     context.fillRect(0, 0, size, size);
   });
+
+// White card for the tray: faint fibres and a slight mottle, so it reads as
+// paper and not plastic.
+export const paperTexture = (): CanvasTexture => {
+  const texture = paint(256, 29, (context, size, random) => {
+    context.fillStyle = '#fbf8f3';
+    context.fillRect(0, 0, size, size);
+    for (let index = 0; index < 260; index += 1) {
+      context.globalAlpha = 0.04 + random() * 0.06;
+      context.strokeStyle = random() > 0.5 ? '#d9cfc2' : '#ffffff';
+      context.lineWidth = 0.6 + random() * 0.8;
+      const x = random() * size;
+      const y = random() * size;
+      const turn = random() * Math.PI;
+      const long = 4 + random() * 14;
+      context.beginPath();
+      context.moveTo(x, y);
+      context.lineTo(x + Math.cos(turn) * long, y + Math.sin(turn) * long);
+      context.stroke();
+    }
+    context.globalAlpha = 1;
+  });
+  texture.wrapS = texture.wrapT = RepeatWrapping;
+  texture.repeat.set(3, 1);
+  return texture;
+};

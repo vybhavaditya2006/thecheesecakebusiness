@@ -77,40 +77,17 @@ export function Chip({ selected, disabled, onClick, children }: ChipProps) {
   );
 }
 
-// The box of five, closed and tied, for the send-off.
-export function ClosedBox({ className }: { className?: string }) {
+// The pack of five, small: the paper tray with its five pieces, in the clear
+// sleeve. For the list of packed boxes.
+export function PackSketch({ className }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 60 360 180"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinejoin="round"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path className="fill-cream" d="M34 82H326L346 140H14Z" />
-      <path className="fill-cream" d="M14 140H346L338 228H22Z" />
-      <path d="M22 183H338" strokeWidth="24" strokeLinecap="butt" />
-      <svg x="125" y="158" width="110" height="57" viewBox="0 0 120 62">
-        <BowPaths />
-      </svg>
+    <svg className={className} viewBox="0 0 120 40" fill="none" stroke="currentColor" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4" y="16" width="112" height="18" rx="4" fill="#fbf8f3" strokeWidth="1.5" />
+      {[16, 38, 60, 82, 104].map((x) => (
+        <ellipse key={x} cx={x} cy="21" rx="8" ry="6" fill="currentColor" fillOpacity="0.18" stroke="none" />
+      ))}
+      <rect x="2" y="6" width="116" height="30" rx="3" fill="#fff" fillOpacity="0.25" strokeWidth="1" strokeOpacity="0.5" />
+      <path d="M8 11h34" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
     </svg>
-  );
-}
-
-// The bow from Bow.astro, for use inside React-rendered SVGs (120 × 62 units).
-export function BowPaths() {
-  return (
-    <>
-      <path className="fill-cream" d="M54 26C40 6 14 4 10 18C7 30 34 38 54 29Z" />
-      <path className="fill-cream" d="M66 26C80 6 106 4 110 18C113 30 86 38 66 29Z" />
-      <path d="M52 26C42 20 30 16 20 19" strokeWidth="1.2" />
-      <path d="M68 26C78 20 90 16 100 19" strokeWidth="1.2" />
-      <path className="fill-cream" d="M56 33C51 43 43 51 33 58L40 44" />
-      <path className="fill-cream" d="M64 33C69 43 77 51 87 58L80 44" />
-      <ellipse className="fill-wine" cx="60" cy="27" rx="6.5" ry="7.5" />
-    </>
   );
 }
