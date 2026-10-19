@@ -111,7 +111,7 @@ export default function WholeBuilder() {
 
       <div className="mt-8 flex flex-col items-center gap-3">
         {sizes.every((choice) => choice.price === null) && (
-          <p className="label-caps rounded-full border border-wine px-4 py-2">{wholeCakes.priceNote}</p>
+          <p className="label-caps rounded-full border border-wine px-4 py-2">{wholeCakes.priceLater}</p>
         )}
         <button
           type="button"

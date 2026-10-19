@@ -27,8 +27,11 @@ export const wholeCakes = {
   leadTime: 'Made to order, date confirmed on WhatsApp.',
   // The shorter form, on /box.
   leadTimeShort: 'Date confirmed on WhatsApp',
-  // When no size has a price.
+  // When no size has a price: in full on /flavours#whole, and the shorter
+  // forms elsewhere (say it once).
   priceNote: 'Sizes and price on WhatsApp',
+  priceShort: 'Ask for sizes and prices',
+  priceLater: 'Price on WhatsApp',
   // A photo master name in src/assets/photos/masters, or null for a cream
   // frame reading "Photo coming soon". The Half & Half cake is the only
   // whole cheesecake photographed so far.
@@ -45,11 +48,11 @@ export const wholeCakes = {
 // Sizes that have a price.
 export const pricedSizes = (): readonly WholeCakeSize[] => (wholeCakes.sizes ?? []).filter((size) => size.price !== null);
 
-// The price in a word or two: "from ₹900" once a size is priced, otherwise
-// the note.
+// The price in a word or two, for Home: "from ₹900" once a size is priced,
+// otherwise the short note.
 export const wholeCakePriceLine = (): string => {
   const prices = pricedSizes().map((size) => size.price!);
-  return prices.length ? `from ${formatPrice(Math.min(...prices))}` : wholeCakes.priceNote;
+  return prices.length ? `from ${formatPrice(Math.min(...prices))}` : wholeCakes.priceShort;
 };
 
 export const isWholeCakeFlavour = (id: unknown): id is FlavourId =>

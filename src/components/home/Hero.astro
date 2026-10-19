@@ -4,7 +4,7 @@
 import { Picture } from 'astro:assets';
 import { brand } from '../../content/brand';
 import { home, orderPath, paths } from '../../content/site';
-import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
+import { HERO_IMAGE, photo } from '../../lib/photos';
 import Button from '../v3/Button.astro';
 import Card from '../v3/Card.astro';
 import Reveal from '../v3/Reveal.astro';
@@ -12,8 +12,11 @@ import Wordmark from '../ui/Wordmark.astro';
 
 // TODO: swap for a daylight photo of a box of five when Shlok has one. This
 // WhatsApp photo is only 940 px wide, so it is soft across a wide screen.
-const HERO = 'packs-of-five';
+const HERO = HERO_IMAGE.name;
 const picture = photo(HERO);
+// The hero sits under a card, so it can be a little lighter than a product
+// shot: it is the page's largest paint on a phone. index.astro preloads it
+// with the same settings, so keep them in step (HERO_IMAGE).
 ---
 
 <section class="relative isolate overflow-hidden" aria-labelledby="hero-heading">
@@ -23,9 +26,9 @@ const picture = photo(HERO);
         src={picture}
         formats={['avif']}
         fallbackFormat="webp"
-        quality={qualityOf(HERO)}
-        widths={PHOTO_WIDTHS}
-        sizes="100vw"
+        quality={HERO_IMAGE.quality}
+        widths={HERO_IMAGE.widths}
+        sizes={HERO_IMAGE.sizes}
         loading="eager"
         fetchpriority="high"
         alt="Three clear packs of five cheesecake pieces, side by side, seen from above"

@@ -3,7 +3,6 @@ import { brand } from '../../content/brand';
 import { arrival, contact, delivery, payment } from '../../content/info';
 import { boxLabel, navLinks, orderPath, paths } from '../../content/site';
 import { whatsappLink } from '../../lib/wa-link';
-import Bow from './Bow.astro';
 import Wordmark from './Wordmark.astro';
 
 const links = [...navLinks, { href: orderPath, label: boxLabel }];
@@ -66,7 +65,6 @@ const facts = [delivery.short, arrival.short, payment.short];
   </div>
 
   <div class="mx-auto mt-10 flex max-w-5xl items-center gap-4 text-xs opacity-80">
-    <Bow class="w-10" />
     <p>© {new Date().getFullYear()} {brand.name}. {delivery.area} {delivery.pincode}.</p>
   </div>
 </footer>

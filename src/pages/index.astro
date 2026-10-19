@@ -8,10 +8,31 @@ import OrderTiles from '../components/home/OrderTiles.astro';
 import StoryCard from '../components/home/StoryCard.astro';
 import WhyPieces from '../components/home/WhyPieces.astro';
 import Base from '../layouts/Base.astro';
+import { getImage } from 'astro:assets';
+import { HERO_IMAGE, photo } from '../lib/photos';
+
+// The hero photo is the largest paint on a phone: fetch it first.
+const heroPhoto = photo(HERO_IMAGE.name);
+const heroPreload = heroPhoto
+  ? await getImage({ src: heroPhoto, widths: [...HERO_IMAGE.widths], format: 'avif', quality: HERO_IMAGE.quality })
+  : undefined;
 ---
 
 <Base>
   <LocalBusiness slot="head" />
+  {
+    heroPreload && (
+      <link
+        slot="head"
+        rel="preload"
+        as="image"
+        type="image/avif"
+        imagesrcset={heroPreload.srcSet.attribute}
+        imagesizes={HERO_IMAGE.sizes}
+        fetchpriority="high"
+      />
+    )
+  }
   <Hero />
   <ContactStrip />
   <OrderTiles />

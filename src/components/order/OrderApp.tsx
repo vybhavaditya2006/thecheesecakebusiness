@@ -81,7 +81,7 @@ export default function OrderApp({ biteImages = {} }: { biteImages?: BiteImages 
                   <motion.span
                     layoutId="tab-pill"
                     className="absolute inset-0 rounded-full bg-wine"
-                    transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   />
                 )}
                 <span className="relative">{item.label}</span>

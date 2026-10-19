@@ -1,0 +1,28 @@
+---
+// Ingredients and calories, flavour by flavour. Renders only once at least
+// one flavour has either filled in (src/content/flavours.ts); until then the
+// page has no such block at all.
+import { flavours } from '../../content/flavours';
+import Reveal from '../v3/Reveal.astro';
+import Section from '../v3/Section.astro';
+
+const filled = flavours.filter((flavour) => flavour.calories !== null || flavour.ingredients?.length);
+---
+
+{
+  filled.length > 0 && (
+    <Section label="In each piece" heading="Ingredients and calories" id="ingredients">
+      <Reveal>
+        <dl class="mx-auto max-w-3xl border-t border-[var(--color-hairline)]">
+          {filled.map((flavour) => (
+            <div class="grid gap-1 border-b border-[var(--color-hairline)] py-5 sm:grid-cols-[10rem_1fr_auto] sm:items-baseline sm:gap-6">
+              <dt class="font-display text-2xl">{flavour.name}</dt>
+              <dd class="text-sm">{flavour.ingredients?.join(', ')}</dd>
+              <dd class="label-caps text-[0.7rem]">{flavour.calories !== null && `${flavour.calories} kcal a piece`}</dd>
+            </div>
+          ))}
+        </dl>
+      </Reveal>
+    </Section>
+  )
+}

@@ -1,16 +1,18 @@
 ---
-// Pricing: two cards. On entering view a hand-drawn line strikes the old
-// price and the offer price fades up into place.
+// Pricing: two cards. On entering view the offer price fades up into place
+// beside the old one, struck through.
+import { Picture } from 'astro:assets';
 import { packsOfFive } from '../../content/photos';
 import { formatPrice, pricing, saleActive } from '../../content/pricing';
-import Snapshot from '../ui/Snapshot.astro';
+import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
 import SectionTitle from '../ui/SectionTitle.astro';
-import Sticker from '../ui/Sticker.astro';
+import Frame from '../v3/Frame.astro';
 
 const cards = [
-  { ...pricing.box, blurb: 'Any mix of flavours, packed and tied with a bow.', sticker: true },
-  { ...pricing.single, blurb: 'For when one is all you want.', sticker: false },
+  { ...pricing.box, blurb: 'Any mix of flavours, in a tray of five in a clear sleeve.', perPiece: true },
+  { ...pricing.single, blurb: 'For when one is all you want.', perPiece: false },
 ];
+const packs = photo(packsOfFive.name);
 const boxPrice = saleActive ? pricing.box.offer : pricing.box.regular;
 const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
 ---
@@ -26,55 +28,47 @@ const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
 
           <p class="mt-6 flex items-baseline justify-center gap-4">
             {saleActive && (
-              <span class="relative font-display text-3xl opacity-80">
+              <s class="font-display text-3xl opacity-80">
                 <span class="sr-only">Was </span>
                 {formatPrice(card.regular)}
-                <svg
-                  class="absolute -inset-x-2 top-1/2 h-4 w-[calc(100%+1rem)] -translate-y-1/2 overflow-visible"
-                  viewBox="0 0 100 20"
-                  preserveAspectRatio="none"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  aria-hidden="true"
-                >
-                  <path d="M2 12C30 6 62 15 98 8" vector-effect="non-scaling-stroke" data-price-strike />
-                </svg>
-              </span>
+              </s>
             )}
-            <span class="inline-block font-display text-7xl leading-none font-semibold" data-price-offer data-count>
+            <span class="inline-block font-display text-7xl leading-none font-semibold" data-price-offer>
               {formatPrice(saleActive ? card.offer : card.regular)}
             </span>
           </p>
 
           <p class="mt-5 text-sm">{card.blurb}</p>
-
-          {card.sticker && (
-            <p class="absolute -bottom-9 -left-2 sm:-left-8" data-price-sticker>
-              <Sticker round tilt={-12}>
-                <strong class="font-display text-3xl leading-none" data-count>{perPiece}</strong>
-                <span class="label-caps mt-1 text-[0.55rem] leading-tight tracking-[0.15em]">a piece in a box of five</span>
-              </Sticker>
-            </p>
-          )}
+          {card.perPiece && <p class="label-caps mt-3 text-[0.65rem]">{perPiece} a piece in a box of five</p>}
         </li>
       ))
     }
   </ul>
 
-  <Snapshot shot={packsOfFive} tilt={3} sizes="(min-width: 40rem) 18rem, 62vw" class="mx-auto mt-20 w-[62vw] max-w-[18rem]" />
+  {
+    packs && (
+      <Frame class="mx-auto mt-16 w-[62vw] max-w-[18rem]">
+        <Picture
+          src={packs}
+          formats={['avif']}
+          fallbackFormat="webp"
+          quality={qualityOf(packsOfFive.name)}
+          widths={PHOTO_WIDTHS}
+          sizes="(min-width: 40rem) 18rem, 62vw"
+          alt={packsOfFive.alt}
+          class="w-full"
+        />
+      </Frame>
+    )
+  }
 </section>
 
 <script>
-  // The prices count up here; only this page uses it.
-  import '../../lib/count-up';
   import gsap from 'gsap';
-  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
   import { lazyScene } from '../../lib/scene';
 
-  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger);
 
   lazyScene('[data-pricing]', (scene) => {
     gsap.utils.toArray<HTMLElement>('[data-price-card]', scene).forEach((card) => {
@@ -82,9 +76,7 @@ const perPiece = formatPrice(Math.round(boxPrice / pricing.box.bites));
 
       gsap
         .timeline({ scrollTrigger: { trigger: card, start: 'top 78%', once: true } })
-        .from(find('[data-price-strike]'), { drawSVG: 0, duration: 0.5, ease: 'power2.inOut' })
-        .from(find('[data-price-offer]'), { y: 12, opacity: 0, duration: 0.8, ease: 'expo.out' }, '-=0.1')
-        .from(find('[data-price-sticker]'), { y: 12, opacity: 0, duration: 0.8, ease: 'expo.out' }, '-=0.6');
+        .from(find('[data-price-offer]'), { y: 12, opacity: 0, duration: 0.8, ease: 'expo.out' });
     });
   });
 </script>

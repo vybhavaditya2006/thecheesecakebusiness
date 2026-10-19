@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react';
-import { animate, AnimatePresence, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useState } from 'react';
 import { customPriceNote } from '../../content/custom';
 import { countedOrder, formatPrice, priceBreakdown, pricing, saleActive } from '../../content/pricing';
 import { delivery } from '../../content/info';
@@ -21,19 +21,9 @@ import { formatCakeDate, orderMessage, unpricedWholeCakes, whatsappLink } from '
 import { flavourById } from '../../content/flavours';
 import BookingNotice from './BookingNotice';
 
-// The total, counting up or down to its new value whenever it changes.
+// The total, as it stands (v3: no counting up).
 function Total({ value }: { value: number }) {
-  const reduceMotion = useReducedMotion();
-  const amount = useMotionValue(value);
-  const text = useTransform(amount, (current) => formatPrice(Math.round(current)));
-
-  useEffect(() => {
-    if (reduceMotion) return amount.set(value);
-    const counting = animate(amount, value, { duration: 0.5, ease: 'easeOut' });
-    return () => counting.stop();
-  }, [amount, value, reduceMotion]);
-
-  return <motion.span>{text}</motion.span>;
+  return <span>{formatPrice(value)}</span>;
 }
 
 // The itemised order, shared by the desktop panel and the mobile sheet.
@@ -124,7 +114,7 @@ function Lines({ onBook }: { onBook: () => void }) {
               <li>For {formatCakeDate(cake.date)}</li>
               {cake.message && <li>Message: {cake.message}</li>}
             </ul>
-            <p className="label-caps mt-2 text-[0.6rem]">{price === null ? wholeCakes.priceNote : formatPrice(price)}</p>
+            <p className="label-caps mt-2 text-[0.6rem]">{price === null ? wholeCakes.priceLater : formatPrice(price)}</p>
           </div>
         );
       })}
@@ -153,7 +143,6 @@ function Lines({ onBook }: { onBook: () => void }) {
       <motion.button
         type="button"
         className="label-caps block w-full rounded-full bg-wine px-8 py-4 text-cream"
-        whileTap={{ scaleX: 1.05, scaleY: 0.9 }}
         onClick={onBook}
       >
         {booking.button}
@@ -209,7 +198,7 @@ export default function OrderSummary() {
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
               <h2 className="text-2xl">Your order</h2>
               <div className="mt-3">

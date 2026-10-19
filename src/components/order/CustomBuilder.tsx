@@ -1,13 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState, type ReactNode } from 'react';
-import {
-  biteLayers,
-  customOptions,
-  customPriceNote,
-  giftNoteLimit,
-  type BiteLayer,
-  type CustomOptionId,
-} from '../../content/custom';
+import { customOptions, customPriceNote, giftNoteLimit, ideaLimit, type CustomOptionId } from '../../content/custom';
 import { flavourById, flavours, type FlavourId } from '../../content/flavours';
 import { addCustom } from '../../lib/order-store';
 import { Chip } from './parts';
@@ -55,91 +48,11 @@ function FlavourMix({ value, onChange }: { value: FlavourId[]; onChange: (next: 
   );
 }
 
-type Layers = Partial<Record<BiteLayer['id'], string>>;
-
-// The bite, built up one layer at a time as choices are made.
-function LayeredBite({ layers }: { layers: Layers }) {
-  const colour = (layer: BiteLayer['id']): string | null | undefined =>
-    biteLayers.find((group) => group.id === layer)?.choices.find((choice) => choice.id === layers[layer])?.colour;
-  const drop = {
-    initial: { y: -60, opacity: 0, scaleY: 1.3 },
-    animate: { y: 0, opacity: 1, scaleY: 1 },
-    exit: { opacity: 0, scale: 0.8 },
-    transition: { type: 'spring', stiffness: 420, damping: 14 },
-  } as const;
-  const base = colour('base');
-  const filling = colour('filling');
-  const centreColour = colour('centre');
-  const topping = colour('topping');
-
-  return (
-    <div className="mx-auto flex h-44 w-40 flex-col items-center justify-end" aria-hidden="true">
-      <AnimatePresence>
-        {topping && (
-          <motion.div key={`topping-${topping}`} className="flex gap-1.5 pb-0.5" {...drop}>
-            {[0, 1, 2, 3, 4].map((piece) => (
-              <span
-                key={piece}
-                className="size-4 rounded-full border border-wine"
-                style={{ backgroundColor: topping, translate: `0 ${piece % 2 ? 3 : 0}px` }}
-              />
-            ))}
-          </motion.div>
-        )}
-        {filling && (
-          <motion.div
-            key={`filling-${filling}`}
-            className="relative flex h-20 w-36 items-center justify-center rounded-t-2xl border-[1.5px] border-wine"
-            style={{ backgroundColor: filling }}
-            {...drop}
-          >
-            <AnimatePresence>
-              {centreColour && (
-                <motion.span
-                  key={centreColour}
-                  className="size-9 rounded-full border-[1.5px] border-wine"
-                  style={{ backgroundColor: centreColour }}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  transition={{ type: 'spring', stiffness: 420, damping: 14 }}
-                />
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-        {base && (
-          <motion.div
-            key={`base-${base}`}
-            className="h-6 w-36 rounded-b-xl border-[1.5px] border-wine"
-            style={{ backgroundColor: base }}
-            {...drop}
-          />
-        )}
-      </AnimatePresence>
-      {!base && !filling && !topping && <p className="pb-10 text-center text-sm opacity-80">Your bite builds up here.</p>}
-    </div>
-  );
-}
-
-// A round cake split down the middle in the two flavours' colours.
-function HalfCake({ left, right }: { left?: FlavourId; right?: FlavourId }) {
-  const empty = 'var(--color-cream)';
-  return (
-    <svg className="mx-auto w-40 text-wine" viewBox="0 0 120 120" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <motion.path d="M60 6A54 54 0 0 0 60 114Z" animate={{ fill: left ? flavourById(left).accent : empty }} />
-      <motion.path d="M60 6A54 54 0 0 1 60 114Z" animate={{ fill: right ? flavourById(right).accent : empty }} />
-      <circle cx="60" cy="60" r="44" strokeWidth="1" stroke="var(--color-cream)" opacity="0.6" />
-      <path d="M60 2V118" strokeDasharray="4 4" stroke="var(--color-cream)" />
-    </svg>
-  );
-}
-
 export default function CustomBuilder({ type, onType }: Props) {
   const option = optionById(type);
   const sizes = option.sizes ?? [];
 
-  const [layers, setLayers] = useState<Layers>({ centre: 'none' });
+  const [idea, setIdea] = useState('');
   const [halves, setHalves] = useState<[FlavourId?, FlavourId?]>([]);
   const [size, setSize] = useState<number | undefined>(sizes[0]);
   const [mix, setMix] = useState<FlavourId[]>(allFlavours);
@@ -148,7 +61,7 @@ export default function CustomBuilder({ type, onType }: Props) {
 
   // Each option starts from a clean form.
   useEffect(() => {
-    setLayers({ centre: 'none' });
+    setIdea('');
     setHalves([]);
     setSize(optionById(type).sizes?.[0]);
     setMix(allFlavours);
@@ -161,26 +74,21 @@ export default function CustomBuilder({ type, onType }: Props) {
     return () => window.clearTimeout(timer);
   }, [added]);
 
-  const layerName = (layer: BiteLayer): string | undefined =>
-    layer.choices.find((choice) => choice.id === layers[layer.id])?.name;
-
   // What will be added, or null while the form is incomplete.
   const details = ((): string[] | null => {
     switch (type) {
       case 'build-your-own':
-        return biteLayers.every(layerName)
-          ? biteLayers.map((layer) => `${layer.name}: ${layerName(layer)}`)
-          : null;
+        return idea.trim() ? [`Idea: ${idea.trim()}`] : null;
       case 'half-and-half': {
         const [left, right] = halves;
         return left && right ? [`${flavourById(left).name} + ${flavourById(right).name}`] : null;
       }
       case 'gift-box':
         return size
-          ? [`${size} bites`, `Flavours: ${flavourNames(mix)}`, ...(note.trim() ? [`Note: ${note.trim()}`] : [])]
+          ? [`${size} pieces`, `Flavours: ${flavourNames(mix)}`, ...(note.trim() ? [`Note: ${note.trim()}`] : [])]
           : null;
       case 'party-platter':
-        return size ? [`${size} bites`, `Even mix of: ${flavourNames(mix)}`] : null;
+        return size ? [`${size} pieces`, `Even mix of: ${flavourNames(mix)}`] : null;
     }
   })();
 
@@ -188,7 +96,7 @@ export default function CustomBuilder({ type, onType }: Props) {
     if (!details) return;
     addCustom({ type, title: option.name, details });
     setAdded(true);
-    setLayers({ centre: 'none' });
+    setIdea('');
     setHalves([]);
     setNote('');
   };
@@ -215,31 +123,26 @@ export default function CustomBuilder({ type, onType }: Props) {
           <h2 className="text-center text-3xl">{option.name}</h2>
 
           {type === 'build-your-own' && (
-            <>
-              <div className="mt-6">
-                <LayeredBite layers={layers} />
-              </div>
-              {biteLayers.map((layer) => (
-                <Field key={layer.id} label={layer.name}>
-                  {layer.choices.map((choice) => (
-                    <Chip
-                      key={choice.id}
-                      selected={layers[layer.id] === choice.id}
-                      onClick={() => setLayers({ ...layers, [layer.id]: choice.id })}
-                    >
-                      {choice.name}
-                    </Chip>
-                  ))}
-                </Field>
-              ))}
-            </>
+            // Shlok has not yet said which bases, fillings and toppings he
+            // offers, so the customer describes the bite in their own words.
+            <label className="mt-6 block">
+              <span className="label-caps opacity-80">The bite you would like</span>
+              <textarea
+                className="mt-3 block w-full rounded-2xl border border-wine/40 bg-cream p-3 text-sm"
+                rows={3}
+                maxLength={ideaLimit}
+                placeholder="The base, filling, centre and topping you have in mind"
+                value={idea}
+                onChange={(event) => setIdea(event.target.value)}
+              />
+              <span className="mt-1 block text-right text-xs opacity-80">
+                {idea.length} / {ideaLimit}
+              </span>
+            </label>
           )}
 
           {type === 'half-and-half' && (
             <>
-              <div className="mt-6">
-                <HalfCake left={halves[0]} right={halves[1]} />
-              </div>
               {(['First half', 'Second half'] as const).map((label, half) => (
                 <Field key={label} label={label}>
                   {flavours.map((flavour) => (
@@ -260,10 +163,10 @@ export default function CustomBuilder({ type, onType }: Props) {
 
           {(type === 'gift-box' || type === 'party-platter') && (
             <>
-              <Field label="How many bites">
+              <Field label="How many pieces">
                 {sizes.map((choice) => (
                   <Chip key={choice} selected={size === choice} onClick={() => setSize(choice)}>
-                    {choice} bites
+                    {choice} pieces
                   </Chip>
                 ))}
               </Field>
@@ -293,7 +196,6 @@ export default function CustomBuilder({ type, onType }: Props) {
               type="button"
               className="label-caps rounded-full bg-wine px-8 py-4 text-cream disabled:opacity-40"
               disabled={!details}
-              whileTap={{ scaleX: 1.07, scaleY: 0.88 }}
               onClick={add}
             >
               Add to order

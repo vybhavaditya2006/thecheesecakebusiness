@@ -1,0 +1,63 @@
+---
+// Custom & Gifts: the four custom options as photo tiles, three across on
+// wide screens. Each ends in a WhatsApp button with that option written out;
+// the price is confirmed there.
+import { Picture } from 'astro:assets';
+import { customOptions, customPage, customPricing } from '../../content/custom';
+import { customMessage } from '../../lib/custom-message';
+import { whatsappLink } from '../../lib/wa-link';
+import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
+import Button from '../v3/Button.astro';
+import Frame from '../v3/Frame.astro';
+import Label from '../v3/Label.astro';
+import Reveal from '../v3/Reveal.astro';
+
+const tiles = customOptions.map((option) => ({
+  option,
+  picture: option.photo ? photo(option.photo.name) : undefined,
+  link: whatsappLink(customMessage(option.name, [])),
+}));
+---
+
+<section class="px-4 pt-12 pb-20 sm:px-6 sm:pt-20 sm:pb-28" aria-labelledby="custom-heading">
+  <div class="mx-auto max-w-6xl">
+    <Reveal class="mx-auto max-w-2xl text-center">
+      <Label>{'Custom & gifts'}</Label>
+      <h1 id="custom-heading" class="mt-3 text-5xl leading-tight font-semibold sm:text-6xl">Tell us what you’re craving</h1>
+      <p class="mt-5">{customPricing}</p>
+    </Reveal>
+
+    <ul class="mt-12 grid gap-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
+      {
+        tiles.map(({ option, picture, link }, index) => (
+          <Reveal as="li" delay={(index % 3) * 0.08} class="flex flex-col">
+            <Frame>
+              {picture && option.photo ? (
+                <Picture
+                  src={picture}
+                  formats={['avif']}
+                  fallbackFormat="webp"
+                  quality={qualityOf(option.photo.name)}
+                  widths={PHOTO_WIDTHS}
+                  sizes="(min-width: 72rem) 22rem, (min-width: 64rem) 30vw, (min-width: 40rem) 45vw, calc(100vw - 2.8rem)"
+                  alt={option.photo.alt}
+                  class="aspect-[4/5] w-full object-cover"
+                />
+              ) : (
+                <div class="flex aspect-[4/5] w-full items-center justify-center bg-cream">
+                  <Label as="span">Photo coming soon</Label>
+                </div>
+              )}
+            </Frame>
+            <h2 class="mt-5 font-display text-3xl leading-tight">{option.name}</h2>
+            {option.sizes && <Label class="mt-1">{option.sizes.join(' or ')} pieces</Label>}
+            <p class="mt-2 text-sm">{option.description}</p>
+            <Button href={link} class="mt-5 self-start" target="_blank" rel="noopener">
+              {customPage.ask}
+            </Button>
+          </Reveal>
+        ))
+      }
+    </ul>
+  </div>
+</section>

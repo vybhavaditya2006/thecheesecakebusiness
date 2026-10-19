@@ -1,12 +1,15 @@
 ---
-// Letter-spaced caps label above a serif heading whose letters rise in a wave.
+// Letter-spaced caps label above a serif heading, revealed as one block (v3:
+// no letter wave).
+import Reveal from '../v3/Reveal.astro';
+
 interface Props {
   label?: string;
   title: string;
   as?: 'h1' | 'h2' | 'h3';
   align?: 'center' | 'left';
-  // For a heading at the very top of a page: shown at once, with no wave,
-  // so the page has its main heading before any script runs.
+  // For a heading at the very top of a page: shown at once, so the page has
+  // its main heading before any script runs.
   immediate?: boolean;
   class?: string;
 }
@@ -19,64 +22,13 @@ const {
   immediate = false,
   class: className,
 } = Astro.props;
+const Wrap = immediate ? 'div' : Reveal;
 ---
 
-<div class:list={[align === 'center' ? 'text-center' : 'text-left', className]}>
+<Wrap class:list={[align === 'center' ? 'text-center' : 'text-left', className]}>
   {label && <p class="label-caps opacity-80">{label}</p>}
   {label && <span class:list={['mt-3 block h-0.5 w-10 bg-gold', align === 'center' && 'mx-auto']} aria-hidden="true" />}
-  <Heading class="wave-heading mt-3 text-4xl leading-tight sm:text-5xl" data-wave={immediate ? undefined : ''}>
+  <Heading class="mt-3 text-4xl leading-tight sm:text-5xl">
     {title}
   </Heading>
-</div>
-
-<style is:global>
-  /* The "motion" class is set in Base.astro only when motion is allowed. */
-  .motion [data-wave]:not([data-wave-ready]) {
-    opacity: 0;
-  }
-</style>
-
-<script>
-  import gsap from 'gsap';
-  import { SplitText } from 'gsap/SplitText';
-  import { reducedMotion } from '../../lib/motion';
-
-  gsap.registerPlugin(SplitText);
-
-  const wave = (heading: HTMLElement): void => {
-    const split = SplitText.create(heading, { type: 'words,chars' });
-    heading.dataset.waveReady = '';
-
-    gsap.from(split.chars, {
-      yPercent: 70,
-      rotate: 8,
-      opacity: 0,
-      duration: 0.7,
-      ease: 'expo.out',
-      stagger: 0.035,
-      onComplete: () => split.revert(),
-    });
-  };
-
-  document.addEventListener('astro:page-load', async () => {
-    const headings = document.querySelectorAll<HTMLElement>('[data-wave]:not([data-wave-ready])');
-    if (!headings.length || reducedMotion()) return;
-
-    await document.fonts.ready;
-
-    // Each heading is split only when it is about to be seen.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          observer.unobserve(entry.target);
-          wave(entry.target as HTMLElement);
-        }
-      },
-      { rootMargin: '0px 0px -10% 0px' },
-    );
-
-    headings.forEach((heading) => observer.observe(heading));
-    document.addEventListener('astro:before-swap', () => observer.disconnect(), { once: true });
-  });
-</script>
+</Wrap>

@@ -1,85 +1,50 @@
 ---
-// How a bite is made, in four steps. The steps are placeholders until Shlok
-// confirms them; see src/content/story.ts.
+// How it's made: four short numbered steps, each beside a real kitchen photo
+// when there is one for it, and text only when there is not.
+import { Picture } from 'astro:assets';
 import { kitchen } from '../../content/photos';
 import { howItsMade } from '../../content/story';
-import Snapshot from '../ui/Snapshot.astro';
-import StepSketch from './StepSketch.astro';
+import { PHOTO_WIDTHS, photo, qualityOf } from '../../lib/photos';
+import Frame from '../v3/Frame.astro';
+import Reveal from '../v3/Reveal.astro';
+import Section from '../v3/Section.astro';
 
-// One drawing per step, in order. They show only what the kitchen photos
-// show (cups, a tray, the fridge, the pack); the words stay to be confirmed.
-const sketches = ['cups', 'tray', 'fridge', 'pack'] as const;
-import SectionTitle from '../ui/SectionTitle.astro';
+const steps = howItsMade.steps.map((step) => {
+  const shot = step.photo ? kitchen.find((one) => one.name === step.photo) : undefined;
+  return { ...step, shot, picture: shot ? photo(shot.name) : undefined };
+});
 ---
 
-<section class="bg-blush/45 px-5 py-20" data-made>
-  <SectionTitle label="In the kitchen" title={howItsMade.heading} />
-
-  <ul class="mx-auto mt-12 grid max-w-4xl grid-cols-3 items-end gap-3 sm:gap-8">
+<Section heading={howItsMade.heading} id="how-its-made" class="border-t border-[var(--color-hairline)]">
+  <ol class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
     {
-      kitchen.map((shot, index) => (
-        <li>
-          <Snapshot shot={shot} tilt={[-3, 2, -2][index % 3]} sizes="(min-width: 56rem) 17rem, 30vw" />
-        </li>
-      ))
-    }
-  </ul>
-
-  <ol class="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-5 md:grid-cols-4">
-    {
-      howItsMade.steps.map((step, index) => (
-        <li class="rounded-3xl border border-dashed border-wine/40 bg-cream p-5 text-center" data-made-step>
-          <StepSketch kind={sketches[index % sketches.length]!} class="mx-auto w-24 overflow-visible" />
-          <span class="label-caps mt-3 block opacity-80" aria-hidden="true">
-            {String(index + 1).padStart(2, '0')}
-          </span>
-          <h3 class="label-caps mt-1 font-sans">{step.title}</h3>
-          <p class="mt-2 text-sm opacity-80">{step.detail}</p>
-        </li>
+      steps.map((step, index) => (
+        <Reveal as="li" delay={index * 0.06} class="flex flex-col justify-end">
+          {step.picture && step.shot && (
+            <Frame class="mb-5">
+              <Picture
+                src={step.picture}
+                formats={['avif']}
+                fallbackFormat="webp"
+                quality={qualityOf(step.shot.name)}
+                widths={PHOTO_WIDTHS}
+                sizes="(min-width: 72rem) 15rem, (min-width: 64rem) 22vw, (min-width: 40rem) 45vw, calc(100vw - 2.8rem)"
+                alt={step.shot.alt}
+                class="aspect-square w-full object-cover"
+              />
+            </Frame>
+          )}
+          <p class="flex items-baseline gap-4 border-t border-[var(--color-hairline)] pt-4">
+            <span class="font-display text-3xl leading-none tabular-nums opacity-70" aria-hidden="true">
+              {index + 1}
+            </span>
+            <span>
+              <span class="block font-display text-2xl leading-tight">{step.title}</span>
+              <span class="mt-1 block text-sm">{step.detail}</span>
+            </span>
+          </p>
+        </Reveal>
       ))
     }
   </ol>
-</section>
-
-<style is:global>
-  /* The "motion" class is set in Base.astro only when motion is allowed. */
-  .motion [data-made]:not([data-ready]) [data-made-step] {
-    opacity: 0;
-  }
-</style>
-
-<script>
-  import gsap from 'gsap';
-  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  import { lazyScene } from '../../lib/scene';
-
-  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
-
-  // The steps play in order: each card rises, its sketch draws itself and
-  // its colour washes in, and then the next one starts.
-  lazyScene('[data-made]', (scene) => {
-    const steps = gsap.utils.toArray<HTMLElement>('[data-made-step]', scene);
-    const sequence = gsap.timeline({
-      scrollTrigger: { trigger: steps[0], start: 'top 82%', once: true },
-      onStart: () => {
-        scene.dataset.ready = '';
-      },
-    });
-    steps.forEach((step, index) => {
-      const at = index * 0.55;
-      sequence
-        .fromTo(step, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' }, at)
-        .from(
-          step.querySelectorAll('[data-sketch] > :not([data-tone])'),
-          { drawSVG: 0, duration: 0.5, stagger: 0.05, ease: 'power1.inOut' },
-          at + 0.1,
-        )
-        .from(
-          step.querySelectorAll('[data-tone]'),
-          { opacity: 0, scale: 0.6, transformOrigin: '50% 50%', duration: 0.4, ease: 'power2.out' },
-          at + 0.4,
-        );
-    });
-  });
-</script>
+</Section>

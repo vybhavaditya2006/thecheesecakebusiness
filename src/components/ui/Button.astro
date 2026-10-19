@@ -1,6 +1,5 @@
 ---
-// Wine pill. Presses in a little; on desktop it leans towards the pointer.
-// No bounce (v3): calm easing in and out.
+// Wine pill. On hover it fades a touch lighter; nothing moves (v3).
 interface Props {
   href?: string;
   variant?: 'solid' | 'outline' | 'cream';
@@ -36,7 +35,6 @@ const sizes = {
   href={href}
   type={href ? undefined : type}
   class:list={['btn inline-block cursor-pointer rounded-full', className]}
-  data-magnetic
   {...rest}
 >
   <span class:list={['btn-face label-caps block rounded-full', faces[variant], sizes[size]]}>
@@ -46,58 +44,17 @@ const sizes = {
 
 <style>
   .btn-face {
-    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.2s ease-out;
   }
 
   @media (hover: hover) {
     .btn:hover .btn-face {
-      transform: scale(1.04);
+      opacity: 0.88;
     }
-  }
-
-  .btn:active .btn-face {
-    transform: scale(0.97);
   }
 
   .btn:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 3px;
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    .btn-face {
-      transition: none;
-    }
-
-    .btn:hover .btn-face,
-    .btn:active .btn-face {
-      transform: none;
-    }
-  }
 </style>
-
-<script>
-  import gsap from 'gsap';
-  import { canAffordEffects } from '../../lib/motion';
-
-  const PULL = 0.3;
-
-  document.addEventListener('astro:page-load', () => {
-    if (!canAffordEffects()) return;
-
-    document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach((button) => {
-      const moveX = gsap.quickTo(button, 'x', { duration: 0.4, ease: 'power3.out' });
-      const moveY = gsap.quickTo(button, 'y', { duration: 0.4, ease: 'power3.out' });
-
-      button.addEventListener('pointermove', (event) => {
-        const box = button.getBoundingClientRect();
-        moveX((event.clientX - (box.left + box.width / 2)) * PULL);
-        moveY((event.clientY - (box.top + box.height / 2)) * PULL);
-      });
-
-      button.addEventListener('pointerleave', () => {
-        gsap.to(button, { x: 0, y: 0, duration: 0.6, ease: 'power3.out' });
-      });
-    });
-  });
-</script>

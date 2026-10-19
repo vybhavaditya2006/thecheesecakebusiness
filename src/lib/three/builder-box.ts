@@ -98,15 +98,14 @@ export function mountBuilderBox(container: HTMLElement, { onLayout, onFallback, 
     spare.push(bite);
   };
 
-  // Lifted out of its cup, getting smaller.
+  // Lifted up out of its cup and out of view.
   const take = (bite: Bite3D, instant: boolean, delay = 0): void => {
     if (instant) return release(bite);
     run(
       bite,
       gsap
         .timeline({ delay, onUpdate: stage.invalidate, onComplete: () => release(bite) })
-        .to(bite.group.position, { y: '+=0.9', duration: 0.25, ease: 'power2.out' }, 0)
-        .to(bite.group.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.25, ease: 'power2.in' }, 0),
+        .to(bite.group.position, { y: '+=2.6', duration: 0.3, ease: 'power2.in' }, 0),
     );
   };
 

@@ -5,7 +5,8 @@ export interface Flavour {
   name: string;
   // Accent colour, used only inside this flavour's scene.
   accent: string;
-  // One-line taste note. TODO: these are draft wording, not yet confirmed by Shlok.
+  // One-line note. Only what can be seen in the photos (and, for Coffee,
+  // what CLAUDE.md says); no claimed ingredients. TODO: Shlok's own words.
   note: string;
   // What surrounds the bite in the flavour's scene.
   ingredient: string;
@@ -18,9 +19,6 @@ export interface Flavour {
   calories: number | null;
   // What goes into it, in order.
   ingredients: readonly string[] | null;
-  // True once the flavour's picture is a real photograph. Coffee has none yet:
-  // it shows the 3D bite (see src/lib/bite-images.ts) and gets no hand-written note.
-  photographed?: boolean;
   // What the bite is made of, from the top down.
   layers: readonly Layer[];
 }
@@ -44,43 +42,40 @@ export const flavours: readonly Flavour[] = [
     id: 'blueberry',
     name: 'Blueberry',
     accent: '#5B3FA0',
-    note: 'Tangy blueberry swirl on a buttery crumb.',
+    note: 'Blueberry compote on top.',
     ingredient: 'Blueberries',
     ingredientPhoto: 'blueberries',
     calories: null,
     ingredients: null,
-    photographed: true,
     layers: layersToConfirm,
   },
   {
     id: 'kitkat',
     name: 'KitKat',
     accent: '#D2232A',
-    note: 'Creamy cheesecake with a crisp wafer crunch.',
+    note: 'Two pieces of KitKat on top.',
     ingredient: 'KitKat pieces',
     ingredientPhoto: 'kitkat',
     calories: null,
     ingredients: null,
-    photographed: true,
     layers: layersToConfirm,
   },
   {
     id: 'oreo',
     name: 'Oreo',
     accent: '#111111',
-    note: 'Cookies and cream, all the way down.',
+    note: 'Oreo crumb on top.',
     ingredient: 'Oreo crumbs',
     ingredientPhoto: 'oreo',
     calories: null,
     ingredients: null,
-    photographed: true,
     layers: layersToConfirm,
   },
   {
     id: 'coffee',
     name: 'Coffee',
     accent: '#6F4E37',
-    note: 'A smooth espresso kick in every bite.',
+    note: 'Light brown all through, with nothing on top.',
     ingredient: 'Coffee beans',
     ingredientPhoto: 'coffee-beans',
     calories: null,
@@ -91,12 +86,11 @@ export const flavours: readonly Flavour[] = [
     id: 'biscoff',
     name: 'Lotus Biscoff',
     accent: '#C8813C',
-    note: 'Caramelised biscuit, warm with spice.',
+    note: 'Lotus Biscoff crumb on top.',
     ingredient: 'Biscoff crumbs',
     ingredientPhoto: 'biscoff',
     calories: null,
     ingredients: null,
-    photographed: true,
     layers: layersToConfirm,
   },
 ];

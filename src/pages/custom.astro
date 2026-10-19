@@ -1,12 +1,9 @@
 ---
-import CustomBuilders from '../components/custom/CustomBuilders.astro';
-import CustomOptions from '../components/custom/CustomOptions.astro';
+import CustomTiles from '../components/custom/CustomTiles.astro';
 import { seo } from '../content/site';
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title={seo.custom.title} description={seo.custom.description} entrance="untie">
-  <CustomOptions />
-  <CustomBuilders />
-  <div class="pb-20"></div>
+<Base title={seo.custom.title} description={seo.custom.description}>
+  <CustomTiles />
 </Base>

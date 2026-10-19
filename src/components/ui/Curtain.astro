@@ -1,62 +1,11 @@
 ---
-// Page transition. Leaving a page is always the same: a wine curtain, tied
-// with the ribbon and bow, wipes across the screen. How it clears depends on
-// the page arriving, which names its entrance on <main data-entrance>:
-//   slide  the curtain slides on across (Home, and the default)
-//   roll   a bite rolls across in the first flavour's colour (Flavours)
-//   turn   a notebook page turns (Our Story)
-//   untie  the ribbon unties and the wrapping parts (Custom & Gifts)
-//   pin    a map pin drops (Good to Know)
-//   lid    the box lid swings open (Build your box)
-import { flavours } from '../../content/flavours';
-import Bow from './Bow.astro';
-
-const firstFlavour = flavours[0]!;
+// Page transition (v3): one for every page. A plain wine sheet slides in from
+// the left to cover the page being left, then on out to the right to show
+// the page arriving. With reduced motion it is a short fade instead.
 ---
 
 <div id="page-curtain" aria-hidden="true" transition:persist="page-curtain">
-  <!-- roll: a sheet in the first flavour's colour, with a bite on its edge. -->
-  <div class="curtain-prop absolute inset-0" style={`background:${firstFlavour.accent}`} data-curtain="tint">
-    <svg
-      class="curtain-bite absolute top-1/2 left-0 text-wine"
-      viewBox="0 0 100 100"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      data-curtain="bite"
-    >
-      <circle cx="50" cy="50" r="48" class="fill-cream"></circle>
-      <circle cx="50" cy="50" r="30" fill={firstFlavour.accent} fill-opacity="0.85" stroke="none"></circle>
-      <path d="M22 30l4 3M74 24l-3 5M82 62l-5-2M30 78l3-5M56 12v4M14 54h4"></path>
-    </svg>
-  </div>
-
-  <!-- turn: a ruled notebook page, hinged on its left edge. -->
-  <div class="curtain-prop curtain-paper absolute inset-0 bg-cream" data-curtain="paper">
-    <div class="curtain-shade absolute inset-0 bg-wine-deep" data-curtain="shade"></div>
-  </div>
-
-  <!-- The curtain itself: two halves of wrapping, the ribbon across, the bow. -->
-  <div class="curtain-sheet absolute inset-0 text-cream" data-curtain="sheet">
-    <div class="absolute inset-y-0 left-0 w-[50.5%] bg-wine" data-curtain="left">
-      <span class="curtain-ribbon origin-left" data-curtain="ribbon"></span>
-    </div>
-    <div class="absolute inset-y-0 right-0 w-[50.5%] bg-wine" data-curtain="right">
-      <span class="curtain-ribbon origin-right" data-curtain="ribbon"></span>
-    </div>
-    <div class="absolute inset-0 flex items-center justify-center" data-curtain="bow">
-      <Bow class="w-40 [&_ellipse]:fill-cream [&_path]:fill-wine" />
-    </div>
-  </div>
-
-  <!-- pin: a map pin and the ring it lands in. -->
-  <span class="curtain-prop curtain-pulse absolute top-1/2 left-1/2 rounded-full border-2 border-wine" data-curtain="pulse"
-  ></span>
-  <svg class="curtain-prop curtain-pin absolute top-1/2 left-1/2 text-wine" viewBox="0 0 44 64" data-curtain="pin">
-    <path d="M22 62C8 42 0 32 0 22a22 22 0 0 1 44 0c0 10-8 20-22 40z" fill="currentColor"></path>
-    <circle cx="22" cy="22" r="8" class="fill-cream"></circle>
-  </svg>
+  <div class="curtain-sheet absolute inset-0 bg-wine" data-curtain="sheet"></div>
 </div>
 
 <style is:global>
@@ -66,56 +15,11 @@ const firstFlavour = flavours[0]!;
     z-index: 100;
     overflow: clip;
     pointer-events: none;
-    perspective: 1600px;
   }
 
   /* Resting place: off to the left, out of sight. */
   .curtain-sheet {
     transform: translateX(-101%);
-  }
-
-  .curtain-prop {
-    opacity: 0;
-  }
-
-  .curtain-ribbon {
-    position: absolute;
-    inset-inline: 0;
-    top: 50%;
-    height: 0.75rem;
-    margin-top: -0.375rem;
-    background: var(--color-cream);
-  }
-
-  .curtain-bite {
-    width: 34vmin;
-    height: 34vmin;
-    margin: -17vmin 0 0 -17vmin;
-  }
-
-  .curtain-paper {
-    transform-origin: 0 50%;
-    backface-visibility: hidden;
-    background-image:
-      linear-gradient(90deg, transparent 3.4rem, rgb(122 31 43 / 0.35) 3.4rem, transparent calc(3.4rem + 1px)),
-      repeating-linear-gradient(transparent 0 2.2rem, rgb(122 31 43 / 0.18) 2.2rem calc(2.2rem + 1px));
-  }
-
-  .curtain-shade {
-    opacity: 0;
-  }
-
-  .curtain-pin {
-    width: 5.5rem;
-    height: 8rem;
-    margin: -8rem 0 0 -2.75rem;
-    transform-origin: 50% 100%;
-  }
-
-  .curtain-pulse {
-    width: 16rem;
-    height: 16rem;
-    margin: -8rem 0 0 -8rem;
   }
 </style>
 
@@ -124,130 +28,44 @@ const firstFlavour = flavours[0]!;
   import { setCurtainBusy } from '../../lib/curtain-state';
   import { reducedMotion } from '../../lib/motion';
 
-  type Entrance = 'slide' | 'roll' | 'turn' | 'untie' | 'pin' | 'lid';
-
-  // How far into each entrance the scenes behind it may start (seconds).
-  const CLEAR_AFTER: Record<Entrance, number> = {
-    slide: 0.4,
-    roll: 0.7,
-    turn: 0.6,
-    untie: 0.8,
-    pin: 0.5,
-    lid: 0.5,
-  };
+  // How far into the reveal the scenes behind it may start (seconds).
+  const CLEAR_AFTER = 0.4;
 
   let covered = false;
   let markClear = (): void => {};
 
   const root = (): HTMLElement | null => document.getElementById('page-curtain');
-  const parts = (name: string): HTMLElement[] =>
-    gsap.utils.toArray<HTMLElement>(`[data-curtain="${name}"]`, root());
+  const sheet = (): HTMLElement | null => root()?.querySelector<HTMLElement>('[data-curtain="sheet"]') ?? null;
 
   // Back to the stylesheet's resting state, ready for the next page change.
   const reset = (): void => {
-    const all = gsap.utils.toArray<HTMLElement>('[data-curtain]', root());
-    gsap.killTweensOf(all);
-    // Only what the animations set: the tint keeps its inline colour.
-    gsap.set([root(), ...all], { clearProps: 'transform,opacity' });
+    const parts = [root(), sheet()].filter(Boolean) as HTMLElement[];
+    gsap.killTweensOf(parts);
+    gsap.set(parts, { clearProps: 'transform,opacity' });
   };
 
   const cover = async (): Promise<void> => {
     if (!root()) return;
     reset();
-
-    // Reduced motion: a short fade instead of a wipe.
     if (reducedMotion()) {
-      gsap.set(parts('sheet'), { x: 0, xPercent: 0 });
+      gsap.set(sheet(), { xPercent: 0 });
       await gsap.fromTo(root(), { opacity: 0 }, { opacity: 1, duration: 0.2 });
     } else {
-      await gsap.fromTo(
-        parts('sheet'),
-        { x: 0, xPercent: -101 },
-        { xPercent: 0, duration: 0.55, ease: 'power3.inOut' },
-      );
+      await gsap.fromTo(sheet(), { xPercent: -101 }, { xPercent: 0, duration: 0.55, ease: 'power3.inOut' });
     }
     covered = true;
-  };
-
-  const entrances: Record<Entrance, (timeline: gsap.core.Timeline) => void> = {
-    slide: (timeline) => {
-      timeline.to(parts('sheet'), { xPercent: 101, duration: 0.6, ease: 'power3.inOut' }, 0.08);
-    },
-
-    // The wine slides away, then a bite rolls the flavour's colour off after it.
-    roll: (timeline) => {
-      const bite = parts('bite')[0]!;
-      const distance = window.innerWidth + bite.clientWidth;
-      const turns = (distance / (bite.clientWidth / 2)) * (180 / Math.PI);
-
-      gsap.set(parts('tint'), { opacity: 1 });
-      timeline
-        .to(parts('sheet'), { xPercent: 101, duration: 0.45, ease: 'power2.in' }, 0)
-        .to(parts('tint'), { x: distance, duration: 0.95, ease: 'power1.inOut' }, 0.3)
-        .to(bite, { rotation: turns, duration: 0.95, ease: 'power1.inOut' }, 0.3);
-    },
-
-    // The wine lifts off a notebook page, which turns over on its left edge.
-    turn: (timeline) => {
-      gsap.set(parts('paper'), { opacity: 1 });
-      timeline
-        .to(parts('sheet'), { opacity: 0, duration: 0.25 }, 0)
-        .to(parts('paper'), { rotationY: -100, duration: 0.95, ease: 'power2.inOut' }, 0.2)
-        .to(parts('shade'), { opacity: 0.35, duration: 0.95, ease: 'power2.in' }, 0.2);
-    },
-
-    // The bow is pulled loose, the ribbon slips off, the wrapping parts.
-    untie: (timeline) => {
-      timeline
-        .to(parts('bow'), { scaleX: 1.5, scaleY: 0.6, duration: 0.2, ease: 'power1.out' }, 0)
-        .to(parts('bow'), { scale: 0, rotation: 30, duration: 0.25, ease: 'back.in(2)' }, 0.2)
-        .to(parts('ribbon'), { scaleX: 0, duration: 0.35, ease: 'power2.in' }, 0.35)
-        .to(parts('left'), { xPercent: -101, duration: 0.6, ease: 'power3.inOut' }, 0.6)
-        .to(parts('right'), { xPercent: 101, duration: 0.6, ease: 'power3.inOut' }, 0.6);
-    },
-
-    // The wine lifts away as a pin drops onto the page and sends out a ring.
-    pin: (timeline) => {
-      gsap.set(parts('pin'), { opacity: 1, y: -window.innerHeight });
-      timeline
-        .to(parts('sheet'), { yPercent: -101, duration: 0.5, ease: 'power3.inOut' }, 0)
-        .to(parts('pin'), { y: 0, duration: 0.65, ease: 'bounce.out' }, 0.15)
-        .fromTo(
-          parts('pulse'),
-          { scale: 0, opacity: 0.8 },
-          { scale: 1, opacity: 0, duration: 0.6, ease: 'power1.out' },
-          0.4,
-        )
-        .to(parts('pin'), { scale: 0, duration: 0.25, ease: 'back.in(2)' }, 1);
-    },
-
-    // The curtain is the lid: hinged along the top, it swings up and away.
-    lid: (timeline) => {
-      timeline.to(
-        parts('sheet'),
-        { rotationX: -96, transformOrigin: '50% 0%', duration: 0.85, ease: 'power2.inOut' },
-        0.05,
-      );
-    },
   };
 
   const reveal = async (): Promise<void> => {
     if (!root() || !covered) return markClear();
     covered = false;
-
     if (reducedMotion()) {
       markClear();
       await gsap.to(root(), { opacity: 0, duration: 0.2 });
       return reset();
     }
-
-    const named = document.querySelector('main')?.dataset.entrance as Entrance | undefined;
-    const entrance: Entrance = named && named in entrances ? named : 'slide';
-    setTimeout(markClear, CLEAR_AFTER[entrance] * 1000);
-
-    const timeline = gsap.timeline();
-    entrances[entrance](timeline);
-    await timeline;
+    setTimeout(markClear, CLEAR_AFTER * 1000);
+    await gsap.to(sheet(), { xPercent: 101, duration: 0.6, ease: 'power3.inOut', delay: 0.08 });
     reset();
   };
 

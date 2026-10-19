@@ -68,7 +68,7 @@ export function Chip({ selected, disabled, onClick, children }: ChipProps) {
       disabled={disabled}
       onClick={onClick}
       className={clsx(
-        'rounded-full border border-wine px-4 py-2 text-sm transition-transform active:scale-95 disabled:opacity-35',
+        'rounded-full border border-wine px-4 py-2 text-sm transition-colors disabled:opacity-35',
         selected ? 'bg-wine text-cream' : 'bg-cream text-wine',
       )}
     >

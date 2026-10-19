@@ -1,7 +1,6 @@
 ---
 // Dev-only review page at /dev/styleguide. Injected by astro.config.mjs in
 // `astro dev` only, so it never reaches the build or the sitemap.
-import Bow from '../components/ui/Bow.astro';
 import Button from '../components/ui/Button.astro';
 import Divider from '../components/ui/Divider.astro';
 import SectionTitle from '../components/ui/SectionTitle.astro';
@@ -27,7 +26,6 @@ const palette = [
       <SectionTitle align="left" label="Brand" title="Wordmark & bow" />
       <div class="mt-8 flex flex-wrap items-center gap-10">
         <Wordmark class="text-7xl" />
-        <Bow class="w-32" />
         <div class="rounded-2xl bg-wine-deep p-6 text-cream">
           <Wordmark class="text-5xl" />
         </div>

@@ -1,7 +1,6 @@
 ---
-// "What's inside": the bite pulled apart into its layers, each with a label.
-// The drawing is the same for every flavour; only the topping takes the
-// flavour's colour. The labels come from the flavour's `layers`, top down.
+// "What's inside": the bite's layers as a short list, top down, from the
+// flavour's `layers`.
 import type { Flavour } from '../../content/flavours';
 
 interface Props {
@@ -15,37 +14,6 @@ const { flavour, class: className } = Astro.props;
 <figure class:list={['layer-stack', className]}>
   <figcaption class="label-caps text-[0.6rem] tracking-[0.2em]">What’s inside</figcaption>
   <div class="mt-1.5 flex items-stretch gap-3">
-    <svg
-      class="h-[5.25rem] w-16 shrink-0 overflow-visible"
-      viewBox="0 0 64 84"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
-    >
-      <!-- Topping: a thin disc in the flavour's colour. -->
-      <path
-        d="M10 12v4a22 7 0 0 0 44 0v-4"
-        fill={`color-mix(in srgb, ${flavour.accent} 55%, var(--color-cream))`}></path>
-      <ellipse cx="32" cy="12" rx="22" ry="7" fill={`color-mix(in srgb, ${flavour.accent} 35%, var(--color-cream))`}
-      ></ellipse>
-      <path d="M24 11h.1M33 14h.1M40 10h.1M29 9h.1" stroke-width="2.5"></path>
-
-      <!-- Filling: the tall cream layer. -->
-      <path d="M8 36v12a24 8 0 0 0 48 0V36" fill="var(--color-cream)"></path>
-      <ellipse cx="32" cy="36" rx="24" ry="8" fill="#fff" fill-opacity="0.6"></ellipse>
-      <path d="M14 44v6M19 46v6M50 44v6" stroke-width="1" opacity="0.45"></path>
-
-      <!-- Crust: the crumb base. -->
-      <path d="M8 68v5a24 8 0 0 0 48 0v-5" fill="color-mix(in srgb, var(--color-gold) 55%, var(--color-cream))"
-      ></path>
-      <ellipse cx="32" cy="68" rx="24" ry="8" fill="color-mix(in srgb, var(--color-gold) 35%, var(--color-cream))"
-      ></ellipse>
-      <path d="M22 67h.1M30 70h.1M38 66h.1M44 70h.1M26 64h.1" stroke-width="2"></path>
-    </svg>
-
     <dl class="grid flex-1 grid-rows-3 text-left">
       {
         flavour.layers.map((layer) => (

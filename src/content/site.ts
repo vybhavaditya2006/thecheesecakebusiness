@@ -25,8 +25,6 @@ export const navLinks = [
   { href: paths.info, label: 'Good to Know' },
 ] as const;
 
-// How each page arrives once the wine curtain has covered the last one.
-export type Entrance = 'slide' | 'roll' | 'turn' | 'untie' | 'pin' | 'lid';
 
 const priceKey = saleActive ? 'offer' : 'regular';
 const { city } = delivery;
@@ -39,7 +37,7 @@ export const seo = {
   },
   flavours: {
     title: `Flavours · ${brand.name}`,
-    description: `${flavours.map((flavour) => flavour.name).join(', ')}: every flavour of cheesecake bite, all at the same price.`,
+    description: `${flavours.map((flavour) => flavour.name).join(', ')}: every flavour of cheesecake, one price a piece for all.`,
   },
   box: {
     title: `${boxLabel} · ${brand.name}`,
@@ -66,7 +64,7 @@ export const seo = {
     path: '/og.png',
     width: 1200,
     height: 630,
-    alt: `${brand.name}: a box of five cheesecake bites tied with a bow`,
+    alt: `${brand.name}: a Lotus Biscoff cheesecake piece in its paper cup, beside the wordmark`,
   },
 } as const;
 

@@ -87,8 +87,9 @@ export default function BoxBuilder() {
                 <motion.span
                   key={count}
                   className="w-6 text-center font-display text-2xl font-semibold"
-                  initial={{ scale: 1.5 }}
-                  animate={{ scale: 1 }}
+                  initial={{ y: -6, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.25, ease: EASE_OUT }}
                   aria-label={`${count} ${flavour.name}`}
                 >
                   {count}
@@ -157,7 +158,7 @@ export default function BoxBuilder() {
                             // Drops into its cup and settles: ease out, no bounce.
                             initial={{ y: '-70%', opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: '-60%', opacity: 0, scale: 0.6 }}
+                            exit={{ y: '-60%', opacity: 0 }}
                             transition={{ duration: 0.45, ease: EASE_OUT }}
                           >
                             <Bite flavour={flavour} className={`size-full text-[clamp(0.5rem,2.4vw,0.72rem)] ${flat}`} />
@@ -204,7 +205,6 @@ export default function BoxBuilder() {
                   className="block w-full"
                   aria-label={`Add ${flavour.name} to the box`}
                   data-add={flavour.id}
-                  whileTap={{ scale: 0.88 }}
                   onClick={() => addBite(flavour.id)}
                 >
                   <Bite flavour={flavour} eager className="w-full text-[clamp(0.55rem,2.6vw,0.8rem)]" />
@@ -227,7 +227,7 @@ export default function BoxBuilder() {
           <motion.span
             className={`absolute top-1 left-1 size-[1.125rem] rounded-full ${singles ? 'bg-cream' : 'bg-wine'}`}
             animate={{ x: singles ? 20 : 0 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            transition={{ duration: 0.25, ease: EASE_OUT }}
           />
         </button>
       </label>
@@ -245,9 +245,10 @@ export default function BoxBuilder() {
               <motion.li
                 key={index}
                 className="flex items-center gap-3 rounded-2xl border border-wine/25 px-4 py-3"
-                initial={{ opacity: 0, scale: 0.8, y: -20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: EASE_OUT }}
               >
                 <PackSketch className="w-12 shrink-0" />
                 <span className="flex-1 text-sm">

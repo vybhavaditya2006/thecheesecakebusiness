@@ -20,3 +20,6 @@ export const qualityOf = (name: string): number => (products.test(name) ? QUALIT
 // pixel density, so a 2x screen gets twice the pixels.
 export const PHOTO_WIDTHS = [240, 320, 480, 640, 800, 1000, 1200, 1600, 2000];
 export const CUTOUT_WIDTHS = [96, 160, 240, 320, 480, 640, 800, 1000, 1200];
+
+// Home's hero photo: shared by the hero and its preload in index.astro.
+export const HERO_IMAGE = { name: 'packs-of-five', quality: 72, widths: PHOTO_WIDTHS, sizes: '100vw' } as const;

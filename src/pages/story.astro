@@ -1,15 +1,11 @@
 ---
 import HowItsMade from '../components/story/HowItsMade.astro';
 import Story from '../components/story/Story.astro';
-import UpClose from '../components/story/UpClose.astro';
-import Divider from '../components/ui/Divider.astro';
 import { seo } from '../content/site';
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title={seo.story.title} description={seo.story.description} entrance="turn">
+<Base title={seo.story.title} description={seo.story.description}>
   <Story />
-  <UpClose />
-  <Divider class="mx-auto max-w-md px-5" />
   <HowItsMade />
 </Base>

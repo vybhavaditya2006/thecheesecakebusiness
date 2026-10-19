@@ -1,5 +1,5 @@
 // Good to Know: the practical facts. This page is their one home; other pages
-// only point here or show a shorter form (a number, a sticker, a link).
+// only point here or show a shorter form (a number, a label, a link).
 import { pricing } from './pricing';
 
 export const delivery = {
@@ -49,6 +49,8 @@ export const contact = {
   // For questions only; orders stay on WhatsApp.
   email: 'shlokajaypawar@gmail.com',
   emailNote: 'For questions only.',
+  // Both at once, above the contact strip on Good to Know.
+  summary: 'Orders and payment happen on WhatsApp. Email is for questions only.',
 } as const;
 
 export interface Question {

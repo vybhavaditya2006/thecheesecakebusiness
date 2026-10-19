@@ -12,7 +12,6 @@ import { biteImage } from '../../lib/bite-images';
 import { ingredientImage } from '../../lib/ingredient-images';
 import { CUTOUT_WIDTHS, QUALITY } from '../../lib/photos';
 import BitePhoto from '../ui/BitePhoto.astro';
-import HandNote from '../ui/HandNote.astro';
 import Button from '../ui/Button.astro';
 import { paths } from '../../content/site';
 import LayerStack from './LayerStack.astro';
@@ -38,18 +37,6 @@ const SPOTS = [
 // How many cut-outs each ingredient gets: small ones more, big ones fewer.
 const HOW_MANY: Record<string, number> = { blueberries: 5, 'coffee-beans': 5, oreo: 4, biscoff: 4, kitkat: 3 };
 
-// Background crumbs: position (%), size (px), drift (px) and duration (s).
-const crumbs = [
-  [8, 18, 7, 40, 60, 26],
-  [22, 72, 5, -30, 50, 31],
-  [37, 34, 9, 50, -40, 22],
-  [51, 84, 6, -45, -35, 28],
-  [63, 12, 8, 35, 55, 34],
-  [74, 58, 5, -55, 30, 24],
-  [86, 28, 7, 30, -50, 30],
-  [93, 78, 9, -35, -45, 27],
-  [45, 55, 4, 60, 40, 36],
-];
 ---
 
 <section
@@ -58,18 +45,10 @@ const crumbs = [
   aria-labelledby="flavours-heading"
   data-flavours
 >
-  <!-- Motion only: flavour colour washes and drifting crumbs, held behind the panels. -->
+  <!-- Motion only: flavour colour washes, held behind the panels. -->
   <div class="flavours-backdrop" aria-hidden="true">
     <div class="flavours-sticky">
       {flavours.map((flavour) => <div class="flavour-tint absolute inset-0 opacity-0" style={`--accent:${flavour.accent}`} data-flavour-wash />)}
-      {
-        crumbs.map(([left, top, size, dx, dy, seconds]) => (
-          <span
-            class="flavours-crumb"
-            style={`left:${left}%;top:${top}%;width:${size}px;height:${size}px;--dx:${dx}px;--dy:${dy}px;--drift:${seconds}s`}
-          />
-        ))
-      }
     </div>
   </div>
 
@@ -146,11 +125,6 @@ const crumbs = [
                   priority={index === 0}
                   class="text-[clamp(0.8rem,2.2vw,1.6rem)]"
                 />
-                {flavour.photographed && biteImage(flavour.id) && (
-                <span class="flavour-note absolute top-[2%] left-[4%]" data-flavour-note>
-                  <HandNote tilt={-6}>{flavour.ingredient.toLowerCase()}</HandNote>
-                </span>
-              )}
             </div>
             </div>
 
@@ -171,23 +145,10 @@ const crumbs = [
               <LayerStack flavour={flavour} />
               <p class="flex items-center gap-3">
                 {saleActive && (
-                  <span class="relative text-lg">
+                  <s class="text-lg">
                     <span class="sr-only">Was </span>
                     {formatPrice(price.regular)}
-                    {/* Hand-drawn strike through the old price. */}
-                    <svg
-                      class="absolute -inset-x-1 top-1/2 h-3 w-[calc(100%+0.5rem)] -translate-y-1/2 overflow-visible"
-                      viewBox="0 0 100 20"
-                      preserveAspectRatio="none"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M2 12C30 6 62 15 98 8" vector-effect="non-scaling-stroke" data-flavour-strike />
-                    </svg>
-                  </span>
+                  </s>
                 )}
                 {/* The price tag. */}
                 <span class="flavour-tag">
@@ -445,7 +406,6 @@ const crumbs = [
 
   /* Hidden until the flavour arrives. */
   .motion [data-flavour-bite],
-  .motion [data-flavour-note],
   .motion [data-ingredient] {
     opacity: 0;
   }
@@ -540,91 +500,25 @@ const crumbs = [
     }
   }
 
-  /* ---- Drifting crumbs: only on capable devices, only while in view. */
-  .flavours-crumb {
-    display: none;
-    position: absolute;
-    border-radius: 40% 60% 55% 45%;
-    background: var(--color-wine);
-    opacity: 0.16;
-    animation: flavours-drift var(--drift) ease-in-out infinite alternate paused;
-  }
-
-  [data-crumbs] .flavours-crumb {
-    display: block;
-  }
-
-  [data-crumbs][data-inside] .flavours-crumb {
-    animation-play-state: running;
-  }
-
-  @keyframes flavours-drift {
-    to {
-      transform: translate3d(var(--dx), var(--dy), 0) rotate(160deg);
-    }
-  }
-
-  .flavour-fling {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 60;
-    width: 2.25rem;
-    height: 2.25rem;
-    margin: -1.125rem 0 0 -1.125rem;
-    border: 2px solid var(--color-wine);
-    border-radius: 50%;
-    background: var(--color-cream);
-    pointer-events: none;
-  }
 </style>
 
 <script>
   import gsap from 'gsap';
-  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  import { canAffordEffects, finePointer, reducedMotion } from '../../lib/motion';
+  import { finePointer, reducedMotion } from '../../lib/motion';
   import { addBite, isFlavourId } from '../../lib/order-store';
   import { getLenis } from '../../lib/smooth-scroll';
   import { canUse3D, whenStirred } from '../../lib/three/support';
   import type { SwitcherBite } from '../../lib/three/switcher-bite';
 
-  gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
-
-  // ---- Add to box: flings a mini bite to the nav, then adds it to the order.
-  const fling = (from: Element, onLand: () => void): void => {
-    const target = document.querySelector('[data-cart-target]');
-    if (!target || reducedMotion()) return onLand();
-
-    const start = from.getBoundingClientRect();
-    const end = target.getBoundingClientRect();
-    const startX = start.left + start.width / 2;
-    const startY = start.top + start.height / 2;
-
-    const bite = document.createElement('span');
-    bite.className = 'flavour-fling';
-    document.body.append(bite);
-
-    // Sideways at a steady pace, upwards fast then slowing: an arc.
-    gsap
-      .timeline({
-        onComplete: () => {
-          bite.remove();
-          onLand();
-        },
-      })
-      .set(bite, { x: startX, y: startY })
-      .to(bite, { x: end.left + end.width / 2, duration: 0.55, ease: 'power1.in' }, 0)
-      .to(bite, { y: end.top + end.height / 2, duration: 0.55, ease: 'power2.out' }, 0)
-      .to(bite, { scale: 0.4, rotation: 360, duration: 0.55, ease: 'power1.in' }, 0);
-  };
+  gsap.registerPlugin(ScrollTrigger);
 
   // Registered once; works in every mode, including reduced motion.
   document.addEventListener('click', (event) => {
     const button = (event.target as Element).closest?.<HTMLElement>('[data-add-to-box]');
     const id = button?.dataset.addToBox;
     if (!button || !isFlavourId(id)) return;
-    fling(button, () => addBite(id));
+    addBite(id);
   });
 
   // ---- The scene itself.
@@ -717,7 +611,7 @@ const crumbs = [
     const onTap = (): void => goTo((index + 1) % panels.length);
     button.addEventListener('click', onTap);
 
-    // The bite turns in and grows a little; the ingredients slide in from
+    // The bite slides up and fades in; the ingredients slide in from
     // their own side and settle.
     const arrive = (panel: HTMLElement): void => {
       const visual = panel.querySelector<HTMLElement>('[data-flavour-visual]');
@@ -727,8 +621,8 @@ const crumbs = [
       arrival?.kill();
       arrival = gsap.timeline().fromTo(
         find('[data-flavour-bite]', panel),
-        { scale: 0.86, rotation: -12, opacity: 0 },
-        { scale: 1, rotation: 0, opacity: 1, duration: 1, ease: 'expo.out' },
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, ease: 'expo.out' },
         0,
       );
 
@@ -742,21 +636,13 @@ const crumbs = [
         );
       });
 
-      arrival.fromTo(find('[data-flavour-note]', panel), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.6);
-
-      arrival.fromTo(
-        find('[data-flavour-strike]', panel),
-        { drawSVG: 0 },
-        { drawSVG: '100%', duration: 0.4, ease: 'power1.inOut' },
-        0.5,
-      );
     };
 
     const show = (next: number): void => {
       if (next === active) return;
       const previous = panels[active];
       if (previous) {
-        gsap.set(find('[data-flavour-bite], [data-flavour-note], [data-ingredient]', previous), { opacity: 0 });
+        gsap.set(find('[data-flavour-bite], [data-ingredient]', previous), { opacity: 0 });
       }
 
       // The background warms to the new flavour's colour.
@@ -826,8 +712,6 @@ const crumbs = [
         sync();
       },
     });
-
-    scene.toggleAttribute('data-crumbs', canAffordEffects());
 
     // Keyboard: tabbing to a button in a panel that is off to the side
     // scrolls the page to that flavour, so focus is never out of sight.
